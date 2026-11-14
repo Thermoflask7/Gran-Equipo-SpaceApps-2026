@@ -25,7 +25,7 @@ Estados válidos: `pendiente`, `en curso`, `en PR`, `hecho`.
 | 12 | Minijuego de pilotaje | P4 | por asignar | ninguna | — | pendiente |
 | 13 | Minijuego de mantenimiento | P4 | por asignar | ninguna | — | pendiente |
 | 14 | Minijuego de investigación (recolección de datos) | P4 | por asignar | ninguna | — | pendiente |
-| 15 | Eventos aleatorios (planeación y vuelo) | P4 | por asignar | ninguna | — | pendiente |
+| 15 | Eventos aleatorios (planeación y vuelo) | P4 | Elena | Claude | `ia/claude/eventos` | en PR |
 | 16 | `03_Resultados`: puntaje final y explicación educativa | P1 | por asignar | ninguna | — | pendiente |
 | 17 | Física: Δv, masa y energía | P5 | por asignar | ninguna | — | pendiente |
 | 18 | Datos: piezas, astronautas, eventos, sitios y clima, misión lunar | P5 | por asignar | ninguna | — | pendiente |

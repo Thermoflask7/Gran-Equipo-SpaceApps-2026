@@ -10,7 +10,7 @@ Estados válidos: `pendiente`, `en curso`, `en PR`, `hecho`.
 
 | ID | Tarea | Rol | Responsable humano | IA asignada | Rama | Estado |
 |---|---|---|---|---|---|---|
-| 0 | GameManager + cambio de escenas + estado | P1 | por asignar | Claude | `ia/claude/gamemanager` | en curso |
+| 0 | GameManager + cambio de escenas + estado | P1 | Elena | Claude | `ia/claude/gamemanager` | en PR |
 | 1 | Presupuesto (`01_Presupuesto`) | P3 | por asignar | ninguna | — | pendiente |
 | 2 | Tienda y armado del cohete (`02_Tienda`) | P2 | por asignar | ninguna | — | pendiente |
 | 3 | Tripulación (`03_Tripulacion`) | P3 | por asignar | ninguna | — | pendiente |

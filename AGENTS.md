@@ -9,6 +9,10 @@ Protocolo entre las dos IAs (Claude y Grok): [AI_COLLAB.md](AI_COLLAB.md).
 Diriges una agencia espacial: consigues presupuesto, compras piezas y armas la nave, eliges tripulación,
 escoges ventana de lanzamiento y ejecutas la misión. Aprendes los trade-offs reales de masa, Δv, energía y presupuesto.
 
+## Misión elegida
+Órbita lunar tripulada (inspirada en Artemis): llegar a órbita baja, inyección translunar, entrar a órbita lunar, recolectar datos y regresar.
+Marte y Europa aparecen como misiones bloqueadas ("próximamente"). Aterrizaje lunar solo si sobra tiempo.
+
 ## Loop (una sola misión jugable, 5–10 min)
 Presupuesto → Tienda/Armado → Tripulación → Lanzamiento → Misión (eventos + minijuegos) → Resultados
 

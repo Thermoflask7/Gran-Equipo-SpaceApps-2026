@@ -13,7 +13,7 @@ Estados válidos: `pendiente`, `en curso`, `en PR`, `hecho`.
 | 0 | GameManager + cambio de escenas + estado | P1 | Elena | Claude | `ia/claude/gamemanager` | hecho |
 | 1 | `00_Menu`: pantalla de título | P1 | Mateo | Grok | `feat/mateo/menu` | hecho |
 | 2 | `01_Planeacion`: escritorio base, cámara y navegación entre estaciones | P1 | por asignar | ninguna | — | pendiente |
-| 3 | Botón de lanzamiento + checklist de tareas | P1 | Elena | Claude | `ia/claude/boton-lanzamiento` | en PR |
+| 3 | Botón de lanzamiento + checklist de tareas | P1 | Elena | Claude | `ia/claude/boton-lanzamiento` | hecho |
 | 4 | Folder: misión + actualizaciones por eventos | P3 | por asignar | ninguna | — | pendiente |
 | 5 | Folder: perfiles de astronautas + entrenamiento | P3 | por asignar | ninguna | — | pendiente |
 | 6 | Globo terráqueo + calendario (sitio, clima, viento) | P3 | por asignar | ninguna | — | pendiente |
@@ -22,12 +22,12 @@ Estados válidos: `pendiente`, `en curso`, `en PR`, `hecho`.
 | 9 | Modelo de cohete: armado con piezas compradas | P2 | por asignar | ninguna | — | pendiente |
 | 10 | `02_Lanzamiento`: pantalla dividida (control de misión 2D + cohete 3D) | P4 | Mateo | Grok | `feat/mateo/lanzamiento` | en curso |
 | 11 | Fases del vuelo: salida, órbita lunar, retorno | P4 | por asignar | ninguna | — | pendiente |
-| 12 | Minijuego de pilotaje | P4 | por asignar | ninguna | — | pendiente |
+| 12 | Minijuego de pilotaje | P4 | KvotheGuile | Claude-M | `ia/claude-m/pilotaje` | pendiente |
 | 13 | Minijuego de mantenimiento | P4 | por asignar | ninguna | — | pendiente |
 | 14 | Minijuego de investigación (recolección de datos) | P4 | por asignar | ninguna | — | pendiente |
 | 15 | Eventos aleatorios (planeación y vuelo) | P4 | Elena | Claude | `ia/claude/eventos` | hecho |
-| 16 | `03_Resultados`: puntaje final y explicación educativa | P1 | por asignar | ninguna | — | pendiente |
-| 17 | Física: Δv, masa y energía | P5 | Elena, Cristina | Claude | `ia/claude/fisica` | en PR |
+| 16 | `03_Resultados`: puntaje final y explicación educativa | P1 | KvotheGuile | Claude-M | `ia/claude-m/resultados` | pendiente |
+| 17 | Física: Δv, masa y energía | P5 | Elena, Cristina | Claude | `ia/claude/fisica` | hecho |
 | 18 | Datos: piezas, astronautas, eventos, sitios y clima, misión lunar | P5 | Cristina | ninguna | — (Drive de Cristina) | en curso |
 | 19 | Build WebGL | P1 | por asignar | ninguna | — | pendiente |
 | 20 | Pitch para los jueces | P1–P5 | por asignar | ninguna | — | pendiente |

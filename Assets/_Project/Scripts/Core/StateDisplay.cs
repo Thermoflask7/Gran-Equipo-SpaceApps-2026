@@ -1,15 +1,15 @@
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 // Texto de depuracion para el greybox: muestra el estado de la partida.
-[RequireComponent(typeof(Text))]
+[RequireComponent(typeof(TMP_Text))]
 public class StateDisplay : MonoBehaviour
 {
-    Text label;
+    TMP_Text label;
 
     void Awake()
     {
-        label = GetComponent<Text>();
+        label = GetComponent<TMP_Text>();
     }
 
     void Update()

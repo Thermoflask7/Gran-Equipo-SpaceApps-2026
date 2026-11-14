@@ -11,6 +11,10 @@ Diriges una misión de **órbita lunar tripulada estilo Artemis**: desde tu escr
 armas el cohete, entrenas a la tripulación y eliges sitio y fecha de lanzamiento; luego vives el vuelo desde
 control de misión. Aprendes los trade-offs reales de masa, Δv, energía, clima y presupuesto.
 
+## Misión elegida
+Órbita lunar tripulada (inspirada en Artemis): llegar a órbita baja, inyección translunar, entrar a órbita lunar, recolectar datos y regresar.
+Marte y Europa aparecen como misiones bloqueadas ("próximamente"). Aterrizaje lunar solo si sobra tiempo.
+
 ## Loop (una sola misión jugable, 5–10 min)
 Menú → **Planeación** (escritorio) → **Lanzamiento** (salida → órbita lunar → retorno) → Resultados
 

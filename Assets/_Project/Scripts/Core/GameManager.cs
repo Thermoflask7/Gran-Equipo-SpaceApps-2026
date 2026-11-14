@@ -54,6 +54,9 @@ public class GameManager : MonoBehaviour
     public float missionScore;
     public List<EventData> eventsHappened = new List<EventData>();
 
+    [Header("Vuelo (lo llenan las fases y minijuegos, lo lee Resultados)")]
+    public MissionResults flight = new MissionResults();
+
     void Awake()
     {
         if (instance != null && instance != this)
@@ -88,8 +91,11 @@ public class GameManager : MonoBehaviour
         planningScore = 0f;
         missionScore = 0f;
         eventsHappened.Clear();
+        flight.Reset();
     }
 
+    // Antes de Resultados es solo lo que sumaron los eventos. En Resultados,
+    // MissionScoring.SaveFinalScore() pone el puntaje final V16 (0 a 100).
     public float TotalScore()
     {
         return planningScore + missionScore;

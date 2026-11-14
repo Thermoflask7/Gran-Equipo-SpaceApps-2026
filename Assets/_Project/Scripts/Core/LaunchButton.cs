@@ -35,6 +35,7 @@ public class LaunchButton : MonoBehaviour
     public void Launch()
     {
         if (!GameManager.Instance.CanLaunch()) return;
+        GameManager.Instance.flight.launched = true; // Resultados revisa que se lanzo con las 4 tareas
         GameManager.Instance.GoToScene(Scenes.Launch);
     }
 }

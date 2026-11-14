@@ -1,6 +1,6 @@
 # Tablero de tareas
 
-Una sola misión jugable, en este orden: Presupuesto → Tienda/Armado → Tripulación → Lanzamiento → Misión (eventos y minijuegos) → Resultados. En paralelo van la física (Δv), los datos, el build WebGL y el pitch.
+Diseño completo en [GDD.md](GDD.md). Loop: Menú → Planeación (escritorio) → Lanzamiento (salida → órbita lunar → retorno) → Resultados.
 
 Antes de tomar una tarea, lee [AGENTS.md](AGENTS.md) y [AI_COLLAB.md](AI_COLLAB.md). Para reclamarla, en el mismo PR llena **IA asignada** y **Rama**, y pasa **Estado** a `en curso`.
 
@@ -11,15 +11,24 @@ Estados válidos: `pendiente`, `en curso`, `en PR`, `hecho`.
 | ID | Tarea | Rol | Responsable humano | IA asignada | Rama | Estado |
 |---|---|---|---|---|---|---|
 | 0 | GameManager + cambio de escenas + estado | P1 | por asignar | Claude | `ia/claude/gamemanager` | en curso |
-| 1 | Presupuesto (`01_Presupuesto`) | P3 | por asignar | ninguna | — | pendiente |
-| 2 | Tienda y armado del cohete (`02_Tienda`) | P2 | por asignar | ninguna | — | pendiente |
-| 3 | Tripulación (`03_Tripulacion`) | P3 | por asignar | ninguna | — | pendiente |
-| 4 | Lanzamiento (`04_Lanzamiento`) | P3 | por asignar | ninguna | — | pendiente |
-| 5 | Misión: eventos y minijuegos (`05_Mision`) | P4 | por asignar | ninguna | — | pendiente |
-| 6 | Resultados (`06_Resultados`) | P1 | por asignar | ninguna | — | pendiente |
-| 7 | Física: Δv, masa y energía | P5 | por asignar | ninguna | — | pendiente |
-| 8 | Datos: ScriptableObjects (piezas, astronautas, eventos, destinos) | P5 | por asignar | ninguna | — | pendiente |
-| 9 | Build WebGL | P1 | por asignar | ninguna | — | pendiente |
-| 10 | Pitch para los jueces | P1–P5 | por asignar | ninguna | — | pendiente |
-
-`00_Menu` es de P1 y todavía no tiene fila. Quien la arme reclama una tarea nueva en este tablero, o la cuelga de la tarea 0 si solo es la escena de entrada del loop.
+| 1 | `00_Menu`: pantalla de título | P1 | por asignar | ninguna | — | pendiente |
+| 2 | `01_Planeacion`: escritorio base, cámara y navegación entre estaciones | P1 | por asignar | ninguna | — | pendiente |
+| 3 | Botón de lanzamiento + checklist de tareas | P1 | por asignar | ninguna | — | pendiente |
+| 4 | Folder: misión + actualizaciones por eventos | P3 | por asignar | ninguna | — | pendiente |
+| 5 | Folder: perfiles de astronautas + entrenamiento | P3 | por asignar | ninguna | — | pendiente |
+| 6 | Globo terráqueo + calendario (sitio, clima, viento) | P3 | por asignar | ninguna | — | pendiente |
+| 7 | Computadora: escritorio de apps, ajustes y apagar | P2 | por asignar | ninguna | — | pendiente |
+| 8 | Computadora: app SpaceMart (comprar piezas) | P2 | por asignar | ninguna | — | pendiente |
+| 9 | Modelo de cohete: armado con piezas compradas | P2 | por asignar | ninguna | — | pendiente |
+| 10 | `02_Lanzamiento`: pantalla dividida (control de misión 2D + cohete 3D) | P4 | por asignar | ninguna | — | pendiente |
+| 11 | Fases del vuelo: salida, órbita lunar, retorno | P4 | por asignar | ninguna | — | pendiente |
+| 12 | Minijuego de pilotaje | P4 | por asignar | ninguna | — | pendiente |
+| 13 | Minijuego de mantenimiento | P4 | por asignar | ninguna | — | pendiente |
+| 14 | Minijuego de investigación (recolección de datos) | P4 | por asignar | ninguna | — | pendiente |
+| 15 | Eventos aleatorios (planeación y vuelo) | P4 | por asignar | ninguna | — | pendiente |
+| 16 | `03_Resultados`: puntaje final y explicación educativa | P1 | por asignar | ninguna | — | pendiente |
+| 17 | Física: Δv, masa y energía | P5 | por asignar | ninguna | — | pendiente |
+| 18 | Datos: piezas, astronautas, eventos, sitios y clima, misión lunar | P5 | por asignar | ninguna | — | pendiente |
+| 19 | Build WebGL | P1 | por asignar | ninguna | — | pendiente |
+| 20 | Pitch para los jueces | P1–P5 | por asignar | ninguna | — | pendiente |
+| 21 | (Opcional) Tech tree como app de la computadora | P2 | por asignar | ninguna | — | pendiente |

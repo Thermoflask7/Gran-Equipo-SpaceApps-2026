@@ -36,6 +36,7 @@ public class LaunchButton : MonoBehaviour
     {
         if (!GameManager.Instance.CanLaunch()) return;
         GameManager.Instance.flight.launched = true; // Resultados revisa que se lanzo con las 4 tareas
+        GameManager.Instance.flight.moneyAtLaunch = GameManager.Instance.money; // el ahorro se califica al lanzar
         GameManager.Instance.GoToScene(Scenes.Launch);
     }
 }

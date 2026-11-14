@@ -26,7 +26,7 @@ Estados válidos: `pendiente`, `en curso`, `en PR`, `hecho`.
 | 13 | Minijuego de mantenimiento | P4 | por asignar | ninguna | — | pendiente |
 | 14 | Minijuego de investigación (recolección de datos) | P4 | por asignar | ninguna | — | pendiente |
 | 15 | Eventos aleatorios (planeación y vuelo) | P4 | Elena | Claude | `ia/claude/eventos` | hecho |
-| 16 | `03_Resultados`: puntaje final y explicación educativa | P1 | Elena | Claude | `ia/claude/puntuacion` (puntuación V16 de Cristina) | en PR |
+| 16 | `03_Resultados`: puntaje final y explicación educativa | P1 | Elena | Claude | `ia/claude/puntuacion-artemis` (puntuación V16 de Cristina, ajustada a Artemis) | en PR |
 | 17 | Física: Δv, masa y energía | P5 | Elena, Cristina | Claude | `ia/claude/catalogo` (corrección + catálogo de Cristina) | hecho |
 | 18 | Datos: piezas, astronautas, eventos, sitios y clima, misión lunar | P5 | Cristina | ninguna | — (Drive de Cristina) | en curso |
 | 19 | Build WebGL | P1 | por asignar | ninguna | — | pendiente |

@@ -3,6 +3,7 @@
 Juego educativo para el **NASA Space Apps Challenge 2026** (reto de diseño de misiones espaciales).
 Hackathon de 48 h: entrega el **domingo 15 nov, 8:00 pm** (cierre oficial 11:59 pm).
 Equipo de 5. Unity, low poly, build final en **WebGL** para que los jueces jueguen en el navegador.
+Protocolo entre las dos IAs (Claude y Grok): [AI_COLLAB.md](AI_COLLAB.md).
 
 ## El juego en una frase
 Diriges una agencia espacial: consigues presupuesto, compras piezas y armas la nave, eliges tripulación,

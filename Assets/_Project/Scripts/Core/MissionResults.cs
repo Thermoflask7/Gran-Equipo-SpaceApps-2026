@@ -11,6 +11,7 @@
 public class MissionResults
 {
     public bool launched;        // el boton de lanzamiento se presiono con CanLaunch() en true
+    public float moneyAtLaunch;  // dinero al lanzar (lo pone LaunchButton). El ahorro se califica con esto
     public bool flightFinished;  // el vuelo ya termino (con exito o no). Mientras sea false el resultado es "pendiente"
 
     // Hitos del vuelo (en orden)
@@ -30,6 +31,7 @@ public class MissionResults
     public void Reset()
     {
         launched = false;
+        moneyAtLaunch = 0f;
         flightFinished = false;
         departureDone = false;
         lunarOrbitDone = false;

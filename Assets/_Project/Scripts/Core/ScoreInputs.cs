@@ -1,24 +1,26 @@
-// Entradas del puntaje V16 de Cristina (Drive: CRISTINA/PUNTUACION/SpaceMission_Puntuacion_V16.json).
-// Los nombres siguen su "input_contract" para poder comparar con sus pruebas.
-// En el juego se llenan con MissionScoring.InputsFromGame(); en las pruebas, a mano.
+// Entradas del puntaje (V16 de Cristina adaptado a la fisica Artemis: el SLS es un servicio completo).
+// En el juego se llenan con MissionScoring.InputsFromGame(); en las pruebas tambien.
 public class ScoreInputs
 {
-    // Ingenieria
-    public float launchDvAvailable;   // m/s (con el SLS se llena con MissionScoring.InputsFromGame)
-    public float launchDvRequired;
+    // Ingenieria (todo sale de RocketPhysics)
+    public float deliveryCapacity;    // kg que el SLS elegido lleva a la translunar (payloadCapacity)
+    public float tliMass;             // kg, RocketPhysics.TliMass
     public float craftDvAvailable;    // m/s, RocketPhysics.SpacecraftDeltaV
     public float craftDvRequired;     // m/s, mission.requiredDeltaV
-    public float massLimit;           // kg, capacidad del SLS a la translunar
-    public float massForLimit;        // kg, RocketPhysics.TliMass
-    public float liftoffTwr;
-    public float powerNetW;           // W, generacion - consumo de la nave
-    public float loadW;               // W, consumo de la nave
-    public float batteryWh;
+    public float powerNetW;           // W, RocketPhysics.PowerBalance (generacion - consumo de la nave)
+    public float loadW;               // W, RocketPhysics.PowerConsumption
+    public float batteryWh;           // RocketPhysics.BatteryWh
     public float outageHours = RocketPhysics.OutageHours;
+    public float waterMargin;         // kg que sobran (RocketPhysics.WaterMargin); negativo = falta
+    public float waterRequired;       // kg que consume la tripulacion en toda la mision
+    public float oxygenMargin;
+    public float oxygenRequired;
+    public float foodMargin;
+    public float foodRequired;
 
     // Presupuesto, tripulacion y clima
     public float startingMoney;
-    public float moneyRemaining;
+    public float moneyAtLaunch;       // dinero al momento de lanzar (los eventos del vuelo no lo cambian)
     public float pilotSkill;          // 0 a 1, GameManager.SkillMultiplier
     public float engineerSkill;
     public float scientistSkill;

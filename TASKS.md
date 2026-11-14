@@ -20,7 +20,7 @@ Estados válidos: `pendiente`, `en curso`, `en PR`, `hecho`.
 | 7 | Computadora: escritorio de apps, ajustes y apagar | P2 | por asignar | ninguna | — | pendiente |
 | 8 | Computadora: app SpaceMart (comprar piezas) | P2 | por asignar | ninguna | — | pendiente |
 | 9 | Modelo de cohete: armado con piezas compradas | P2 | por asignar | ninguna | — | pendiente |
-| 10 | `02_Lanzamiento`: pantalla dividida (control de misión 2D + cohete 3D) | P4 | por asignar | ninguna | — | pendiente |
+| 10 | `02_Lanzamiento`: pantalla dividida (control de misión 2D + cohete 3D) | P4 | Mateo | Grok | `feat/mateo/lanzamiento` | en curso |
 | 11 | Fases del vuelo: salida, órbita lunar, retorno | P4 | por asignar | ninguna | — | pendiente |
 | 12 | Minijuego de pilotaje | P4 | por asignar | ninguna | — | pendiente |
 | 13 | Minijuego de mantenimiento | P4 | por asignar | ninguna | — | pendiente |

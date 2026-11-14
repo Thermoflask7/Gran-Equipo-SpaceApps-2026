@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78ba0bd40e8248e4bb812688317f4c72, type: 3}
+  m_Name: ART-CREW-RES-FOOD
+  m_EditorClassIdentifier: Assembly-CSharp::PartData
+  catalogId: ART-CREW-RES-FOOD
+  partName: Supplementary food reserve (game)
+  type: 10
+  description: Optional extra food inventory beyond integrated baseline.
+  icon: {fileID: 0}
+  price: 55
+  dryMass: 38
+  fuelMass: 0
+  isp: 0
+  thrust: 0
+  payloadCapacity: 0
+  power: 0
+  powerDraw: 0
+  batteryWh: 0
+  crewCapacity: 0
+  maxMissionDays: 0
+  waterKg: 0
+  oxygenKg: 0
+  foodKg: 30
+  sciencePoints: 0
+  dataRateBps: 0
+  experimentDataBits: 0

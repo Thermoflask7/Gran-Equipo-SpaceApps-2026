@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78ba0bd40e8248e4bb812688317f4c72, type: 3}
+  m_Name: ART-PWR-BACKUP
+  m_EditorClassIdentifier: Assembly-CSharp::PartData
+  catalogId: ART-PWR-BACKUP
+  partName: Redundant power-storage pack (game)
+  type: 4
+  description: Additional energy for extended shading or equipment failure.
+  icon: {fileID: 0}
+  price: 145
+  dryMass: 105
+  fuelMass: 0
+  isp: 0
+  thrust: 0
+  payloadCapacity: 0
+  power: 0
+  powerDraw: 25
+  batteryWh: 14000
+  crewCapacity: 0
+  maxMissionDays: 0
+  waterKg: 0
+  oxygenKg: 0
+  foodKg: 0
+  sciencePoints: 0
+  dataRateBps: 0
+  experimentDataBits: 0

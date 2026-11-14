@@ -19,9 +19,9 @@ Marte y Europa aparecen como misiones bloqueadas ("próximamente"). Aterrizaje l
 Menú → **Planeación** (escritorio) → **Lanzamiento** (salida → órbita lunar → retorno) → Resultados
 
 ## Física (simplificada pero real)
-- Δv de la nave: `Δv = Isp * g0 * ln(m0 / mf)` con `g0 = 9.81 m/s²`
+- Δv de la nave: `Δv = Isp * g0 * ln(m0 / mf)` con `g0 = 9.80665 m/s²`
   - `m0` = masa total con combustible, `mf` = masa sin combustible. Por etapas: se suma el Δv de cada etapa.
-- La misión pide un Δv mínimo (llegar a órbita, inyección translunar, inserción en órbita lunar, regreso). Si la nave no lo alcanza, no se puede lanzar.
+- Dos Δv mínimos: el **cohete** (que arma el jugador) para despegar e inyectarse a la Luna (`launchDeltaV`), y la **nave** Orion para entrar a órbita lunar y regresar (`requiredDeltaV`). Si alguno no alcanza, no se puede lanzar. Cálculos en `Scripts/Fisica/RocketPhysics.cs`.
 - Datos reales de piezas, sitios de lanzamiento y la misión: los prepara P5 (ver `Assets/_Project/Data/`).
 
 ## Reglas para escribir código
@@ -34,6 +34,7 @@ Menú → **Planeación** (escritorio) → **Lanzamiento** (salida → órbita l
 - Compatible con WebGL: nada de hilos (`System.Threading`), ni lectura/escritura de archivos locales.
 - UI solo con uGUI + **TextMeshPro** (`TextMeshProUGUI` / `TMP_Text`). Nada de `UnityEngine.UI.Text` legacy.
 - Entrada solo con el **Input System nuevo** (`UnityEngine.InputSystem`: `Keyboard.current`, `Mouse.current` o Input Actions). Nada de `Input.GetKey`, `Input.GetAxis` ni `Input.mousePosition`: el manejador viejo está apagado en el proyecto y truena. Todo EventSystem lleva `InputSystemUIInputModule`, no `StandaloneInputModule`.
+- Nada de APIs obsoletas de Unity 6: cero warnings `CS0618`. Por ejemplo, `FindAnyObjectByType` / `FindObjectsByType` en vez de `FindObjectOfType` o `FindFirstObjectByType`.
 - No modificar escenas, prefabs o scripts de otra persona sin avisarle (evita conflictos de merge).
 
 ## Estructura de carpetas

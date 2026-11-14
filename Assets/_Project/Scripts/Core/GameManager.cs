@@ -23,7 +23,7 @@ public class GameManager : MonoBehaviour
     }
 
     [Header("Valores iniciales")]
-    public float startingMoney = 500f; // millones de USD (presupuesto fijo)
+    public float startingMoney = 3400f; // creditos del juego (presupuesto fijo, catalogo de Cristina)
 
     [Header("Mision")]
     public DestinationData mission;

@@ -27,7 +27,7 @@ Estados válidos: `pendiente`, `en curso`, `en PR`, `hecho`.
 | 14 | Minijuego de investigación (recolección de datos) | P4 | por asignar | ninguna | — | pendiente |
 | 15 | Eventos aleatorios (planeación y vuelo) | P4 | Elena | Claude | `ia/claude/eventos` | hecho |
 | 16 | `03_Resultados`: puntaje final y explicación educativa | P1 | KvotheGuile | Claude-M | `ia/claude-m/resultados` | pendiente |
-| 17 | Física: Δv, masa y energía | P5 | Elena, Cristina | Claude | `ia/claude/fisica` | hecho |
+| 17 | Física: Δv, masa y energía | P5 | Elena, Cristina | Claude | `ia/claude/catalogo` (corrección + catálogo de Cristina) | en PR |
 | 18 | Datos: piezas, astronautas, eventos, sitios y clima, misión lunar | P5 | Cristina | ninguna | — (Drive de Cristina) | en curso |
 | 19 | Build WebGL | P1 | por asignar | ninguna | — | pendiente |
 | 20 | Pitch para los jueces | P1–P5 | por asignar | ninguna | — | pendiente |

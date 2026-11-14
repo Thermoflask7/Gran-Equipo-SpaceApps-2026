@@ -1,27 +1,28 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Calculos de fisica del cohete (tarea 17). Todo es estatico: RocketPhysics.LaunchDeltaV(partes), etc.
+// Calculos de fisica de la mision (tarea 17), con el modelo de Cristina:
+// catalogo V8.3, mision V13 y modelos fisicos V9.3 (Drive, carpeta CRISTINA).
+// Todo es estatico: RocketPhysics.SpacecraftDeltaV(partes), etc.
 //
-// Como se arma el cohete:
-//   La lista de piezas va de ARRIBA hacia ABAJO (capsula primero, motor de la primera etapa al final).
-//   Las piezas arriba del primer motor son la NAVE (capsula Orion, modulo de servicio, modulos opcionales,
-//   torre de escape). Despues, cada motor cierra una etapa del cohete: la etapa son ese motor y los tanques
-//   que estan arriba de el hasta el motor anterior.
+// Como se arma el cohete (el orden de las piezas ya no importa):
+//   - Se elige UN lanzador (LaunchService): SLS Block 1 (lleva 27,000 kg a la translunar)
+//     o SLS Block 1B (38,000 kg). El lanzador ya trae sus etapas: no se arman tanques ni motores.
+//   - La nave: capsula Orion + modulo de servicio + torre de escape (obligatorias)
+//     + modulos opcionales (ciencia, antena, reservas, baterias...).
 //
-//   Ejemplo:  Escape, Capsula, ModuloServicio, Ciencia | Tanque, Motor | Tanque, Tanque, Motor
-//             \____________ nave (carga util) ________/  \_ etapa 2 _/   \____ etapa 1 ____/
-//
-// Hay dos calculos de delta-v (ecuacion de Tsiolkovsky: dv = Isp * g0 * ln(m0 / mf)):
-//   1. Cohete (lo arma el jugador): sus etapas deben llevar la nave de la Tierra a la inyeccion translunar.
-//      Debe dar al menos mission.launchDeltaV. Al terminar una etapa se suelta su masa seca.
-//   2. Nave (modelo de Cristina, Orion despues de la translunar): con el Isp y el propelente del modulo de
-//      servicio debe dar al menos mission.requiredDeltaV (llegar a la orbita lunar, regresar y reserva).
-//      La torre de escape no cuenta aqui: se suelta durante el despegue.
+// Lo que se revisa:
+//   1. Masa en la translunar (AM-19) <= capacidad del lanzador.
+//      Masa en la translunar = masa de la nave (sin torre de escape) + mission.tliExtraMass.
+//   2. Delta-v de la nave (Tsiolkovsky con el modulo de servicio, AM-17/18) >= mission.requiredDeltaV.
+//   3. Energia: con sol, lo que se genera >= lo que se consume; en sombra (1.5 h) la bateria aguanta.
+//   4. Tripulacion: la capsula lleva a todos, aguanta los dias y alcanzan agua, oxigeno y comida.
+//   5. Ciencia: puntos >= mission.minSciencePoints y los datos se bajan en <= 1 hora.
+//   El presupuesto lo revisa GameManager al comprar (precios en creditos).
 public static class RocketPhysics
 {
     public const float G0 = 9.80665f;      // m/s2 (gravedad estandar, igual que los datos de Cristina)
-    public const float OutageHours = 1.5f;  // horas sin sol que la bateria debe aguantar (dato de balanceo)
+    public const float OutageHours = 1.5f;  // horas sin sol que la bateria debe aguantar (mision V13)
 
     // dv de un motor con masa inicial m0 y final mf (kg). Isp en segundos.
     public static float DeltaV(float isp, float m0, float mf)
@@ -30,17 +31,11 @@ public static class RocketPhysics
         return isp * G0 * Mathf.Log(m0 / mf);
     }
 
-    static float Mass(List<PartData> parts)
-    {
-        float total = 0f;
-        foreach (PartData p in parts) total += p.dryMass + p.fuelMass;
-        return total;
-    }
-
-    // Masa total al despegue (kg): seca + combustible de todo.
+    // Masa total (kg): seca + combustible de todas las piezas (el lanzador pesa 0 en este modelo).
     public static float TotalMass(List<PartData> parts)
     {
         float total = 0f;
+        if (parts == null) return total;
         foreach (PartData p in parts)
         {
             if (p != null) total += p.dryMass + p.fuelMass;
@@ -48,218 +43,242 @@ public static class RocketPhysics
         return total;
     }
 
-    // ---------- Partes del cohete ----------
+    // Suma de precios (creditos).
+    public static float TotalPrice(List<PartData> parts)
+    {
+        float total = 0f;
+        if (parts == null) return total;
+        foreach (PartData p in parts)
+        {
+            if (p != null) total += p.price;
+        }
+        return total;
+    }
 
-    // La nave: todo lo que esta arriba del primer motor (incluye la torre de escape).
-    public static List<PartData> Payload(List<PartData> parts)
+    static int CountType(List<PartData> parts, PartType type)
+    {
+        int count = 0;
+        if (parts == null) return count;
+        foreach (PartData p in parts)
+        {
+            if (p != null && p.type == type) count++;
+        }
+        return count;
+    }
+
+    static PartData FirstOfType(List<PartData> parts, PartType type)
+    {
+        if (parts == null) return null;
+        foreach (PartData p in parts)
+        {
+            if (p != null && p.type == type) return p;
+        }
+        return null;
+    }
+
+    // ---------- 1. Lanzador y masa ----------
+
+    // El SLS elegido (null si no hay).
+    public static PartData LaunchService(List<PartData> parts)
+    {
+        return FirstOfType(parts, PartType.LaunchService);
+    }
+
+    // La nave que viaja a la Luna: todo menos el lanzador y la torre de escape.
+    public static List<PartData> Spacecraft(List<PartData> parts)
     {
         List<PartData> result = new List<PartData>();
+        if (parts == null) return result;
         foreach (PartData p in parts)
         {
             if (p == null) continue;
-            if (p.type == PartType.Engine) break;
+            if (p.type == PartType.LaunchService || p.type == PartType.AbortSystem) continue;
             result.Add(p);
         }
         return result;
     }
 
-    // Etapas del cohete. stages[0] es la de ABAJO (la que se enciende primero).
-    // No incluye la nave. Piezas abajo del ultimo motor no cuentan (ValidationMessage lo avisa).
-    public static List<List<PartData>> SplitStages(List<PartData> parts)
+    // Masa de la nave justo despues de la translunar, con combustible (kg). AM-18.
+    public static float SpacecraftMass(List<PartData> parts)
     {
-        List<List<PartData>> topToBottom = new List<List<PartData>>();
-        List<PartData> current = new List<PartData>();
-        bool payloadDone = false;
-
-        foreach (PartData p in parts)
-        {
-            if (p == null) continue;
-            if (p.type == PartType.Engine) payloadDone = true;
-            if (!payloadDone) continue; // es parte de la nave
-
-            current.Add(p);
-            if (p.type == PartType.Engine)
-            {
-                topToBottom.Add(current);
-                current = new List<PartData>();
-            }
-        }
-
-        topToBottom.Reverse();
-        return topToBottom;
+        return TotalMass(Spacecraft(parts));
     }
 
-    // ---------- 1. Cohete ----------
-
-    // Delta-v de cada etapa, en orden de encendido (abajo -> arriba). m/s.
-    public static List<float> StageDeltaVs(List<PartData> parts)
+    // Masa que el lanzador tiene que llevar a la translunar (kg). AM-19.
+    public static float TliMass(List<PartData> parts, DestinationData mission)
     {
-        List<float> result = new List<float>();
-        float massAbove = TotalMass(parts); // masa de todo lo que sigue pegado al cohete
-
-        foreach (List<PartData> stage in SplitStages(parts))
-        {
-            float fuel = 0f;
-            float dry = 0f;
-            float isp = 0f;
-            foreach (PartData p in stage)
-            {
-                fuel += p.fuelMass;
-                dry += p.dryMass;
-                if (p.type == PartType.Engine) isp = p.isp;
-            }
-
-            float m0 = massAbove;
-            float mf = m0 - fuel;
-            result.Add(DeltaV(isp, m0, mf));
-
-            massAbove = mf - dry; // se suelta la etapa vacia
-        }
-        return result;
+        float extra = mission != null ? mission.tliExtraMass : 0f;
+        return SpacecraftMass(parts) + extra;
     }
 
-    // Delta-v total del cohete (m/s): despegue + inyeccion translunar.
-    public static float LaunchDeltaV(List<PartData> parts)
+    // Capacidad del lanzador menos la masa en la translunar (kg). Negativo = no cabe. AM-07.
+    public static float DeliveryMargin(List<PartData> parts, DestinationData mission)
     {
-        float total = 0f;
-        foreach (float dv in StageDeltaVs(parts)) total += dv;
-        return total;
+        PartData sls = LaunchService(parts);
+        if (sls == null) return 0f;
+        return sls.payloadCapacity - TliMass(parts, mission);
     }
 
-    // Relacion empuje/peso al despegue (motor de la etapa de abajo). Debe ser > 1 para despegar.
-    // thrust esta en kN.
-    public static float LiftoffTWR(List<PartData> parts)
-    {
-        List<List<PartData>> stages = SplitStages(parts);
-        if (stages.Count == 0) return 0f;
+    // ---------- 2. Delta-v de la nave ----------
 
-        float thrustKN = 0f;
-        foreach (PartData p in stages[0])
-        {
-            if (p.type == PartType.Engine) thrustKN += p.thrust;
-        }
-
-        float weight = TotalMass(parts) * G0; // N
-        if (weight <= 0f) return 0f;
-        return thrustKN * 1000f / weight;
-    }
-
-    // ---------- 2. Nave (Orion despues de la translunar) ----------
-
-    // Las piezas de la nave que viajan a la Luna (sin la torre de escape).
-    public static List<PartData> Spacecraft(List<PartData> parts)
-    {
-        List<PartData> result = new List<PartData>();
-        foreach (PartData p in Payload(parts))
-        {
-            if (p.type != PartType.AbortSystem) result.Add(p);
-        }
-        return result;
-    }
-
-    // Delta-v de la nave con el modulo de servicio. m/s.
+    // Delta-v de la nave con el modulo de servicio (m/s). Solo usa su propelente. AM-17/18 + MOD-16.
     public static float SpacecraftDeltaV(List<PartData> parts)
     {
         List<PartData> craft = Spacecraft(parts);
         float isp = 0f;
         float fuel = 0f;
+        int serviceModules = 0;
         foreach (PartData p in craft)
         {
-            fuel += p.fuelMass;
-            if (p.type == PartType.ServiceModule) isp = p.isp;
+            if (p.type == PartType.ServiceModule)
+            {
+                serviceModules++;
+                fuel += p.fuelMass;
+                isp = p.isp;
+            }
         }
-        float m0 = Mass(craft);
+        if (serviceModules != 1) return 0f; // ValidationMessage lo avisa
+        float m0 = TotalMass(craft);
         return DeltaV(isp, m0, m0 - fuel);
     }
 
-    // Combustible que necesitaria la nave para lograr cierto delta-v (kg). Sirve para dar pistas al jugador.
+    // Combustible que se necesitaria para lograr cierto delta-v (kg). GM-02. Sirve para dar pistas.
     public static float FuelNeeded(float isp, float dryMass, float targetDeltaV)
     {
         if (isp <= 0f) return 0f;
         return dryMass * (Mathf.Exp(targetDeltaV / (isp * G0)) - 1f);
     }
 
-    // ---------- Energia ----------
+    // ---------- 3. Energia ----------
 
-    // Suma de power (W) de todas las piezas. Positivo = sobra, negativo = falta.
+    // Generacion menos consumo (W) con sol. Negativo = falta energia. AM-13.
     public static float PowerBalance(List<PartData> parts)
     {
         float total = 0f;
-        foreach (PartData p in parts)
-        {
-            if (p != null) total += p.power;
-        }
+        foreach (PartData p in Spacecraft(parts)) total += p.power - p.powerDraw;
         return total;
     }
 
-    // Consumo total (W): la suma de los power negativos, en positivo.
+    // Consumo total de la nave (W).
     public static float PowerConsumption(List<PartData> parts)
     {
         float total = 0f;
-        foreach (PartData p in parts)
-        {
-            if (p != null && p.power < 0f) total -= p.power;
-        }
+        foreach (PartData p in Spacecraft(parts)) total += p.powerDraw;
         return total;
     }
 
     public static float BatteryWh(List<PartData> parts)
     {
         float total = 0f;
-        foreach (PartData p in parts)
-        {
-            if (p != null) total += p.batteryWh;
-        }
+        foreach (PartData p in Spacecraft(parts)) total += p.batteryWh;
         return total;
     }
 
-    // La bateria debe aguantar todo el consumo durante OutageHours sin sol.
+    // En sombra no se genera nada: la bateria debe aguantar todo el consumo OutageHours. AM-11/12.
     public static bool BatteryCoversOutage(List<PartData> parts)
     {
         return BatteryWh(parts) >= PowerConsumption(parts) * OutageHours;
     }
 
-    // ---------- Validacion ----------
+    // ---------- 4. Tripulacion ----------
 
-    static bool HasType(List<PartData> parts, PartType type)
+    // Agua, oxigeno o comida que sobra (kg) para toda la mision. Negativo = falta. AM-02..05.
+    public static float WaterMargin(List<PartData> parts, DestinationData mission)
     {
-        foreach (PartData p in parts)
-        {
-            if (p != null && p.type == type) return true;
-        }
-        return false;
+        float stock = mission.baseWaterKg;
+        foreach (PartData p in Spacecraft(parts)) stock += p.waterKg;
+        return stock - mission.crewCount * mission.missionDays * mission.waterPerPersonDay;
     }
 
-    // Revisa si el cohete sirve para la mision. Regresa "" si todo esta bien,
+    public static float OxygenMargin(List<PartData> parts, DestinationData mission)
+    {
+        float stock = mission.baseOxygenKg;
+        foreach (PartData p in Spacecraft(parts)) stock += p.oxygenKg;
+        return stock - mission.crewCount * mission.missionDays * mission.oxygenPerPersonDay;
+    }
+
+    public static float FoodMargin(List<PartData> parts, DestinationData mission)
+    {
+        float stock = mission.baseFoodKg;
+        foreach (PartData p in Spacecraft(parts)) stock += p.foodKg;
+        return stock - mission.crewCount * mission.missionDays * mission.foodPerPersonDay;
+    }
+
+    // ---------- 5. Ciencia ----------
+
+    public static float SciencePoints(List<PartData> parts)
+    {
+        float total = 0f;
+        foreach (PartData p in Spacecraft(parts)) total += p.sciencePoints;
+        return total;
+    }
+
+    // Segundos para bajar a la Tierra todos los datos de los instrumentos. Sin antena = infinito.
+    public static float DownlinkSeconds(List<PartData> parts)
+    {
+        float bits = 0f;
+        float rate = 0f;
+        foreach (PartData p in Spacecraft(parts))
+        {
+            bits += p.experimentDataBits;
+            rate += p.dataRateBps;
+        }
+        if (bits <= 0f) return 0f;
+        if (rate <= 0f) return float.PositiveInfinity;
+        return bits / rate;
+    }
+
+    // ---------- Validacion ----------
+
+    // Revisa si la nave sirve para la mision. Regresa "" si todo esta bien,
     // o un mensaje en espanol con el primer problema (para mostrarlo en el modelo de cohete).
     public static string ValidationMessage(List<PartData> parts, DestinationData mission)
     {
         if (parts == null || parts.Count == 0) return "El cohete no tiene piezas.";
-        if (!HasType(parts, PartType.Capsule)) return "Falta la capsula para la tripulacion.";
-        if (!HasType(parts, PartType.ServiceModule)) return "Falta el modulo de servicio de la nave.";
-        if (!HasType(parts, PartType.Engine)) return "Falta al menos un motor.";
-        if (parts[parts.Count - 1].type != PartType.Engine) return "La pieza de abajo debe ser un motor.";
+        foreach (PartData p in parts)
+        {
+            if (p == null) return "Hay una pieza vacia en el cohete.";
+            if (p.dryMass < 0f || p.fuelMass < 0f) return "\"" + p.partName + "\" tiene masa o combustible negativo.";
+        }
 
-        float twr = LiftoffTWR(parts);
-        if (twr <= 1f) return "El cohete no puede despegar: empuje/peso " + twr.ToString("0.00") + ", necesita mas de 1. Agrega motores o quita peso.";
+        int launchers = CountType(parts, PartType.LaunchService);
+        if (launchers == 0) return "Elige un lanzador: SLS Block 1 o SLS Block 1B.";
+        if (launchers > 1) return "Solo puedes usar un lanzador.";
+        if (CountType(parts, PartType.Capsule) != 1) return "La nave necesita una capsula Orion.";
+        if (CountType(parts, PartType.ServiceModule) != 1) return "La nave necesita exactamente un modulo de servicio.";
+        if (CountType(parts, PartType.AbortSystem) != 1) return "Falta la torre de escape para proteger a la tripulacion.";
 
         if (mission != null)
         {
-            float mass = TotalMass(parts);
-            if (mission.maxMass > 0f && mass > mission.maxMass)
-                return "Demasiado pesado: " + mass.ToString("N0") + " kg de " + mission.maxMass.ToString("N0") + " kg permitidos.";
+            float margin = DeliveryMargin(parts, mission);
+            if (margin < 0f)
+                return "Demasiado pesado para " + LaunchService(parts).partName + ": sobran " + (-margin).ToString("N0") + " kg. Quita modulos o usa un lanzador mas grande.";
 
-            float launchDv = LaunchDeltaV(parts);
-            if (launchDv < mission.launchDeltaV)
-                return "El cohete no llega a la Luna: " + launchDv.ToString("N0") + " m/s de " + mission.launchDeltaV.ToString("N0") + " m/s necesarios.";
+            float dv = SpacecraftDeltaV(parts);
+            if (dv < mission.requiredDeltaV)
+                return "La nave no puede llegar a la orbita lunar y regresar: " + dv.ToString("N0") + " m/s de " + mission.requiredDeltaV.ToString("N0") + " m/s necesarios.";
 
-            float craftDv = SpacecraftDeltaV(parts);
-            if (craftDv < mission.requiredDeltaV)
-                return "La nave no puede llegar a la orbita lunar y regresar: " + craftDv.ToString("N0") + " m/s de " + mission.requiredDeltaV.ToString("N0") + " m/s necesarios.";
+            PartData capsule = FirstOfType(parts, PartType.Capsule);
+            if (capsule.crewCapacity < mission.crewCount)
+                return "La capsula no tiene lugar para " + mission.crewCount + " astronautas.";
+            if (capsule.maxMissionDays < mission.missionDays)
+                return "La capsula aguanta " + capsule.maxMissionDays + " dias y la mision dura " + mission.missionDays + ".";
+            if (WaterMargin(parts, mission) < 0f) return "No alcanza el agua para la mision: agrega reservas de agua.";
+            if (OxygenMargin(parts, mission) < 0f) return "No alcanza el oxigeno para la mision: agrega reservas de oxigeno.";
+            if (FoodMargin(parts, mission) < 0f) return "No alcanza la comida para la mision: agrega reservas de comida.";
         }
 
-        if (PowerBalance(parts) < 0f) return "No hay energia suficiente: agrega paneles solares.";
+        if (PowerBalance(parts) < 0f) return "No hay energia suficiente: los modulos consumen mas de lo que generan los paneles.";
         if (!BatteryCoversOutage(parts)) return "La bateria no aguanta " + OutageHours + " horas sin sol: agrega baterias.";
+
+        if (mission != null)
+        {
+            float science = SciencePoints(parts);
+            if (science < mission.minSciencePoints)
+                return "Poca ciencia: " + science.ToString("0") + " de " + mission.minSciencePoints.ToString("0") + " puntos. Agrega instrumentos.";
+            if (DownlinkSeconds(parts) > mission.maxDownlinkSeconds)
+                return "Los datos de ciencia no se pueden mandar a la Tierra a tiempo: agrega una antena de largo alcance.";
+        }
 
         return "";
     }

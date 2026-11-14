@@ -32,7 +32,8 @@ Menú → **Planeación** (escritorio) → **Lanzamiento** (salida → órbita l
 - Cada escena debe poder probarse sola: si no existe `GameManager`, se crea uno con valores de prueba.
 - Cada estación del escritorio y cada minijuego es un **prefab independiente** con su propio script, para que varias personas trabajen en la misma escena sin conflictos.
 - Compatible con WebGL: nada de hilos (`System.Threading`), ni lectura/escritura de archivos locales.
-- UI con uGUI + TextMeshPro.
+- UI solo con uGUI + **TextMeshPro** (`TextMeshProUGUI` / `TMP_Text`). Nada de `UnityEngine.UI.Text` legacy.
+- Entrada solo con el **Input System nuevo** (`UnityEngine.InputSystem`: `Keyboard.current`, `Mouse.current` o Input Actions). Nada de `Input.GetKey`, `Input.GetAxis` ni `Input.mousePosition`: el manejador viejo está apagado en el proyecto y truena. Todo EventSystem lleva `InputSystemUIInputModule`, no `StandaloneInputModule`.
 - No modificar escenas, prefabs o scripts de otra persona sin avisarle (evita conflictos de merge).
 
 ## Estructura de carpetas

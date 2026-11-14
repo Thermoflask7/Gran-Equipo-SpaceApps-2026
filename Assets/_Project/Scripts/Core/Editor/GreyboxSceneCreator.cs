@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using TMPro;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -8,23 +9,49 @@ using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
 // Menu: SpaceApps > Crear escenas greybox
-// Crea las escenas del loop (si no existen) con un titulo, el estado y un boton "Siguiente",
-// y las agrega en orden a la lista de escenas del build. No sobrescribe escenas que ya existan.
+//   Crea las escenas del loop que falten con un titulo, el estado y un boton "Siguiente",
+//   y las agrega en orden a la lista de escenas del build.
+// Menu: SpaceApps > Regenerar escenas greybox (sobrescribe)
+//   Igual, pero vuelve a crear las 4 escenas aunque ya existan. Solo para el greybox inicial:
+//   no lo uses cuando alguien ya haya trabajado en una escena.
+// UI con TextMeshPro y EventSystem del Input System nuevo (reglas del equipo en AGENTS.md).
 public static class GreyboxSceneCreator
 {
     const string Folder = "Assets/_Project/Scenes";
 
     [MenuItem("SpaceApps/Crear escenas greybox")]
-    static void CreateScenes()
+    static void CreateMissingScenes()
+    {
+        Build(false);
+    }
+
+    [MenuItem("SpaceApps/Regenerar escenas greybox (sobrescribe)")]
+    static void RegenerateScenes()
+    {
+        if (!EditorUtility.DisplayDialog("Regenerar escenas greybox",
+            "Esto sobrescribe 00_Menu, 01_Planeacion, 02_Lanzamiento y 03_Resultados. Se pierde lo que tengan. ¿Continuar?",
+            "Sí, regenerar", "Cancelar")) return;
+        Build(true);
+    }
+
+    static void Build(bool overwrite)
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+
+        if (TMP_Settings.defaultFontAsset == null)
+        {
+            EditorUtility.DisplayDialog("Falta TextMeshPro",
+                "Primero importa los recursos de TextMeshPro: Window > TextMeshPro > Import TMP Essential Resources. Luego vuelve a correr este menú.",
+                "OK");
+            return;
+        }
 
         List<EditorBuildSettingsScene> buildScenes = new List<EditorBuildSettingsScene>();
         for (int i = 0; i < Scenes.Order.Length; i++)
         {
             string sceneName = Scenes.Order[i];
             string path = Folder + "/" + sceneName + ".unity";
-            if (!File.Exists(path))
+            if (overwrite || !File.Exists(path))
             {
                 bool isLast = i == Scenes.Order.Length - 1;
                 CreateScene(sceneName, path, isLast);
@@ -50,10 +77,8 @@ public static class GreyboxSceneCreator
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
 
-        Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-
-        CreateText(canvasGo.transform, "Titulo", sceneName, font, 72, new Vector2(0.5f, 0.8f), new Vector2(1400, 150));
-        Text state = CreateText(canvasGo.transform, "Estado", "", font, 36, new Vector2(0.5f, 0.5f), new Vector2(1400, 300));
+        CreateText(canvasGo.transform, "Titulo", sceneName, 72, new Vector2(0.5f, 0.8f), new Vector2(1400, 150));
+        TextMeshProUGUI state = CreateText(canvasGo.transform, "Estado", "", 36, new Vector2(0.5f, 0.5f), new Vector2(1400, 300));
         state.gameObject.AddComponent<StateDisplay>();
 
         GameObject button = new GameObject("BotonSiguiente", typeof(RectTransform), typeof(Image), typeof(Button), typeof(NextSceneButton));
@@ -62,24 +87,22 @@ public static class GreyboxSceneCreator
         rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.2f);
         rt.sizeDelta = new Vector2(420, 110);
         button.GetComponent<Image>().color = new Color(0.35f, 0.35f, 0.35f);
-        Text label = CreateText(button.transform, "Texto", isLast ? "Jugar de nuevo" : "Siguiente", font, 44, new Vector2(0.5f, 0.5f), new Vector2(420, 110));
-        label.color = Color.white;
+        CreateText(button.transform, "Texto", isLast ? "Jugar de nuevo" : "Siguiente", 44, new Vector2(0.5f, 0.5f), new Vector2(420, 110));
 
         EditorSceneManager.SaveScene(scene, path);
     }
 
-    static Text CreateText(Transform parent, string name, string content, Font font, int size, Vector2 anchor, Vector2 boxSize)
+    static TextMeshProUGUI CreateText(Transform parent, string name, string content, int size, Vector2 anchor, Vector2 boxSize)
     {
-        GameObject go = new GameObject(name, typeof(RectTransform), typeof(Text));
+        GameObject go = new GameObject(name, typeof(RectTransform), typeof(TextMeshProUGUI));
         go.transform.SetParent(parent, false);
         RectTransform rt = go.GetComponent<RectTransform>();
         rt.anchorMin = rt.anchorMax = anchor;
         rt.sizeDelta = boxSize;
-        Text t = go.GetComponent<Text>();
+        TextMeshProUGUI t = go.GetComponent<TextMeshProUGUI>();
         t.text = content;
-        t.font = font;
         t.fontSize = size;
-        t.alignment = TextAnchor.MiddleCenter;
+        t.alignment = TextAlignmentOptions.Center;
         t.color = Color.white;
         return t;
     }

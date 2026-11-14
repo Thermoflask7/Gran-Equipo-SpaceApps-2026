@@ -1,6 +1,6 @@
 # Object Export From Tinkercad Server 2015
 
-mtllib obj.mtl
+mtllib Calendario.mtl
 
 o obj_0
 v 78 		42 		20

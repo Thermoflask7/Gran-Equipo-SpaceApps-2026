@@ -13,7 +13,7 @@ Estados válidos: `pendiente`, `en curso`, `en PR`, `hecho`.
 | 0 | GameManager + cambio de escenas + estado | P1 | Elena | Claude | `ia/claude/gamemanager` | hecho |
 | 1 | `00_Menu`: pantalla de título | P1 | Mateo | Grok | `feat/mateo/menu` | hecho |
 | 2 | `01_Planeacion`: escritorio base, cámara y navegación entre estaciones | P1 | por asignar | ninguna | — | pendiente |
-| 3 | Botón de lanzamiento + checklist de tareas | P1 | por asignar | ninguna | — | pendiente |
+| 3 | Botón de lanzamiento + checklist de tareas | P1 | Elena | Claude | `ia/claude/boton-lanzamiento` | en PR |
 | 4 | Folder: misión + actualizaciones por eventos | P3 | por asignar | ninguna | — | pendiente |
 | 5 | Folder: perfiles de astronautas + entrenamiento | P3 | por asignar | ninguna | — | pendiente |
 | 6 | Globo terráqueo + calendario (sitio, clima, viento) | P3 | por asignar | ninguna | — | pendiente |

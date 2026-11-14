@@ -11,7 +11,9 @@ using UnityEngine.UI;
 // Menu de Unity: SpaceApps > Armar escena de lanzamiento
 // Arma 02_Lanzamiento (tarea 10) en greybox:
 //   - Dos camaras base con viewport partido: CamaraControlMision (mitad izquierda, solo fondo)
-//     y CamaraCohete (mitad derecha, vista 3D de Tierra, Luna, cohete y ruta).
+//     y CamaraCohete (mitad derecha, vista 3D). LaunchScreen mueve CamaraCohete entre tres vistas:
+//     Despegue (acercamiento en el sitio "Despegue", lejos en +X), Viaje (vista general: Tierra, Luna,
+//     cohete y ruta en el origen) y Aterrizaje (acercamiento en el sitio "Amerizaje", lejos en -X).
 //   - Canvas en Screen Space Overlay: control de mision a la izquierda (operadores, pantalla grande,
 //     bitacora), titulo de la vista 3D, boton de prueba "Saltar fase" y panel de fin con "Ver resultados".
 //   - Objeto Lanzamiento con LaunchScreen y todas las referencias conectadas.
@@ -27,7 +29,7 @@ public static class LaunchSceneBuilder
     static readonly string[] Generated =
     {
         "Main Camera", "Directional Light", "Canvas",
-        "CamaraControlMision", "CamaraCohete", "Espacio", "CanvasLanzamiento", "Lanzamiento"
+        "CamaraControlMision", "CamaraCohete", "Espacio", "Despegue", "Amerizaje", "CanvasLanzamiento", "Lanzamiento"
     };
 
     static readonly Color PanelColor = new Color(0.06f, 0.08f, 0.13f);
@@ -80,7 +82,7 @@ public static class LaunchSceneBuilder
         rightCam.gameObject.tag = "MainCamera";
         rightCam.gameObject.AddComponent<AudioListener>();
         rightCam.fieldOfView = 60f;
-        rightCam.farClipPlane = 200f;
+        rightCam.farClipPlane = 2000f; // los acercamientos usan planetas grandes (radio 400)
         rightCam.transform.position = new Vector3(7f, 14f, -14f);
         rightCam.transform.LookAt(new Vector3(7f, 0f, 0f));
 
@@ -100,6 +102,41 @@ public static class LaunchSceneBuilder
         // La ruta usa URP/Unlit (si existe) para que se vea igual sin importar la luz
         path.sharedMaterial = MakeMaterial("Ruta", new Color(0.5f, 0.55f, 0.65f), rocket.GetComponent<Renderer>().sharedMaterial,
             Shader.Find("Universal Render Pipeline/Unlit"));
+
+        // ---------- Acercamientos: despegue y amerizaje ----------
+        Shader unlit = Shader.Find("Universal Render Pipeline/Unlit");
+
+        // Despegue: superficie (esfera grande, se ve la curva al subir), plataforma, torre, nubes y cohete grande
+        Transform liftoff = new GameObject("Despegue").transform;
+        liftoff.position = new Vector3(1000f, 0f, 0f);
+        CreateBody(PrimitiveType.Sphere, "Superficie", liftoff, new Vector3(0f, -400f, 0f), Vector3.one * 800f, "TierraCerca", new Color(0.25f, 0.5f, 0.3f));
+        CreateBody(PrimitiveType.Cylinder, "Suelo", liftoff, Vector3.zero, new Vector3(80f, 0.1f, 80f), "TierraCerca", new Color(0.25f, 0.5f, 0.3f));
+        CreateBody(PrimitiveType.Cube, "Plataforma", liftoff, new Vector3(0f, 0.5f, 0f), new Vector3(8f, 1f, 8f), "Plataforma", new Color(0.45f, 0.45f, 0.48f));
+        CreateBody(PrimitiveType.Cube, "Torre", liftoff, new Vector3(3f, 7f, 0f), new Vector3(1.2f, 14f, 1.2f), "Torre", new Color(0.7f, 0.3f, 0.2f));
+        CreateBody(PrimitiveType.Sphere, "Nube1", liftoff, new Vector3(-14f, 28f, 12f), new Vector3(22f, 4f, 14f), "Nube", Color.white);
+        CreateBody(PrimitiveType.Sphere, "Nube2", liftoff, new Vector3(22f, 40f, -6f), new Vector3(26f, 5f, 16f), "Nube", Color.white);
+        CreateBody(PrimitiveType.Sphere, "Nube3", liftoff, new Vector3(-6f, 55f, -14f), new Vector3(18f, 4f, 12f), "Nube", Color.white);
+        CreateBody(PrimitiveType.Sphere, "Nube4", liftoff, new Vector3(30f, 70f, 10f), new Vector3(24f, 4f, 14f), "Nube", Color.white);
+
+        Transform closeRocket = new GameObject("CoheteCercano").transform;
+        closeRocket.SetParent(liftoff, false);
+        closeRocket.localPosition = new Vector3(0f, 1f, 0f);
+        CreateBody(PrimitiveType.Capsule, "Cuerpo", closeRocket, new Vector3(0f, 5f, 0f), new Vector3(1.5f, 5f, 1.5f), "Cohete", new Color(1f, 0.55f, 0.15f));
+        Transform flame = CreateBody(PrimitiveType.Sphere, "Llama", closeRocket, new Vector3(0f, -1.2f, 0f), new Vector3(1.3f, 3f, 1.3f), "Llama", new Color(1f, 0.75f, 0.2f), unlit);
+
+        // Amerizaje: oceano (esfera grande), capsula con plasma de reentrada y paracaidas
+        Transform landing = new GameObject("Amerizaje").transform;
+        landing.position = new Vector3(-1000f, 0f, 0f);
+        CreateBody(PrimitiveType.Sphere, "Oceano", landing, new Vector3(0f, -400f, 0f), Vector3.one * 800f, "Oceano", new Color(0.1f, 0.3f, 0.6f));
+        CreateBody(PrimitiveType.Sphere, "Nube1", landing, new Vector3(-30f, 45f, 10f), new Vector3(26f, 5f, 16f), "Nube", Color.white);
+        CreateBody(PrimitiveType.Sphere, "Nube2", landing, new Vector3(10f, 25f, -12f), new Vector3(20f, 4f, 12f), "Nube", Color.white);
+
+        Transform capsule = new GameObject("Capsula").transform;
+        capsule.SetParent(landing, false);
+        capsule.localPosition = new Vector3(-90f, 150f, 0f);
+        CreateBody(PrimitiveType.Capsule, "Cuerpo", capsule, Vector3.zero, new Vector3(2.5f, 1.5f, 2.5f), "Capsula", new Color(0.85f, 0.85f, 0.88f));
+        Transform glow = CreateBody(PrimitiveType.Sphere, "Plasma", capsule, new Vector3(0f, -1.6f, 0f), new Vector3(4f, 2f, 4f), "Plasma", new Color(1f, 0.45f, 0.1f), unlit);
+        Transform chute = CreateBody(PrimitiveType.Sphere, "Paracaidas", capsule, new Vector3(0f, 9f, 0f), new Vector3(9f, 3f, 9f), "Paracaidas", new Color(0.95f, 0.5f, 0.2f));
 
         // ---------- Canvas ----------
         GameObject canvasGo = new GameObject("CanvasLanzamiento", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
@@ -130,7 +167,10 @@ public static class LaunchSceneBuilder
         TextMeshProUGUI title = CreateText(screen, "Titulo", "CONTROL DE MISIÓN · ARTEMIS", 30, TextAlignmentOptions.Center, Color.white);
         Place(title.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -15f), new Vector2(820f, 45f));
 
-        TextMeshProUGUI phase = CreateText(screen, "Fase", "FASE: SALIDA", 60, TextAlignmentOptions.Center, AccentColor);
+        TextMeshProUGUI phase = CreateText(screen, "Fase", "FASE: SALIDA · DESPEGUE", 60, TextAlignmentOptions.Center, AccentColor);
+        phase.enableAutoSizing = true; // "FASE: ÓRBITA LUNAR · VIAJE" es largo
+        phase.fontSizeMin = 30f;
+        phase.fontSizeMax = 60f;
         Place(phase.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -65f), new Vector2(820f, 80f));
 
         TextMeshProUGUI data = CreateText(screen, "Datos", "", 34, TextAlignmentOptions.TopLeft, Color.white);
@@ -156,12 +196,22 @@ public static class LaunchSceneBuilder
         CreateOperator(control.transform, "SISTEMAS", 110f, new Color(0.3f, 0.35f, 0.75f), circle);
         CreateOperator(control.transform, "CIENCIA", 330f, new Color(0.65f, 0.45f, 0.75f), circle);
 
-        // Mitad derecha: titulo de la vista 3D y boton de prueba
-        TextMeshProUGUI viewTitle = CreateText(root, "TituloVista3D", "Ruta: Tierra - Luna - Tierra", 32, TextAlignmentOptions.Center, Color.white);
+        // Mitad derecha: fundido entre vistas, titulo de la vista 3D y boton de prueba
+        GameObject fadeGo = new GameObject("FundidoVista3D", typeof(RectTransform), typeof(Image));
+        fadeGo.transform.SetParent(root, false);
+        RectTransform fadeRt = (RectTransform)fadeGo.transform;
+        fadeRt.anchorMin = new Vector2(0.5f, 0f);
+        fadeRt.anchorMax = Vector2.one;
+        fadeRt.offsetMin = fadeRt.offsetMax = Vector2.zero;
+        Image fade = fadeGo.GetComponent<Image>();
+        fade.color = new Color(0f, 0f, 0f, 0f);
+        fade.raycastTarget = false;
+
+        TextMeshProUGUI viewTitle = CreateText(root, "TituloVista3D", "Despegue", 32, TextAlignmentOptions.Center, Color.white);
         Place(viewTitle.rectTransform, new Vector2(0.75f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -30f), new Vector2(900f, 50f));
         viewTitle.raycastTarget = false;
 
-        Button skip = CreateButton(root, "BotonSaltarFase", "Saltar fase (prueba)", 28);
+        Button skip = CreateButton(root, "BotonSaltarFase", "Saltar (prueba)", 28);
         Place((RectTransform)skip.transform, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-30f, 30f), new Vector2(320f, 70f));
 
         // Panel de fin de mision
@@ -187,6 +237,16 @@ public static class LaunchSceneBuilder
         launch.earth = earth;
         launch.moon = moon;
         launch.pathLine = path;
+        launch.viewCamera = rightCam;
+        launch.viewTitleLabel = viewTitle;
+        launch.viewFade = fade;
+        launch.liftoffSite = liftoff;
+        launch.closeRocket = closeRocket;
+        launch.rocketFlame = flame;
+        launch.landingSite = landing;
+        launch.returnCapsule = capsule;
+        launch.reentryGlow = glow;
+        launch.parachute = chute;
         launch.phaseLabel = phase;
         launch.dataLabel = data;
         launch.logLabel = logText;
@@ -240,7 +300,7 @@ public static class LaunchSceneBuilder
         return cam;
     }
 
-    static Transform CreateBody(PrimitiveType type, string name, Transform parent, Vector3 position, Vector3 scale, string materialName, Color color)
+    static Transform CreateBody(PrimitiveType type, string name, Transform parent, Vector3 position, Vector3 scale, string materialName, Color color, Shader shader = null)
     {
         GameObject go = GameObject.CreatePrimitive(type);
         go.name = name;
@@ -250,7 +310,8 @@ public static class LaunchSceneBuilder
         Collider col = go.GetComponent<Collider>();
         if (col != null) Object.DestroyImmediate(col);
         Renderer r = go.GetComponent<Renderer>();
-        r.sharedMaterial = MakeMaterial(materialName, color, r.sharedMaterial);
+        r.sharedMaterial = MakeMaterial(materialName, color, r.sharedMaterial, shader);
+        if (shader != null) r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; // llamas y plasma no dan sombra
         return go.transform;
     }
 

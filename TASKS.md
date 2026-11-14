@@ -11,7 +11,7 @@ Estados válidos: `pendiente`, `en curso`, `en PR`, `hecho`.
 | ID | Tarea | Rol | Responsable humano | IA asignada | Rama | Estado |
 |---|---|---|---|---|---|---|
 | 0 | GameManager + cambio de escenas + estado | P1 | Elena | Claude | `ia/claude/gamemanager` | hecho |
-| 1 | `00_Menu`: pantalla de título | P1 | por asignar | ninguna | — | pendiente |
+| 1 | `00_Menu`: pantalla de título | P1 | Mateo | Grok | `feat/mateo/menu` | en PR |
 | 2 | `01_Planeacion`: escritorio base, cámara y navegación entre estaciones | P1 | por asignar | ninguna | — | pendiente |
 | 3 | Botón de lanzamiento + checklist de tareas | P1 | por asignar | ninguna | — | pendiente |
 | 4 | Folder: misión + actualizaciones por eventos | P3 | por asignar | ninguna | — | pendiente |

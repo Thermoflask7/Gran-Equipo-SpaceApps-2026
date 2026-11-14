@@ -8,7 +8,7 @@ using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
 // Menu: SpaceApps > Crear escenas greybox
-// Crea las 7 escenas del loop (si no existen) con un titulo, el estado y un boton "Siguiente",
+// Crea las escenas del loop (si no existen) con un titulo, el estado y un boton "Siguiente",
 // y las agrega en orden a la lista de escenas del build. No sobrescribe escenas que ya existan.
 public static class GreyboxSceneCreator
 {

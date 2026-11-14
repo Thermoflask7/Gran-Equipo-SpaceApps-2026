@@ -15,11 +15,15 @@ public class StateDisplay : MonoBehaviour
     void Update()
     {
         GameManager gm = GameManager.Instance;
-        string dest = gm.destination != null ? gm.destination.destinationName : "-";
         label.text =
-            "Dinero: $" + gm.money.ToString("0") + " M\n" +
-            "Año: " + gm.year + "   Puntaje: " + gm.score + "\n" +
-            "Piezas: " + gm.boughtParts.Count + "   Masa: " + (gm.TotalDryMass() + gm.TotalFuelMass()).ToString("0") + " kg\n" +
-            "Tripulación completa: " + (gm.IsCrewComplete() ? "sí" : "no") + "   Destino: " + dest;
+            "Dinero: $" + gm.money.ToString("0") + " M   Piezas compradas: " + gm.boughtParts.Count + "\n" +
+            "Misión leída: " + SiNo(gm.missionRead) + "   Tripulación lista: " + SiNo(gm.IsCrewReady()) + "\n" +
+            "Cohete válido: " + SiNo(gm.rocketValid) + "   Lanzamiento planeado: " + SiNo(gm.IsLaunchPlanned()) + "\n" +
+            "¿Se puede lanzar?: " + SiNo(gm.CanLaunch()) + "   Puntaje: " + gm.TotalScore().ToString("0");
+    }
+
+    string SiNo(bool value)
+    {
+        return value ? "sí" : "no";
     }
 }

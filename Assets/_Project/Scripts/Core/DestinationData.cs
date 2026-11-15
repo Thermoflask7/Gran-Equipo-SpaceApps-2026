@@ -13,6 +13,7 @@ public class DestinationData : ScriptableObject
     public float maxMass;        // no longer used (the limit is the capacity of the chosen SLS)
     public int missionDays;
     public bool locked; // true = shown as "coming soon"
+    public int difficulty = 2; // 1 = easy, 2 = medium, 3 = hard (mission select cards)
 
     [Header("Mass at translunar injection (model AM-19)")]
     public float tliExtraMass = 682f; // kg: mass at translunar injection (26,536) minus mass after it (25,854)

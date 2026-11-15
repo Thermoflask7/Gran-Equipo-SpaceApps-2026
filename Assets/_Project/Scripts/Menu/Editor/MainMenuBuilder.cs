@@ -104,7 +104,7 @@ public static class MainMenuBuilder
             "<b>The challenge</b>\n" +
             "Space Mission Design Game, proposed by the Canadian Space Agency: a game to understand how a space mission is planned and carried out.\n\n" +
             "<b>Our project</b>\n" +
-            "You plan an Artemis-style crewed lunar orbit mission: you read the mission, choose and train the crew, buy parts and assemble the rocket, and pick the launch site and date. Then you fly the mission: departure, lunar orbit and return, solving minigames and events.\n\n" +
+            "You plan a crewed lunar orbit mission: you read the mission, choose and train the crew, buy parts and assemble the rocket, and pick the launch site and date. Then you fly the mission: departure, lunar orbit and return, solving minigames and events.\n\n" +
             "<b>The team</b>\n" +
             "[Team name and the 5 members]",
             32);
@@ -179,16 +179,11 @@ public static class MainMenuBuilder
         MissionSelect select = panel.AddComponent<MissionSelect>();
         select.cardSprite = RoundedSprite;
         select.planetSprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Knob.psd");
-        DestinationData moon = AssetDatabase.LoadAssetAtPath<DestinationData>(DestinationsFolder + "MisionArtemis.asset");
-        if (moon != null && string.IsNullOrEmpty(moon.missionName))
-        {
-            moon.missionName = "Selene";
-            EditorUtility.SetDirty(moon);
-            AssetDatabase.SaveAssets();
-        }
-        select.missions.Add(moon);
-        select.missions.Add(LockedMission("MissionMars", "Mars", "Crewed mission to Mars."));
-        select.missions.Add(LockedMission("MissionEuropa", "Europa", "Mission to Europa, the icy moon of Jupiter."));
+        // Ordered from easy to hard. Only Selene can be played; the others are "Coming soon".
+        select.missions.Add(LockedMission("MissionSatellite", "Satellite launch", "Put a satellite into orbit around the Earth.", 1));
+        select.missions.Add(Selene());
+        select.missions.Add(LockedMission("MissionMoonLanding", "Moon landing", "Land a crew on the Moon and bring it back home.", 3));
+        select.missions.Add(LockedMission("MissionMars", "Mars landing", "Land a crew on Mars.", 3));
 
         GameObject row = new GameObject("Cards", typeof(RectTransform), typeof(HorizontalLayoutGroup));
         row.transform.SetParent(body, false);
@@ -204,16 +199,20 @@ public static class MainMenuBuilder
         layout.childForceExpandWidth = layout.childForceExpandHeight = true;
         select.cardRow = rowRt;
 
-        TextMeshProUGUI details = CreateText(body, "Details", "", 30);
-        details.alignment = TextAlignmentOptions.TopLeft;
-        details.textWrappingMode = TextWrappingModes.Normal;
-        details.lineSpacing = 10;
-        RectTransform dr = details.rectTransform;
+        // Info of the selected mission (title, description and stat tiles, created at runtime)
+        GameObject details = new GameObject("Details", typeof(RectTransform), typeof(VerticalLayoutGroup));
+        details.transform.SetParent(body, false);
+        RectTransform dr = (RectTransform)details.transform;
         dr.anchorMin = Vector2.zero;
         dr.anchorMax = Vector2.one;
-        dr.offsetMin = new Vector2(10, 130);
-        dr.offsetMax = new Vector2(-10, -430);
-        select.details = details;
+        dr.offsetMin = new Vector2(10, 125);
+        dr.offsetMax = new Vector2(-10, -425);
+        VerticalLayoutGroup detailsLayout = details.GetComponent<VerticalLayoutGroup>();
+        detailsLayout.spacing = 14;
+        detailsLayout.childControlWidth = detailsLayout.childControlHeight = true;
+        detailsLayout.childForceExpandWidth = true;
+        detailsLayout.childForceExpandHeight = false;
+        select.detailsArea = dr;
 
         Button start = CreateButton(body, "StartMissionButton", "Start mission", 44);
         Place((RectTransform)start.transform, new Vector2(0.5f, 0f), new Vector2(0, 55), new Vector2(480, 95));
@@ -222,17 +221,36 @@ public static class MainMenuBuilder
         select.startButton = start;
     }
 
-    // "Coming soon" mission: only a name and a description, no numbers (it cannot be played)
-    static DestinationData LockedMission(string file, string name, string description)
+    // "Coming soon" mission: only a name, a description and a difficulty, no numbers (it cannot be played)
+    static DestinationData LockedMission(string file, string name, string description, int difficulty)
     {
         string path = DestinationsFolder + file + ".asset";
         DestinationData m = AssetDatabase.LoadAssetAtPath<DestinationData>(path);
-        if (m != null) return m;
-        m = ScriptableObject.CreateInstance<DestinationData>();
+        if (m == null)
+        {
+            m = ScriptableObject.CreateInstance<DestinationData>();
+            AssetDatabase.CreateAsset(m, path);
+        }
         m.destinationName = name;
         m.description = description;
         m.locked = true;
-        AssetDatabase.CreateAsset(m, path);
+        m.difficulty = difficulty;
+        EditorUtility.SetDirty(m);
+        AssetDatabase.SaveAssets();
+        return m;
+    }
+
+    // The playable lunar orbit mission. The game must not name real agencies or programs,
+    // so the texts imported from the catalog are replaced (the numbers are not touched).
+    static DestinationData Selene()
+    {
+        DestinationData m = AssetDatabase.LoadAssetAtPath<DestinationData>(DestinationsFolder + "MisionArtemis.asset");
+        if (m == null) return null;
+        m.missionName = "Selene";
+        m.destinationName = "Crewed lunar orbit";
+        m.description = "Take 3 astronauts to an orbit around the Moon, collect scientific data and bring them back home safely.";
+        m.difficulty = 2;
+        EditorUtility.SetDirty(m);
         AssetDatabase.SaveAssets();
         return m;
     }

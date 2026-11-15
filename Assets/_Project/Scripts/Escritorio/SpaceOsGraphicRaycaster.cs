@@ -24,6 +24,9 @@ public class SpaceOsGraphicRaycaster : GraphicRaycaster
     public override void Raycast(PointerEventData eventData, List<RaycastResult> resultAppendList)
     {
         if (desktop != null && !desktop.IsInteractive) return;
+        // A popup over the screen (quit dialog) owns the clicks: remapping eventData.position here
+        // would also shift the clicks of that overlay canvas.
+        if (QuitToMenuDialog.IsOpen) return;
         if (screenCollider == null || !screenCollider.enabled) return;
 
         Camera world = worldCamera;

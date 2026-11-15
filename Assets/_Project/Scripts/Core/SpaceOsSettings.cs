@@ -93,7 +93,7 @@ public static class SpaceOsSettings
         QualitySettings.vSyncCount = VSync ? 1 : 0;
         Application.targetFrameRate = VSync ? -1 : TargetFrameRate;
 
-        var screens = UnityEngine.Object.FindObjectsByType<SpaceOsScreen>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        var screens = UnityEngine.Object.FindObjectsByType<SpaceOsScreen>(FindObjectsInactive.Include);
         for (int i = 0; i < screens.Length; i++)
             screens[i].SetCrtEnabled(CrtFilter);
 

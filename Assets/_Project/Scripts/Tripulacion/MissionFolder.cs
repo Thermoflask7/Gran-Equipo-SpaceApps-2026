@@ -6,7 +6,8 @@ using UnityEngine.UI;
 
 // Mission folder on the planning desk (task 4, P3).
 // Page 1: mission briefing, launch checklist and mission updates (random events that happened).
-// More pages (task 5: astronauts and training) go as children of "Pages" and are added to the "pages" list.
+// Page 2 (task 5): crew profiles and training, see CrewPage.
+// More pages go as children of "Pages" and are added to the "pages" list.
 // Open it with Open() or SetActive(true); the X button calls Close().
 // Every time it opens it marks the task "Mission read" (gm.missionRead).
 // The first time, it also rolls one planning event, which shows up in the updates.

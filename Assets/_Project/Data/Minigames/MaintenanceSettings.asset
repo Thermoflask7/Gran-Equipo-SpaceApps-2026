@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 48ec6287df1e4f37abe7a805ba75f387, type: 3}
+  m_Name: MaintenanceSettings
+  m_EditorClassIdentifier: Assembly-CSharp::MaintenanceSettings
+  duration: 60
+  minDrain: 0.015
+  maxDrain: 0.03
+  failureChance: 0.2
+  failureDamage: 0.2
+  panelRefill: 0.06
+  repairAmount: 0.25
+  minBurnSeconds: 2
+  maxBurnSeconds: 5.5
+  sweetMin: 0.4
+  sweetMax: 0.8
+  oxygenDecay: 0.05
+  pumpGain: 0.3
+  oxygenStartLevel: 0.7
+  minFrequency: 2200
+  maxFrequency: 2300
+  tuneTolerance: 0.035
+  signalRange: 0.25
+  radioMinChangeSeconds: 6
+  radioMaxChangeSeconds: 10
+  ledMinChangeSeconds: 6
+  ledMaxChangeSeconds: 10

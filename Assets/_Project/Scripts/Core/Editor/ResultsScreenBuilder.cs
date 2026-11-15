@@ -44,7 +44,7 @@ public static class ResultsScreenBuilder
         TextMeshProUGUI report = CreateText(root.transform, "Breakdown", "", 26);
         report.alignment = TextAlignmentOptions.TopLeft;
         report.textWrappingMode = TextWrappingModes.Normal;
-        report.overflowMode = TextOverflowModes.Ellipsis;
+        report.overflowMode = TextOverflowModes.Truncate;
         Place(report.rectTransform, new Vector2(0, -520), new Vector2(1400, 560));
 
         GameObject buttonGo = new GameObject("MenuButton", typeof(RectTransform), typeof(Image), typeof(Button));

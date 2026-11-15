@@ -4,7 +4,7 @@ Full design in [GDD.md](GDD.md). Loop: Menu → Planning (desk) → Launch (depa
 
 Before taking a task, read [AGENTS.md](AGENTS.md) and [AI_COLLAB.md](AI_COLLAB.md). To claim it, fill in **Assigned AI** and **Branch** in the same PR, and set **Status** to `in progress`.
 
-Valid statuses: `pending`, `in progress`, `in PR`, `done`.
+Valid statuses: `pending`, `in progress`, `in PR`, `done`, `dropped`.
 
 **Human owner** stays as `unassigned` until someone on the team writes their name.
 
@@ -40,11 +40,11 @@ Valid statuses: `pending`, `in progress`, `in PR`, `done`.
 | 26 | Locked missions (Mars, Europa) shown as "coming soon" (`DestinationData.locked`) | P1 | Elena | Claude | Branch `ia/claude/main-menu`: **SpaceApps → Build main menu** now adds a space background, the game title (placeholder, constant `GameTitle`) and a **Choose your mission** panel opened by Start game (`MissionSelect`: one card per mission, locked ones greyed as "Coming soon", details from the asset, **Start mission** sets `GameManager.mission`). It creates `MissionMars` and `MissionEuropa` (locked, name and description only) in `Data/Destinos` | done |
 | 27 | (Manual, if time allows) Audio: music and sound effects, using the volumes in `SpaceOsSettings` | All | team (manual) | none | — | pending |
 | 28 | How to play: short tutorial or hints for first-time players (the judges) | P1 | unassigned | none | — | pending |
-| 29 | Full-loop playtest (Menu → Planning → Launch → Results) and bug fixes before the final build | All | unassigned | none | — | pending |
+| 29 | Full-loop playtest (Menu → Planning → Launch → Results) and bug fixes before the final build | All | Mateo | none | Full loop played start to end without blockers (2026-11-15) | done |
 | 30 | Space Apps submission: project page text, demo video, link to the WebGL build, and credits for NASA data and third-party assets | P1–P5 | unassigned | none | — | pending |
 | 31 | Mission failure, abort and recovery rules (a phase can fail; departure/lunar orbit abort, failed return, recoverable incidents); docs in `Docs/Task31/MISSION_FAILURE_RULES.md` | P4, P5 | Cristina | claude_c | `ia/claude_c/mission-failure-rules` (PR #37) | done |
 | 32 | Code fixes from the GitHub audit of 2026-11-14 (F02 overlay canvas in builders, F06 safe minigame routing + dev-only Skip, F08 maintenance raw-result hook, F09 non-destructive launch builder, F11 12-day HUD + simulated label, F12 English launch UI). Scene/prefab work (F01, F03, F05, F07) stays in tasks 24, 25, 9b, 12 and 14 | P4, P1 | Cristina | claude_c | `ia/claude_c/audit-fixes` (PR #33) | done |
-| 33 | Orbit choice (NASA challenge goal 3, "select the launch vehicle and orbit"): 2–3 lunar orbit options chosen in the folder, for example low lunar orbit, NRHO (Artemis/Gateway) and DRO (Artemis I). Each one changes `requiredDeltaV`, science and communication/downlink time, with a short plain-language explanation | P5, P3 | unassigned | none | — | pending |
+| 33 | Orbit choice (NASA challenge goal 3, "select the launch vehicle and orbit"): 2–3 lunar orbit options chosen in the folder, for example low lunar orbit, NRHO (Artemis/Gateway) and DRO (Artemis I). Each one changes `requiredDeltaV`, science and communication/downlink time, with a short plain-language explanation | P5, P3 | unassigned | none | Dropped: the game ships one mission type; the other missions are shown as future work ("Coming soon", task 26) | dropped |
 | 34 | Interactive crew training: skill bars (Piloting, Engineering, Research; approximate stars before training, exact value after), a +2 preview bar when choosing training, the effect on the minigame (`SkillMultiplier` as %, e.g. "pilot effectiveness 60 % → 80 %") and a training cost in credits so it competes with the budget. Changes the training part of the scoring: tell claude_c and Claude-M | P3 | unassigned | none | — | pending |
 | 35 | Results: one line per failed gate with what went wrong, the lesson and what would have fixed it (e.g. "Your battery does not cover 1.5 h in shadow: a battery module would have passed") | P1 | Elena | Claude | `GateAdvice.Explain(gate, gm)` in `Scripts/Core`, used by `ResultsScreen`: real `RocketPhysics` numbers + a catalog part (or the module to remove) that would have passed. Test: Play + **SpaceApps → Results screen → Test: failing sample game** | done |
 | 36 | SpaceMart: highlight the 2–3 critical resources of the current mission (for SLS Block 1: mass to the Moon and Orion Δv), as the challenge asks | P2 | unassigned | none | — | pending |

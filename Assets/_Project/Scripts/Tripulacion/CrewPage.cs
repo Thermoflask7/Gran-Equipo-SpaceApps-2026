@@ -27,6 +27,7 @@ public class CrewPage : MonoBehaviour
     [Header("Crew slots")]
     public TMP_Text[] slotNames = new TMP_Text[3];
     public Button[] trainingButtons = new Button[9]; // slot * 3 + focus (0 Piloting, 1 Engineering, 2 Research)
+    public Button[] removeButtons = new Button[3];   // "X": takes the astronaut out of the slot
     public TMP_Text tipText;
 
     public static readonly string[] RoleNames = { "Pilot", "Engineer", "Scientist" };
@@ -45,6 +46,7 @@ public class CrewPage : MonoBehaviour
         Wire();
         BuildList();
         if (selected == null && shownList.Count > 0) selected = shownList[0];
+        UpdateReserves(GameManager.Instance, Candidates()); // reserves are right from the first opening
         Refresh();
     }
 
@@ -59,6 +61,7 @@ public class CrewPage : MonoBehaviour
             int s = slot;
             if (assignButtons[slot] != null) assignButtons[slot].onClick.AddListener(() => AssignSelected(s));
             FitText(slotNames[slot], 26f);
+            if (slot < removeButtons.Length && removeButtons[slot] != null) removeButtons[slot].onClick.AddListener(() => Remove(s));
 
             for (int f = 0; f < 3; f++)
             {
@@ -131,7 +134,7 @@ public class CrewPage : MonoBehaviour
         Assign(selected, slot);
     }
 
-    // Puts the astronaut in the slot. If they had another role, that role is left empty.
+    // Puts the astronaut in the slot. If they had another role, that role is left empty (and its training is cleared).
     // The training stays with the slot, so the player decides again only if they want.
     public void Assign(AstronautData astronaut, int slot)
     {
@@ -140,25 +143,36 @@ public class CrewPage : MonoBehaviour
 
         for (int i = 0; i < 3; i++)
         {
-            if (GetCrew(gm, i) == astronaut) SetCrew(gm, i, null);
+            if (i != slot && GetCrew(gm, i) == astronaut) ClearSlot(gm, i);
         }
         SetCrew(gm, slot, astronaut);
         UpdateReserves(gm, Candidates());
         Refresh();
     }
 
+    // Takes the astronaut out of the slot (back to the reserves) and clears its training
+    public void Remove(int slot)
+    {
+        if (slot < 0 || slot > 2) return;
+        GameManager gm = GameManager.Instance;
+        ClearSlot(gm, slot);
+        UpdateReserves(gm, Candidates());
+        Refresh();
+    }
+
+    // Only a slot with an astronaut can choose its training
     public void SetTraining(int slot, TrainingFocus focus)
     {
         GameManager gm = GameManager.Instance;
-        if (slot == 0) gm.pilotTraining = focus;
-        if (slot == 1) gm.engineerTraining = focus;
-        if (slot == 2) gm.scientistTraining = focus;
+        if (GetCrew(gm, slot) == null) return;
+        SetTrainingOf(gm, slot, focus);
         Refresh();
     }
 
     // One click = +1 training point; past the max (or with no points left) it goes back to 0
     public void TrainPoint(int slot, int focusIndex)
     {
+        if (GetCrew(GameManager.Instance, slot) == null) return;
         CrewTraining.CyclePoint(GameManager.Instance, slot, focusIndex);
         Refresh();
     }
@@ -201,10 +215,13 @@ public class CrewPage : MonoBehaviour
             AstronautData crew = GetCrew(gm, slot);
             if (slotNames[slot] != null) slotNames[slot].text = SlotLabel(gm, slot);
 
+            if (slot < removeButtons.Length && removeButtons[slot] != null) removeButtons[slot].interactable = crew != null;
+
             for (int f = 0; f < 3; f++)
             {
                 Button b = trainingButtons[slot * 3 + f];
                 if (b == null) continue;
+                b.interactable = crew != null;
                 int points = CrewTraining.Points(gm, slot, f);
                 b.image.color = points > 0 ? Selected : Normal;
                 TMP_Text label = b.GetComponentInChildren<TMP_Text>();
@@ -258,6 +275,21 @@ public class CrewPage : MonoBehaviour
         if (slot == 0) gm.pilot = astronaut;
         if (slot == 1) gm.engineer = astronaut;
         if (slot == 2) gm.scientist = astronaut;
+    }
+
+    public static void SetTrainingOf(GameManager gm, int slot, TrainingFocus focus)
+    {
+        if (slot == 0) gm.pilotTraining = focus;
+        if (slot == 1) gm.engineerTraining = focus;
+        if (slot == 2) gm.scientistTraining = focus;
+    }
+
+    // Empty slot without training
+    public static void ClearSlot(GameManager gm, int slot)
+    {
+        SetCrew(gm, slot, null);
+        CrewTraining.ClearSlotPoints(gm, slot);
+        SetTrainingOf(gm, slot, TrainingFocus.None);
     }
 
     public static TrainingFocus GetTraining(GameManager gm, int slot)

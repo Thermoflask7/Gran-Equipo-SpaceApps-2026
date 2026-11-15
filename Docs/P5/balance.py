@@ -1,6 +1,7 @@
-# Enumeracion de balanceo (P5). Uso: python3 Docs/P5/balance.py  (desde la raiz del repo)
-# Lee Assets/_Project/Data/Catalogo/CatalogoArtemis.json y repite las revisiones de RocketPhysics
-# con los valores de la mision V13. Es la misma cuenta que SpaceApps -> Pruebas de balanceo en Unity.
+# Balance enumeration (P5). Usage: python3 Docs/P5/balance.py  (from the repo root)
+# Reads Assets/_Project/Data/Catalogo/CatalogoArtemis.json and repeats the RocketPhysics checks
+# with the values of mission V13. It is the same count as SpaceApps -> Balance tests in Unity.
+# Options: --repeats (up to 2 copies per part), --budget (3,400 to 4,000 credits).
 import collections, itertools, json, math, os, sys
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..")
@@ -49,14 +50,14 @@ def enumerate_all(days, max_copies=1, budget=3400):
 if __name__ == "__main__":
     for days in (12, 15):
         total, viable, fails = enumerate_all(days)
-        print(f"{days} dias: {total} combinaciones, {len(viable)} viables ({100 * len(viable) / total:.2f} %)")
-        print("  fallan por:", dict(fails))
-        print("  mas barata:", viable[0][0], [i[4:] for i in viable[0][1]])
-        print("  con Block 1B:", sum(1 for _, ids in viable if ids[0].endswith("1B")))
-    if "--repetidas" in sys.argv:
+        print(f"{days} days: {total} combinations, {len(viable)} viable ({100 * len(viable) / total:.2f} %)")
+        print("  fail on:", dict(fails))
+        print("  cheapest:", viable[0][0], [i[4:] for i in viable[0][1]])
+        print("  with Block 1B:", sum(1 for _, ids in viable if ids[0].endswith("1B")))
+    if "--repeats" in sys.argv:
         for days in (12, 15):
             total, viable, _ = enumerate_all(days, 2)
-            print(f"{days} dias con hasta 2 copias: {total} combinaciones, {len(viable)} viables; mas barata {viable[0][0]} {[i[4:] for i in viable[0][1]]}")
-    if "--presupuesto" in sys.argv:
+            print(f"{days} days with up to 2 copies: {total} combinations, {len(viable)} viable; cheapest {viable[0][0]} {[i[4:] for i in viable[0][1]]}")
+    if "--budget" in sys.argv:
         for budget in (3400, 3600, 3800, 4000):
-            print(budget, "creditos:", [len(enumerate_all(d, 1, budget)[1]) for d in (12, 15)], "viables (12 / 15 dias)")
+            print(budget, "credits:", [len(enumerate_all(d, 1, budget)[1]) for d in (12, 15)], "viable (12 / 15 days)")

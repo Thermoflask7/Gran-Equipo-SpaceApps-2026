@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-// Ponlo en un Button. Si targetScene esta vacio, va a la siguiente escena del loop.
+// Put it on a Button. If targetScene is empty, it goes to the next scene in the loop.
 [RequireComponent(typeof(Button))]
 public class NextSceneButton : MonoBehaviour
 {

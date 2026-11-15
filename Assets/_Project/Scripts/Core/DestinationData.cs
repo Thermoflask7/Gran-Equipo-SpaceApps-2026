@@ -1,31 +1,31 @@
 using UnityEngine;
 
-// La mision (por ahora: orbita lunar tripulada estilo Artemis, mision V13 de Cristina).
-// Define lo que la nave necesita para poder lanzarse.
-[CreateAssetMenu(menuName = "SpaceApps/Mision", fileName = "NuevaMision")]
+// The mission (for now: Artemis-style crewed lunar orbit, Cristina's mission V13).
+// Defines what the spacecraft needs in order to launch.
+[CreateAssetMenu(menuName = "SpaceApps/Mission", fileName = "NewMission")]
 public class DestinationData : ScriptableObject
 {
     public string destinationName;
     [TextArea] public string description;
-    public float launchDeltaV;   // ya no se usa: el SLS es un servicio completo (se deja para no romper assets)
-    public float requiredDeltaV; // m/s que debe dar la nave despues de la translunar: llegada a orbita lunar + regreso + reserva
-    public float maxMass;        // ya no se usa (el limite es la capacidad del SLS elegido)
+    public float launchDeltaV;   // no longer used: the SLS is a complete service (kept so assets do not break)
+    public float requiredDeltaV; // m/s the spacecraft must provide after translunar injection: lunar orbit arrival + return + reserve
+    public float maxMass;        // no longer used (the limit is the capacity of the chosen SLS)
     public int missionDays;
-    public bool locked; // true = aparece como "proximamente"
+    public bool locked; // true = shown as "coming soon"
 
-    [Header("Masa en la translunar (modelo AM-19)")]
-    public float tliExtraMass = 682f; // kg: masa en la translunar (26,536) menos masa despues (25,854)
+    [Header("Mass at translunar injection (model AM-19)")]
+    public float tliExtraMass = 682f; // kg: mass at translunar injection (26,536) minus mass after it (25,854)
 
-    [Header("Tripulacion y consumibles")]
+    [Header("Crew and consumables")]
     public int crewCount = 4;
     public float waterPerPersonDay = 2.5f;  // kg
     public float oxygenPerPersonDay = 0.84f;
     public float foodPerPersonDay = 0.75f;
-    public float baseWaterKg = 135f;        // ya incluidos en la masa de Orion
+    public float baseWaterKg = 135f;        // already included in Orion's mass
     public float baseOxygenKg = 47f;
     public float baseFoodKg = 44f;
 
-    [Header("Ciencia")]
+    [Header("Science")]
     public float minSciencePoints = 40f;
-    public float maxDownlinkSeconds = 3600f; // bajar todos los datos en maximo 1 hora
+    public float maxDownlinkSeconds = 3600f; // downlink all the data in at most 1 hour
 }

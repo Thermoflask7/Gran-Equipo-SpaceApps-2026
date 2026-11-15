@@ -2,14 +2,14 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
-// Importa el catalogo de Cristina (Data/Catalogo/CatalogoArtemis.json) como ScriptableObjects.
-// Menu: SpaceApps -> Importar catalogo Artemis.
-//   - Crea o actualiza una PartData por pieza en Data/Piezas (archivo = id del catalogo).
-//     Si el asset ya existe se actualizan sus valores y se conserva el GUID (no se rompen referencias).
-//   - Crea la mision Data/Destinos/MisionArtemis.asset (mision V13 de Cristina) si no existe.
-//     Si ya existe y alguien la cambio a mano, NO la sobrescribe: avisa en la consola que campos
-//     son distintos a la V13. Para regresarla a la V13: SpaceApps -> Restaurar mision V13.
-// Se puede correr las veces que sea, por ejemplo cuando Cristina actualice el catalogo.
+// Imports Cristina's catalog (Data/Catalogo/CatalogoArtemis.json) as ScriptableObjects.
+// Menu: SpaceApps -> Import Artemis catalog.
+//   - Creates or updates one PartData per part in Data/Piezas (file = catalog id).
+//     If the asset already exists, its values are updated and the GUID is kept (references do not break).
+//   - Creates the mission Data/Destinos/MisionArtemis.asset (Cristina's mission V13) if it does not exist.
+//     If it already exists and someone changed it by hand, it is NOT overwritten: the console lists which fields
+//     differ from V13. To return it to V13: SpaceApps -> Restore V13 mission.
+// It can be run as many times as needed, for example when Cristina updates the catalog.
 public static class CatalogImporter
 {
     const string CatalogPath = "Assets/_Project/Data/Catalogo/CatalogoArtemis.json";
@@ -49,13 +49,13 @@ public static class CatalogImporter
         public float experimentDataBits;
     }
 
-    [MenuItem("SpaceApps/Importar catalogo Artemis")]
+    [MenuItem("SpaceApps/Import Artemis catalog")]
     public static void Import()
     {
         TextAsset json = AssetDatabase.LoadAssetAtPath<TextAsset>(CatalogPath);
         if (json == null)
         {
-            Debug.LogError("No encontre " + CatalogPath);
+            Debug.LogError("Not found: " + CatalogPath);
             return;
         }
 
@@ -66,7 +66,7 @@ public static class CatalogImporter
             PartType type;
             if (!Enum.TryParse(c.type, out type))
             {
-                Debug.LogError("Tipo desconocido '" + c.type + "' en " + c.id + ". No se importo.");
+                Debug.LogError("Unknown type '" + c.type + "' in " + c.id + ". It was not imported.");
                 continue;
             }
 
@@ -96,7 +96,7 @@ public static class CatalogImporter
             part.sciencePoints = c.sciencePoints;
             part.dataRateBps = c.dataRateBps;
             part.experimentDataBits = c.experimentDataBits;
-            // El icono no se toca: lo pone el equipo de arte a mano.
+            // The icon is not touched: the art team sets it by hand.
 
             if (isNew) AssetDatabase.CreateAsset(part, path);
             else EditorUtility.SetDirty(part);
@@ -105,22 +105,22 @@ public static class CatalogImporter
 
         ImportMission(false);
         AssetDatabase.SaveAssets();
-        Debug.Log("Catalogo Artemis importado: " + count + " piezas en " + PartsFolder + " y la mision en " + MissionPath);
+        Debug.Log("Artemis catalog imported: " + count + " parts in " + PartsFolder + " and the mission in " + MissionPath);
     }
 
-    [MenuItem("SpaceApps/Restaurar mision V13")]
+    [MenuItem("SpaceApps/Restore V13 mission")]
     public static void RestoreMission()
     {
-        if (!EditorUtility.DisplayDialog("Restaurar mision V13",
-            "Se van a reemplazar todos los valores de " + MissionPath + " por los de la mision V13 de Cristina.", "Restaurar", "Cancelar"))
+        if (!EditorUtility.DisplayDialog("Restore V13 mission",
+            "All the values of " + MissionPath + " will be replaced with those of Cristina's mission V13.", "Restore", "Cancel"))
             return;
         ImportMission(true);
         AssetDatabase.SaveAssets();
-        Debug.Log("Mision restaurada a la V13: " + MissionPath);
+        Debug.Log("Mission restored to V13: " + MissionPath);
     }
 
-    // Crea la mision si no existe. Si existe: con overwrite la regresa a la V13; sin overwrite
-    // solo avisa que campos son distintos (para no borrar cambios hechos despues sin querer).
+    // Creates the mission if it does not exist. If it exists: with overwrite it returns it to V13; without overwrite
+    // it only reports which fields differ (so later changes are not erased by accident).
     static void ImportMission(bool overwrite)
     {
         DestinationData v13 = MissionV13();
@@ -145,24 +145,24 @@ public static class CatalogImporter
         }
         else
         {
-            Debug.LogWarning("La mision " + MissionPath + " tiene valores distintos a la V13 y no se sobrescribio. "
-                + "Si eso no fue a proposito usa SpaceApps -> Restaurar mision V13.\nActual: " + current + "\nV13: " + reference);
+            Debug.LogWarning("The mission " + MissionPath + " has values that differ from V13 and was not overwritten. "
+                + "If that was not intentional, use SpaceApps -> Restore V13 mission.\nCurrent: " + current + "\nV13: " + reference);
         }
         UnityEngine.Object.DestroyImmediate(v13);
     }
 
-    // Valores de SpaceMission_Mision_Artemis_V13.json (Drive de Cristina, carpeta MISION CALCULOS Y DETALLES).
+    // Values from SpaceMission_Mision_Artemis_V13.json (Cristina's Drive, folder MISION CALCULOS Y DETALLES).
     static DestinationData MissionV13()
     {
         DestinationData mission = ScriptableObject.CreateInstance<DestinationData>();
-        mission.name = "MisionArtemis"; // mismo nombre que el asset para poder comparar
+        mission.name = "MisionArtemis"; // same name as the asset so they can be compared
 
-        mission.destinationName = "Orbita lunar tripulada (Artemis)";
-        mission.description = "Lleva a 4 astronautas en Orion a una orbita alrededor de la Luna (NRHO), recolecta datos y regresa. Mision educativa inspirada en Artemis, no es una mision real de la NASA.";
-        mission.requiredDeltaV = 1060f; // 940 nominal (40 correccion + 450 captura + 450 salida) + 120 de reserva
+        mission.destinationName = "Crewed lunar orbit (Artemis)";
+        mission.description = "Take 4 astronauts in Orion to an orbit around the Moon (NRHO), collect data and return. Educational mission inspired by Artemis; it is not a real NASA mission.";
+        mission.requiredDeltaV = 1060f; // 940 nominal (40 correction + 450 capture + 450 departure) + 120 reserve
         mission.missionDays = 12;
         mission.locked = false;
-        mission.tliExtraMass = 682f;    // 26,536 en la translunar - 25,854 despues
+        mission.tliExtraMass = 682f;    // 26,536 at translunar injection - 25,854 after
         mission.crewCount = 4;
         mission.waterPerPersonDay = 2.5f;
         mission.oxygenPerPersonDay = 0.84f;

@@ -1,66 +1,66 @@
-# Documento de diseño (GDD)
+# Game design document (GDD)
 
-**Misión:** órbita lunar tripulada estilo Artemis. Despegar, viajar a la Luna, orbitarla haciendo ciencia y regresar a salvo.
+**Mission:** Artemis-style crewed lunar orbit. Lift off, travel to the Moon, orbit it doing science, and return safely.
 
-El juego tiene **2 etapas**: Planeación de misión y Lanzamiento. Al final se calcula el puntaje con el desempeño en ambas.
+The game has **2 stages**: Mission planning and Launch. At the end, the score is calculated from the performance in both.
 
 ---
 
-## Etapa 1 · Planeación de misión (`01_Planeacion`)
+## Stage 1 · Mission planning (`01_Planeacion`)
 
-El jugador está frente a un **escritorio** con varios objetos. Cada objeto es una **estación** (un prefab independiente) que se abre al hacer clic.
+The player sits in front of a **desk** with several objects. Each object is a **station** (an independent prefab) that opens when clicked.
 
-| Estación | Qué hace | Dueño |
+| Station | What it does | Owner |
 |---|---|---|
-| **Folder** | Página 1: descripción de la misión y actualizaciones por eventos aleatorios. Página 2: perfiles de los astronautas y asignación de entrenamiento. Páginas extra opcionales (info del cohete, etc.). | P3 |
-| **Computadora** | Escritorio con apps: **SpaceMart** (tienda tipo Amazon para comprar piezas), **Ajustes** del juego, **Apagar** (pregunta si quieres salir). Tech tree como app solo si sobra tiempo. | P2 |
-| **Modelo de cohete** | Armado del cohete final con las piezas compradas. Muestra masa, Δv y si alcanza para la misión. | P2 |
-| **Globo terráqueo + calendario** | Elegir sitio de lanzamiento en el globo; el calendario muestra el clima y el viento del sitio en el día de lanzamiento. | P3 |
-| **Botón de lanzamiento** | Bloqueado hasta completar todas las tareas. Al hacer clic pasa a la etapa de Lanzamiento. | P1 |
+| **Folder** | Page 1: mission description and updates from random events. Page 2: astronaut profiles and training assignment. Optional extra pages (rocket info, etc.). | P3 |
+| **Computer** | Desktop with apps: **SpaceMart** (Amazon-style store to buy parts), game **Settings**, **Shut down** (asks whether you want to quit). Tech tree as an app only if there is time left. | P2 |
+| **Rocket model** | Assembly of the final rocket with the purchased parts. Shows mass, Δv and whether it is enough for the mission. | P2 |
+| **Globe + calendar** | Choose the launch site on the globe; the calendar shows the site's weather and wind on launch day. | P3 |
+| **Launch button** | Locked until every task is complete. Clicking it moves to the Launch stage. | P1 |
 
-### Tareas que desbloquean el botón
-1. Misión leída (folder abierto al menos una vez).
-2. Tripulación asignada y con entrenamiento elegido.
-3. Cohete armado y válido: Δv ≥ el que pide la misión y masa dentro del límite.
-4. Sitio y fecha de lanzamiento elegidos.
+### Tasks that unlock the button
+1. Mission read (folder opened at least once).
+2. Crew assigned, with training chosen.
+3. Rocket assembled and valid: Δv ≥ what the mission requires, and mass within the limit.
+4. Launch site and date chosen.
 
-El presupuesto es fijo al inicio (la negociación de presupuesto quedó fuera de esta versión) y se gasta en SpaceMart.
+The budget is fixed at the start (budget negotiation was left out of this version) and is spent in SpaceMart.
 
 ---
 
-## Etapa 2 · Lanzamiento (`02_Lanzamiento`)
+## Stage 2 · Launch (`02_Lanzamiento`)
 
-**Pantalla dividida:**
-- **Izquierda (2D):** control de misión. Gente en sus computadoras y, al fondo, una pantalla grande con el estado y los datos del vuelo.
-- **Derecha (3D):** el cohete haciendo su ruta Tierra → Luna → Tierra.
+**Split screen:**
+- **Left (2D):** mission control. People at their computers and, in the background, a big screen with the flight status and data.
+- **Right (3D):** the rocket flying its Earth → Moon → Earth route.
 
-**Fases del vuelo:**
+**Flight phases:**
 
-| Fase | Contenido |
+| Phase | Content |
 |---|---|
-| **Salida** | Despegue. Minijuegos de pilotaje y mantenimiento. Pueden surgir eventos aleatorios que disparan minijuegos. |
-| **Órbita lunar** | Minijuegos de investigación (recolección de datos) y eventos aleatorios. |
-| **Retorno** | Igual que la salida pero más rápido. Reentrada. |
+| **Departure** | Liftoff. Piloting and maintenance minigames. Random events can come up and trigger minigames. |
+| **Lunar orbit** | Research minigames (data collection) and random events. |
+| **Return** | Same as departure but faster. Reentry. |
 
-Cada minijuego devuelve un resultado (0 a 1) que se multiplica por la habilidad del astronauta del rol correspondiente (piloto, ingeniero, investigador).
+Each minigame returns a result (0 to 1) that is multiplied by the skill of the astronaut in the matching role (pilot, engineer, researcher).
 
-Los eventos aleatorios dependen de lo que se decidió en la planeación (por ejemplo, mal clima en el sitio elegido aumenta el riesgo en la salida).
-
----
-
-## Resultados (`03_Resultados`)
-
-Puntaje final = desempeño en la planeación (presupuesto restante, cohete eficiente, buena fecha y sitio, entrenamiento) + desempeño en los minijuegos de la misión. Pantalla con el desglose y una explicación educativa de cada decisión.
+Random events depend on what was decided during planning (for example, bad weather at the chosen site raises the risk during departure).
 
 ---
 
-## Escenas
+## Results (`03_Resultados`)
 
-| Escena | Contenido |
+Final score = planning performance (remaining budget, efficient rocket, good date and site, training) + performance in the mission minigames. Screen with the breakdown and an educational explanation of each decision.
+
+---
+
+## Scenes
+
+| Scene | Content |
 |---|---|
-| `00_Menu` | Pantalla de título |
-| `01_Planeacion` | Escritorio con las 5 estaciones |
-| `02_Lanzamiento` | Pantalla dividida, 3 fases, minijuegos |
-| `03_Resultados` | Puntaje y explicación |
+| `00_Menu` | Title screen |
+| `01_Planeacion` | Desk with the 5 stations |
+| `02_Lanzamiento` | Split screen, 3 phases, minigames |
+| `03_Resultados` | Score and explanation |
 
-Los minijuegos y las estaciones son **prefabs**, no escenas, para que cada quien trabaje en su propio archivo.
+Minigames and stations are **prefabs**, not scenes, so everyone works in their own file.

@@ -1,16 +1,16 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-// Ajustes basicos: volumen general y pantalla completa. Se guardan en PlayerPrefs
-// (en WebGL se guardan en el navegador).
+// Basic settings: master volume and fullscreen. Saved in PlayerPrefs
+// (in WebGL they are saved in the browser).
 public class GameSettings : MonoBehaviour
 {
-    const string VolumeKey = "volumen";
+    const string VolumeKey = "volume";
 
     public Slider volumeSlider;
     public Toggle fullscreenToggle;
 
-    // Aplica lo guardado. MainMenu lo llama al iniciar.
+    // Applies the saved settings. MainMenu calls it at startup.
     public static void ApplySaved()
     {
         AudioListener.volume = PlayerPrefs.GetFloat(VolumeKey, 1f);

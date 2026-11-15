@@ -5,16 +5,16 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.UI;
 
-// Menu de Unity: SpaceApps > Armar menu principal
-// Arma 00_Menu: quita el texto de estado y el boton Siguiente del greybox, y crea los 5 botones
-// y los paneles de Ajustes y Space Apps ya conectados. Se puede volver a correr: borra y recrea
-// solo lo que crea (Botones, PanelAjustes, PanelSpaceApps). Despues acomoda colores y textos a mano.
+// Unity menu: SpaceApps > Build main menu
+// Builds 00_Menu: removes the greybox state text and Next button, and creates the 5 buttons
+// and the Settings and Space Apps panels, already wired up. It can be run again: it deletes and recreates
+// only what it creates (Buttons, SettingsPanel, SpaceAppsPanel). Then adjust colors and texts by hand.
 public static class MainMenuBuilder
 {
     static readonly Color ButtonColor = new Color(0.15f, 0.22f, 0.35f);
     static readonly Color BoxColor = new Color(0.08f, 0.1f, 0.16f);
 
-    [MenuItem("SpaceApps/Armar menu principal")]
+    [MenuItem("SpaceApps/Build main menu")]
     static void Build()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
@@ -23,11 +23,13 @@ public static class MainMenuBuilder
         Canvas canvas = Object.FindAnyObjectByType<Canvas>();
         if (canvas == null)
         {
-            EditorUtility.DisplayDialog("Menu principal", "No encontre un Canvas en 00_Menu.", "OK");
+            EditorUtility.DisplayDialog("Main menu", "No Canvas found in 00_Menu.", "OK");
             return;
         }
         Transform root = canvas.transform;
-        foreach (string n in new[] { "Estado", "BotonSiguiente", "Botones", "PanelAjustes", "PanelSpaceApps" })
+        // The Spanish names are the ones created by older versions of this menu (so they also get replaced).
+        foreach (string n in new[] { "State", "NextButton", "Buttons", "SettingsPanel", "SpaceAppsPanel",
+            "Estado", "BotonSiguiente", "Botones", "PanelAjustes", "PanelSpaceApps" })
         {
             Transform t = root.Find(n);
             if (t != null) Object.DestroyImmediate(t.gameObject);
@@ -36,8 +38,8 @@ public static class MainMenuBuilder
         MainMenu menu = canvas.GetComponent<MainMenu>();
         if (menu == null) menu = canvas.gameObject.AddComponent<MainMenu>();
 
-        // ---------- Botones ----------
-        GameObject column = new GameObject("Botones", typeof(RectTransform), typeof(VerticalLayoutGroup));
+        // ---------- Buttons ----------
+        GameObject column = new GameObject("Buttons", typeof(RectTransform), typeof(VerticalLayoutGroup));
         column.transform.SetParent(root, false);
         Place((RectTransform)column.transform, new Vector2(0.5f, 0.38f), Vector2.zero, new Vector2(620, 620));
         VerticalLayoutGroup layout = column.GetComponent<VerticalLayoutGroup>();
@@ -46,32 +48,32 @@ public static class MainMenuBuilder
         layout.childControlWidth = layout.childControlHeight = true;
         layout.childForceExpandWidth = layout.childForceExpandHeight = true;
 
-        Button play = CreateButton(column.transform, "BotonIniciar", "Iniciar juego", 44);
-        Button creative = CreateButton(column.transform, "BotonModoCreativo", "Modo creativo (próximamente)", 36);
-        Button settings = CreateButton(column.transform, "BotonAjustes", "Ajustes", 44);
-        Button spaceApps = CreateButton(column.transform, "BotonSpaceApps", "Space Apps", 44);
-        Button quit = CreateButton(column.transform, "BotonSalir", "Salir del juego", 44);
+        Button play = CreateButton(column.transform, "PlayButton", "Start game", 44);
+        Button creative = CreateButton(column.transform, "CreativeModeButton", "Creative mode (coming soon)", 36);
+        Button settings = CreateButton(column.transform, "SettingsButton", "Settings", 44);
+        Button spaceApps = CreateButton(column.transform, "SpaceAppsButton", "Space Apps", 44);
+        Button quit = CreateButton(column.transform, "QuitButton", "Quit game", 44);
         creative.interactable = false;
 
-        // ---------- Paneles ----------
+        // ---------- Panels ----------
         Transform settingsBody;
-        GameObject settingsPanel = CreatePanel(root, "PanelAjustes", "Ajustes", menu, out settingsBody);
+        GameObject settingsPanel = CreatePanel(root, "SettingsPanel", "Settings", menu, out settingsBody);
         BuildSettings(settingsPanel, settingsBody);
 
         Transform infoBody;
-        GameObject infoPanel = CreatePanel(root, "PanelSpaceApps", "NASA Space Apps Challenge 2026", menu, out infoBody);
-        TextMeshProUGUI info = CreateText(infoBody, "Texto",
-            "<b>El reto</b>\n" +
-            "Space Mission Design Game, propuesto por la Agencia Espacial Canadiense: un juego para entender cómo se planea y se ejecuta una misión espacial.\n\n" +
-            "<b>Nuestro proyecto</b>\n" +
-            "Planeas una misión tripulada de órbita lunar estilo Artemis: lees la misión, eliges y entrenas a la tripulación, compras piezas y armas el cohete, y escoges sitio y fecha de lanzamiento. Luego vuelas la misión: salida, órbita lunar y retorno, resolviendo minijuegos y eventos.\n\n" +
-            "<b>El equipo</b>\n" +
-            "[Nombre del equipo y de los 5 integrantes]",
+        GameObject infoPanel = CreatePanel(root, "SpaceAppsPanel", "NASA Space Apps Challenge 2026", menu, out infoBody);
+        TextMeshProUGUI info = CreateText(infoBody, "Text",
+            "<b>The challenge</b>\n" +
+            "Space Mission Design Game, proposed by the Canadian Space Agency: a game to understand how a space mission is planned and carried out.\n\n" +
+            "<b>Our project</b>\n" +
+            "You plan an Artemis-style crewed lunar orbit mission: you read the mission, choose and train the crew, buy parts and assemble the rocket, and pick the launch site and date. Then you fly the mission: departure, lunar orbit and return, solving minigames and events.\n\n" +
+            "<b>The team</b>\n" +
+            "[Team name and the 5 members]",
             32);
         info.alignment = TextAlignmentOptions.TopLeft;
         Stretch(info.rectTransform);
 
-        // ---------- Conexiones ----------
+        // ---------- Connections ----------
         menu.panels = new[] { settingsPanel, infoPanel };
         UnityEventTools.AddVoidPersistentListener(play.onClick, menu.Play);
         UnityEventTools.AddObjectPersistentListener<GameObject>(settings.onClick, menu.ShowPanel, settingsPanel);
@@ -84,7 +86,7 @@ public static class MainMenuBuilder
         EditorUtility.SetDirty(menu);
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene);
-        Debug.Log("Menu principal armado en 00_Menu.");
+        Debug.Log("Main menu built in 00_Menu.");
     }
 
     static void BuildSettings(GameObject panel, Transform body)
@@ -98,12 +100,12 @@ public static class MainMenuBuilder
             checkmark = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Checkmark.psd"),
         };
 
-        TextMeshProUGUI volLabel = CreateText(body, "TextoVolumen", "Volumen", 40);
+        TextMeshProUGUI volLabel = CreateText(body, "VolumeText", "Volume", 40);
         volLabel.alignment = TextAlignmentOptions.Left;
         Place(volLabel.rectTransform, new Vector2(0.5f, 1f), new Vector2(0, -60), new Vector2(900, 70));
 
         GameObject sliderGo = DefaultControls.CreateSlider(res);
-        sliderGo.name = "SliderVolumen";
+        sliderGo.name = "VolumeSlider";
         sliderGo.transform.SetParent(body, false);
         Place((RectTransform)sliderGo.transform, new Vector2(0.5f, 1f), new Vector2(0, -140), new Vector2(900, 40));
         Slider slider = sliderGo.GetComponent<Slider>();
@@ -112,11 +114,11 @@ public static class MainMenuBuilder
         slider.value = 1f;
 
         GameObject toggleGo = DefaultControls.CreateToggle(res);
-        toggleGo.name = "TogglePantallaCompleta";
+        toggleGo.name = "FullscreenToggle";
         toggleGo.transform.SetParent(body, false);
         Transform oldLabel = toggleGo.transform.Find("Label");
         if (oldLabel != null) Object.DestroyImmediate(oldLabel.gameObject);
-        TextMeshProUGUI tLabel = CreateText(toggleGo.transform, "Label", "Pantalla completa", 16);
+        TextMeshProUGUI tLabel = CreateText(toggleGo.transform, "Label", "Fullscreen", 16);
         tLabel.alignment = TextAlignmentOptions.Left;
         tLabel.rectTransform.anchorMin = Vector2.zero;
         tLabel.rectTransform.anchorMax = Vector2.one;
@@ -137,21 +139,21 @@ public static class MainMenuBuilder
         GameObject bg = new GameObject(name, typeof(RectTransform), typeof(Image));
         bg.transform.SetParent(root, false);
         Stretch((RectTransform)bg.transform);
-        bg.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.75f); // bloquea clics al menu de atras
+        bg.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.75f); // blocks clicks on the menu behind it
 
-        GameObject box = new GameObject("Caja", typeof(RectTransform), typeof(Image));
+        GameObject box = new GameObject("Box", typeof(RectTransform), typeof(Image));
         box.transform.SetParent(bg.transform, false);
         Place((RectTransform)box.transform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1300, 850));
         box.GetComponent<Image>().color = BoxColor;
 
-        TextMeshProUGUI t = CreateText(box.transform, "Titulo", title, 56);
+        TextMeshProUGUI t = CreateText(box.transform, "Title", title, 56);
         Place(t.rectTransform, new Vector2(0.5f, 1f), new Vector2(0, -75), new Vector2(1100, 100));
 
-        Button close = CreateButton(box.transform, "BotonCerrar", "X", 48);
+        Button close = CreateButton(box.transform, "CloseButton", "X", 48);
         Place((RectTransform)close.transform, new Vector2(1f, 1f), new Vector2(-65, -65), new Vector2(90, 90));
         UnityEventTools.AddVoidPersistentListener(close.onClick, menu.HidePanels);
 
-        GameObject content = new GameObject("Contenido", typeof(RectTransform));
+        GameObject content = new GameObject("Content", typeof(RectTransform));
         content.transform.SetParent(box.transform, false);
         RectTransform cr = (RectTransform)content.transform;
         cr.anchorMin = Vector2.zero;
@@ -167,7 +169,7 @@ public static class MainMenuBuilder
         GameObject go = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
         go.transform.SetParent(parent, false);
         go.GetComponent<Image>().color = ButtonColor;
-        TextMeshProUGUI t = CreateText(go.transform, "Texto", label, size);
+        TextMeshProUGUI t = CreateText(go.transform, "Text", label, size);
         Stretch(t.rectTransform);
         return go.GetComponent<Button>();
     }

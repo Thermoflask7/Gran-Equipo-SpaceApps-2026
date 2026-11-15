@@ -1,30 +1,30 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Puntaje final de 0 a 100 (tarea 16): sistema V16 de Cristina (Drive: CRISTINA/PUNTUACION)
-// adaptado a la fisica Artemis (el SLS es un servicio completo, no se arman etapas).
+// Final score from 0 to 100 (task 16): Cristina's V16 system (Drive: CRISTINA/PUNTUACION)
+// adapted to the Artemis physics (the SLS is a complete service, no stages are assembled).
 //
-//   Total = Planeacion (0-45) + Mision (0-55)
-//   Planeacion: ingenieria 24 + presupuesto 7 + entrenamiento 8 + clima 6, +/- 3 por eventos
-//     Ingenieria: capacidad del SLS 7 + delta-v de Orion 7 + generacion 3 + baterias 3 + consumibles 4
-//   Mision:     etapas del vuelo 24 + minijuegos 21 + ciencia 10,           +/- 3 por eventos
+//   Total = Planning (0-45) + Mission (0-55)
+//   Planning: engineering 24 + budget 7 + training 8 + weather 6,     +/- 3 from events
+//     Engineering: SLS capacity 7 + Orion delta-v 7 + generation 3 + batteries 3 + consumables 4
+//   Mission:  flight stages 24 + minigames 21 + science 10,           +/- 3 from events
 //
-// Hay dos puntajes: el de diagnostico (total, para aprender, se muestra aunque la mision falle)
-// y el oficial (competitive = total solo si la mision fue exitosa, si no 0).
-// Ganar depende de las condiciones obligatorias (gates), no del puntaje.
+// There are two scores: the diagnostic one (total, for learning, shown even if the mission fails)
+// and the official one (competitive = total only if the mission succeeded, otherwise 0).
+// Winning depends on the mandatory conditions (gates), not on the score.
 //
-// Uso en Resultados:  ScoreResult r = MissionScoring.SaveFinalScore();
+// Use in Results:  ScoreResult r = MissionScoring.SaveFinalScore();
 public static class MissionScoring
 {
-    // Minimo de experimentos hechos y de datos mandados a la Tierra para ganar (0 a 1).
-    // Hoy basta con hacer algo (> 0). PROPUESTA del equipo, pendiente de aprobar: 0.5 en ambos.
+    // Minimum experiments done and data sent to Earth needed to win (0 to 1).
+    // Today doing anything (> 0) is enough. Team PROPOSAL, pending approval: 0.5 for both.
     public const float MinExperimentFraction = 0f;
     public const float MinDownlinkFraction = 0f;
 
-    // ---------- Puntaje desde la partida ----------
+    // ---------- Score from the game ----------
 
-    // Calcula el puntaje de la partida y lo guarda en gm.planningScore y gm.missionScore.
-    // Se recalcula desde cero (no suma), asi que llamarlo varias veces no cuenta doble los eventos.
+    // Calculates the game's score and stores it in gm.planningScore and gm.missionScore.
+    // It is recalculated from scratch (it does not add), so calling it several times does not count events twice.
     public static ScoreResult SaveFinalScore()
     {
         GameManager gm = GameManager.Instance;
@@ -34,14 +34,14 @@ public static class MissionScoring
         return r;
     }
 
-    // Igual que SaveFinalScore pero sin tocar GameManager (para mostrar un avance antes del final).
+    // Same as SaveFinalScore but without touching GameManager (to show progress before the end).
     public static ScoreResult EvaluateGame(GameManager gm)
     {
         if (gm.mission == null)
         {
             ScoreResult empty = new ScoreResult();
             empty.status = "INVALID";
-            empty.problem = "No hay mision cargada. Para probar: Play y SpaceApps -> Pantalla de resultados -> Prueba: partida de ejemplo.";
+            empty.problem = "No mission loaded. To test: Play and SpaceApps -> Results screen -> Test: sample game.";
             return empty;
         }
         ScoreResult r = Evaluate(InputsFromGame(gm));
@@ -49,13 +49,13 @@ public static class MissionScoring
 
         if (!gm.flight.launched || !gm.flight.flightFinished)
         {
-            // Todavia no se lanza o el vuelo no ha terminado: ni ganada ni perdida
+            // Not launched yet or the flight has not finished: neither won nor lost
             r.status = "PENDING";
             r.failedGates.Clear();
         }
         else
         {
-            // Condiciones que solo existen en el juego (ademas de las de Evaluate)
+            // Conditions that only exist in the game (in addition to those in Evaluate)
             List<string> gameGates = new List<string>();
             if (!RocketPhysics.IsRocketValid(gm.rocketParts, gm.mission)) gameGates.Add("ROCKET_INVALID");
             if (!gm.IsCrewReady()) gameGates.Add("CREW_NOT_READY");
@@ -69,7 +69,7 @@ public static class MissionScoring
         return r;
     }
 
-    // Llena las entradas con el estado de GameManager y RocketPhysics (catalogo Artemis).
+    // Fills in the inputs with the state of GameManager and RocketPhysics (Artemis catalog).
     public static ScoreInputs InputsFromGame(GameManager gm)
     {
         ScoreInputs i = new ScoreInputs();
@@ -77,7 +77,7 @@ public static class MissionScoring
         DestinationData mission = gm.mission;
         PartData sls = RocketPhysics.LaunchService(parts);
 
-        i.deliveryCapacity = sls != null ? sls.payloadCapacity : 1f; // sin SLS: 0 puntos (y el cohete no es valido)
+        i.deliveryCapacity = sls != null ? sls.payloadCapacity : 1f; // no SLS: 0 points (and the rocket is not valid)
         i.tliMass = RocketPhysics.TliMass(parts, mission);
         i.craftDvAvailable = RocketPhysics.SpacecraftDeltaV(parts);
         i.craftDvRequired = mission.requiredDeltaV;
@@ -93,8 +93,8 @@ public static class MissionScoring
         i.foodMargin = RocketPhysics.FoodMargin(parts, mission);
         i.foodRequired = personDays * mission.foodPerPersonDay;
 
-        // El ahorro se califica con el dinero que habia al lanzar: los eventos del vuelo
-        // cambian gm.money pero no cambian una decision de la planeacion ya tomada.
+        // Savings are graded with the money there was at launch: flight events
+        // change gm.money but do not change a planning decision already made.
         float money = gm.flight.launched ? gm.flight.moneyAtLaunch : gm.money;
         i.startingMoney = gm.startingMoney;
         i.moneyAtLaunch = Mathf.Clamp(money, 0f, gm.startingMoney);
@@ -126,7 +126,7 @@ public static class MissionScoring
         return i;
     }
 
-    // -1 (no jugado) cuenta como 0
+    // -1 (not played) counts as 0
     static float Played(float value)
     {
         if (value < 0f) return 0f;
@@ -145,31 +145,31 @@ public static class MissionScoring
             return r;
         }
 
-        // Ingenieria (24). Los puntos crecen con el margen y llegan al maximo con cierto margen extra.
-        // SLS (7): completo con 5% de su capacidad libre
+        // Engineering (24). Points grow with the margin and reach the maximum with some extra margin.
+        // SLS (7): full with 5% of its capacity free
         r.deliveryPoints = 7f * Mathf.Clamp01((i.deliveryCapacity - i.tliMass) / (0.05f * i.deliveryCapacity));
-        // Orion (7): completo con 8% de delta-v extra
+        // Orion (7): full with 8% extra delta-v
         r.craftDvPoints = 7f * Mathf.Clamp01((i.craftDvAvailable - i.craftDvRequired) / (0.08f * i.craftDvRequired));
-        // Generacion (3): completo si sobra 25% del consumo
+        // Generation (3): full if 25% of the draw is left over
         r.powerPoints = 3f * Mathf.Clamp01(i.powerNetW / (0.25f * Mathf.Max(i.loadW, 1f)));
-        // Baterias (3): completo si aguantan 50% mas que el tiempo sin sol
+        // Batteries (3): full if they last 50% longer than the time without sunlight
         float outageWh = i.loadW * i.outageHours;
         r.batteryPoints = 3f * Mathf.Clamp01((i.batteryWh - outageWh) / (0.5f * Mathf.Max(outageWh, 1f)));
-        // Consumibles (4): cada uno completo con 20% de reserva sobre lo que se consume
+        // Consumables (4): each one full with a 20% reserve over what is consumed
         r.consumablePoints = 4f * (Reserve(i.waterMargin, i.waterRequired)
                                  + Reserve(i.oxygenMargin, i.oxygenRequired)
                                  + Reserve(i.foodMargin, i.foodRequired)) / 3f;
         r.engineering = r.deliveryPoints + r.craftDvPoints + r.powerPoints + r.batteryPoints + r.consumablePoints;
 
-        // Presupuesto (7): completo si sobra al menos el 15%
+        // Budget (7): full if at least 15% is left over
         r.budgetPoints = 7f * Mathf.Clamp01(i.moneyAtLaunch / (0.15f * i.startingMoney));
-        // Entrenamiento (8) y clima (6)
+        // Training (8) and weather (6)
         r.trainingPoints = 8f * (i.pilotSkill + i.engineerSkill + i.scientistSkill) / 3f;
         r.weatherPoints = 6f * (1f - i.weatherRisk);
 
         r.planningBase = r.engineering + r.budgetPoints + r.trainingPoints + r.weatherPoints;
 
-        // Mision: etapas (24), minijuegos (21) y ciencia (10)
+        // Mission: stages (24), minigames (21) and science (10)
         r.milestonePoints = 8f * (i.departureDone + i.lunarOrbitDone + i.safeReturnDone);
         r.minigamePoints = 7f * (i.pilotingRaw * i.pilotSkill + i.repairRaw * i.engineerSkill + i.researchRaw * i.scientistSkill);
         r.sciencePoints = 4f * Mathf.Clamp01(i.sciencePoints / i.requiredSciencePoints)
@@ -177,14 +177,14 @@ public static class MissionScoring
                         + 3f * i.downlinkFraction;
         r.missionBase = r.milestonePoints + r.minigamePoints + r.sciencePoints;
 
-        // Eventos: maximo +/- 3 por etapa
+        // Events: at most +/- 3 per stage
         r.planningEvents = Mathf.Clamp(i.planningEventSum, -3f, 3f);
         r.missionEvents = Mathf.Clamp(i.missionEventSum, -3f, 3f);
         r.planning = Mathf.Clamp(r.planningBase + r.planningEvents, 0f, 45f);
         r.mission = Mathf.Clamp(r.missionBase + r.missionEvents, 0f, 55f);
         r.total = r.planning + r.mission;
 
-        // Condiciones obligatorias para ganar (no dependen del puntaje)
+        // Mandatory conditions to win (they do not depend on the score)
         if (i.tliMass > i.deliveryCapacity) r.failedGates.Add("DELIVERY");
         if (i.craftDvAvailable < i.craftDvRequired) r.failedGates.Add("CRAFT_DELTA_V");
         if (i.powerNetW < 0f) r.failedGates.Add("POWER");
@@ -202,13 +202,13 @@ public static class MissionScoring
         return r;
     }
 
-    // Reserva de un consumible de 0 a 1: 0 si no sobra nada (o falta), 1 si sobra 20% o mas.
+    // Reserve of a consumable from 0 to 1: 0 if nothing is left over (or it falls short), 1 if 20% or more is left over.
     static float Reserve(float margin, float required)
     {
         return Mathf.Clamp01(margin / (0.2f * required));
     }
 
-    // Revisa que las entradas tengan sentido. "" = todo bien.
+    // Checks that the inputs make sense. "" = all good.
     public static string Problem(ScoreInputs i)
     {
         float[] all = { i.deliveryCapacity, i.tliMass, i.craftDvAvailable, i.craftDvRequired,
@@ -220,27 +220,27 @@ public static class MissionScoring
             i.planningEventSum, i.missionEventSum };
         foreach (float v in all)
         {
-            if (float.IsNaN(v) || float.IsInfinity(v)) return "Hay un valor que no es un numero.";
+            if (float.IsNaN(v) || float.IsInfinity(v)) return "A value is not a number.";
         }
 
-        if (i.craftDvRequired <= 0f) return "El delta-v requerido debe ser mayor que 0.";
-        if (i.deliveryCapacity <= 0f) return "La capacidad del lanzador debe ser mayor que 0.";
-        if (i.waterRequired <= 0f || i.oxygenRequired <= 0f || i.foodRequired <= 0f) return "El consumo de la tripulacion debe ser mayor que 0.";
-        if (i.requiredSciencePoints <= 0f) return "Los puntos de ciencia requeridos deben ser mayores que 0.";
-        if (i.startingMoney <= 0f) return "El presupuesto inicial debe ser mayor que 0.";
-        if (i.moneyAtLaunch < 0f || i.moneyAtLaunch > i.startingMoney) return "El dinero al lanzar debe estar entre 0 y el presupuesto inicial.";
-        if (i.loadW < 0f || i.batteryWh < 0f || i.tliMass < 0f || i.sciencePoints < 0f) return "Hay una masa, consumo, bateria o ciencia negativa.";
+        if (i.craftDvRequired <= 0f) return "The required delta-v must be greater than 0.";
+        if (i.deliveryCapacity <= 0f) return "The launcher capacity must be greater than 0.";
+        if (i.waterRequired <= 0f || i.oxygenRequired <= 0f || i.foodRequired <= 0f) return "The crew consumption must be greater than 0.";
+        if (i.requiredSciencePoints <= 0f) return "The required science points must be greater than 0.";
+        if (i.startingMoney <= 0f) return "The starting budget must be greater than 0.";
+        if (i.moneyAtLaunch < 0f || i.moneyAtLaunch > i.startingMoney) return "The money at launch must be between 0 and the starting budget.";
+        if (i.loadW < 0f || i.batteryWh < 0f || i.tliMass < 0f || i.sciencePoints < 0f) return "A mass, power draw, battery or science value is negative.";
 
         float[] fractions = { i.pilotSkill, i.engineerSkill, i.scientistSkill, i.weatherRisk,
             i.pilotingRaw, i.repairRaw, i.researchRaw, i.experimentFraction, i.downlinkFraction };
         foreach (float v in fractions)
         {
-            if (v < 0f || v > 1f) return "Una habilidad, el clima, un minijuego o la ciencia no esta entre 0 y 1.";
+            if (v < 0f || v > 1f) return "A skill, the weather, a minigame or the science is not between 0 and 1.";
         }
 
-        if (!IsFlag(i.departureDone) || !IsFlag(i.lunarOrbitDone) || !IsFlag(i.safeReturnDone)) return "Las etapas del vuelo deben ser 0 o 1.";
-        if (i.lunarOrbitDone > i.departureDone || i.safeReturnDone > i.lunarOrbitDone) return "Las etapas del vuelo deben cumplirse en orden.";
-        if (i.downlinkFraction > i.experimentFraction) return "No se pueden mandar mas datos que los experimentos hechos.";
+        if (!IsFlag(i.departureDone) || !IsFlag(i.lunarOrbitDone) || !IsFlag(i.safeReturnDone)) return "The flight stages must be 0 or 1.";
+        if (i.lunarOrbitDone > i.departureDone || i.safeReturnDone > i.lunarOrbitDone) return "The flight stages must be completed in order.";
+        if (i.downlinkFraction > i.experimentFraction) return "You cannot send more data than the experiments done.";
         return "";
     }
 

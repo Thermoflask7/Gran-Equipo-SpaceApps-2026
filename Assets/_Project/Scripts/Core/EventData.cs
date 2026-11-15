@@ -1,20 +1,20 @@
 using UnityEngine;
 
-// Evento aleatorio de la planeacion o del vuelo (bueno o malo).
-// Lo tira RandomEvents (Scripts/Mision).
-[CreateAssetMenu(menuName = "SpaceApps/Evento", fileName = "NuevoEvento")]
+// Random event during planning or the flight (good or bad).
+// Rolled by RandomEvents (Scripts/Mision).
+[CreateAssetMenu(menuName = "SpaceApps/Event", fileName = "NewEvent")]
 public class EventData : ScriptableObject
 {
     public string eventName;
     [TextArea] public string description;
-    [Range(0f, 1f)] public float probability = 0.3f; // probabilidad base
+    [Range(0f, 1f)] public float probability = 0.3f; // base probability
     public bool isGood;
-    public float moneyChange; // millones de USD, puede ser negativo
+    public float moneyChange; // millions of USD, can be negative
     public int scoreChange;
 
-    [Header("Cuando y como pasa")]
+    [Header("When and how it happens")]
     public EventPhase phase = EventPhase.Departure;
-    public bool weatherSensitive; // si es true, el clima del dia elegido cambia su probabilidad
-    public TrainingFocus minigameRole = TrainingFocus.None; // minijuego que dispara (None = ninguno)
-    [TextArea] public string lesson; // explicacion educativa para Resultados (opcional)
+    public bool weatherSensitive; // if true, the weather on the chosen day changes its probability
+    public TrainingFocus minigameRole = TrainingFocus.None; // minigame it triggers (None = none)
+    [TextArea] public string lesson; // educational explanation for Results (optional)
 }

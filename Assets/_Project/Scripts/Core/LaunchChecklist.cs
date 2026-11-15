@@ -1,13 +1,13 @@
 using TMPro;
 using UnityEngine;
 
-// Lista de las 4 tareas que desbloquean el boton de lanzamiento (ver GDD.md).
-// Ponlo en un texto TMP: se actualiza solo y dice que falta y por que.
+// List of the 4 tasks that unlock the launch button (see GDD.md).
+// Put it on a TMP text: it updates itself and says what is missing and why.
 [RequireComponent(typeof(TMP_Text))]
 public class LaunchChecklist : MonoBehaviour
 {
-    const string Done = "<color=#6FCF6F>[listo]</color> ";
-    const string Missing = "<color=#FF8A65>[falta]</color> ";
+    const string Done = "<color=#6FCF6F>[done]</color> ";
+    const string Missing = "<color=#FF8A65>[missing]</color> ";
 
     TMP_Text label;
 
@@ -21,7 +21,7 @@ public class LaunchChecklist : MonoBehaviour
         label.text = BuildText(GameManager.Instance);
     }
 
-    // Cuantas de las 4 tareas ya estan completas
+    // How many of the 4 tasks are already complete
     public static int CompletedTasks(GameManager gm)
     {
         int count = 0;
@@ -36,32 +36,32 @@ public class LaunchChecklist : MonoBehaviour
     {
         string text = "";
 
-        // 1. Mision leida
-        if (gm.missionRead) text += Done + "Misión leída\n";
-        else text += Missing + "Lee la misión en el folder\n";
+        // 1. Mission read
+        if (gm.missionRead) text += Done + "Mission read\n";
+        else text += Missing + "Read the mission in the folder\n";
 
-        // 2. Tripulacion asignada y entrenada
-        if (gm.IsCrewReady()) text += Done + "Tripulación asignada y entrenada\n";
+        // 2. Crew assigned and trained
+        if (gm.IsCrewReady()) text += Done + "Crew assigned and trained\n";
         else if (gm.pilot == null || gm.engineer == null || gm.scientist == null)
-            text += Missing + "Asigna piloto, ingeniero y científico en el folder\n";
-        else text += Missing + "Elige el entrenamiento de cada astronauta\n";
+            text += Missing + "Assign a pilot, an engineer and a scientist in the folder\n";
+        else text += Missing + "Choose each astronaut's training\n";
 
-        // 3. Cohete armado y valido
-        if (gm.rocketValid) text += Done + "Cohete armado y válido\n";
-        else if (gm.rocketParts.Count == 0) text += Missing + "Compra piezas en SpaceMart y arma el cohete\n";
+        // 3. Rocket assembled and valid
+        if (gm.rocketValid) text += Done + "Rocket assembled and valid\n";
+        else if (gm.rocketParts.Count == 0) text += Missing + "Buy parts in SpaceMart and assemble the rocket\n";
         else
         {
             string reason = RocketPhysics.ValidationMessage(gm.rocketParts, gm.mission);
-            if (reason == "") reason = "Confirma el cohete en el modelo";
+            if (reason == "") reason = "Confirm the rocket in the model";
             text += Missing + reason + "\n";
         }
 
-        // 4. Sitio y fecha de lanzamiento
+        // 4. Launch site and date
         if (gm.IsLaunchPlanned())
-            text += Done + "Lanzamiento: " + gm.launchSite.siteName + ", día " + (gm.launchDay + 1)
-                + " (riesgo de clima " + (gm.weatherRisk * 100f).ToString("0") + "%)";
-        else if (gm.launchSite == null) text += Missing + "Elige el sitio de lanzamiento en el globo";
-        else text += Missing + "Elige la fecha en el calendario";
+            text += Done + "Launch: " + gm.launchSite.siteName + ", day " + (gm.launchDay + 1)
+                + " (weather risk " + (gm.weatherRisk * 100f).ToString("0") + "%)";
+        else if (gm.launchSite == null) text += Missing + "Choose the launch site on the globe";
+        else text += Missing + "Choose the date in the calendar";
 
         return text;
     }

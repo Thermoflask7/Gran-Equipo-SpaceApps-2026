@@ -46,10 +46,9 @@ public class SpaceOsGraphicRaycaster : GraphicRaycaster
         Vector2 uv = hit.textureCoord;
         if (screen != null) uv = screen.MeshUvToCanvasUv(uv);
 
-        Vector2 mapped = new Vector2(uv.x * pw, uv.y * ph);
-        Vector2 original = eventData.position;
-        eventData.position = mapped;
+        // Dejamos la posicion remapeada: ScrollRect (rueda y arrastre) y los
+        // botones usan las coordenadas del canvas/RT, no las del Game view.
+        eventData.position = new Vector2(uv.x * pw, uv.y * ph);
         base.Raycast(eventData, resultAppendList);
-        eventData.position = original;
     }
 }

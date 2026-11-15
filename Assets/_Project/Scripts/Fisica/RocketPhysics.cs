@@ -23,6 +23,7 @@ public static class RocketPhysics
 {
     public const float G0 = 9.80665f;      // m/s2 (gravedad estandar, igual que los datos de Cristina)
     public const float OutageHours = 1.5f;  // horas sin sol que la bateria debe aguantar (mision V13)
+    public const int MaxCopiesPerPart = 1;  // unidades de una misma pieza (catalogId). 0 = sin limite. Decision pendiente del equipo (ver Docs/P5)
 
     // dv de un motor con masa inicial m0 y final mf (kg). Isp en segundos.
     public static float DeltaV(float isp, float m0, float mf)
@@ -234,12 +235,18 @@ public static class RocketPhysics
     // o un mensaje en espanol con el primer problema (para mostrarlo en el modelo de cohete).
     public static string ValidationMessage(List<PartData> parts, DestinationData mission)
     {
+        if (mission == null) return "No hay mision asignada.";
+        string missionProblem = MissionDataProblem(mission);
+        if (missionProblem != "") return missionProblem;
         if (parts == null || parts.Count == 0) return "El cohete no tiene piezas.";
         foreach (PartData p in parts)
         {
             if (p == null) return "Hay una pieza vacia en el cohete.";
-            if (p.dryMass < 0f || p.fuelMass < 0f) return "\"" + p.partName + "\" tiene masa o combustible negativo.";
+            string partProblem = PartDataProblem(p);
+            if (partProblem != "") return partProblem;
         }
+        string repeated = RepeatedPart(parts);
+        if (repeated != "") return "Solo se puede llevar una unidad de \"" + repeated + "\".";
 
         int launchers = CountType(parts, PartType.LaunchService);
         if (launchers == 0) return "Elige un lanzador: SLS Block 1 o SLS Block 1B.";
@@ -276,10 +283,61 @@ public static class RocketPhysics
             float science = SciencePoints(parts);
             if (science < mission.minSciencePoints)
                 return "Poca ciencia: " + science.ToString("0") + " de " + mission.minSciencePoints.ToString("0") + " puntos. Agrega instrumentos.";
+            if (SciencePoints(parts) > 0f && DataBits(parts) <= 0f)
+                return "Los instrumentos no generan datos para mandar a la Tierra (revisa el catalogo).";
             if (DownlinkSeconds(parts) > mission.maxDownlinkSeconds)
                 return "Los datos de ciencia no se pueden mandar a la Tierra a tiempo: agrega una antena de largo alcance.";
         }
 
+        return "";
+    }
+
+    // Bits de datos que generan los instrumentos de la nave.
+    public static float DataBits(List<PartData> parts)
+    {
+        float bits = 0f;
+        foreach (PartData p in Spacecraft(parts)) bits += p.experimentDataBits;
+        return bits;
+    }
+
+    // Datos de una pieza que no tienen sentido fisico (negativos). "" = bien.
+    public static string PartDataProblem(PartData p)
+    {
+        if (p.dryMass < 0f || p.fuelMass < 0f) return "\"" + p.partName + "\" tiene masa o combustible negativo.";
+        if (p.price < 0f || p.isp < 0f || p.thrust < 0f || p.power < 0f || p.powerDraw < 0f || p.batteryWh < 0f
+            || p.payloadCapacity < 0f || p.crewCapacity < 0 || p.maxMissionDays < 0
+            || p.waterKg < 0f || p.oxygenKg < 0f || p.foodKg < 0f
+            || p.sciencePoints < 0f || p.dataRateBps < 0f || p.experimentDataBits < 0f)
+            return "\"" + p.partName + "\" tiene un valor negativo en el catalogo.";
+        if (p.fuelMass > 0f && p.isp <= 0f) return "\"" + p.partName + "\" tiene combustible pero no tiene Isp.";
+        return "";
+    }
+
+    // Datos de la mision que no tienen sentido. "" = bien.
+    public static string MissionDataProblem(DestinationData m)
+    {
+        if (m.requiredDeltaV <= 0f) return "La mision no tiene delta-v requerido.";
+        if (m.crewCount <= 0 || m.missionDays <= 0) return "La mision necesita tripulacion y dias de duracion.";
+        if (m.tliExtraMass < 0f || m.waterPerPersonDay < 0f || m.oxygenPerPersonDay < 0f || m.foodPerPersonDay < 0f
+            || m.baseWaterKg < 0f || m.baseOxygenKg < 0f || m.baseFoodKg < 0f
+            || m.minSciencePoints < 0f || m.maxDownlinkSeconds < 0f)
+            return "La mision tiene un valor negativo.";
+        return "";
+    }
+
+    // Nombre de la primera pieza que aparece mas veces de las permitidas ("" = ninguna).
+    public static string RepeatedPart(List<PartData> parts)
+    {
+        if (MaxCopiesPerPart <= 0) return "";
+        Dictionary<string, int> counts = new Dictionary<string, int>();
+        foreach (PartData p in parts)
+        {
+            if (p == null) continue;
+            string id = string.IsNullOrEmpty(p.catalogId) ? p.partName : p.catalogId;
+            if (!counts.ContainsKey(id)) counts[id] = 0;
+            counts[id]++;
+            if (counts[id] > MaxCopiesPerPart) return p.partName;
+        }
         return "";
     }
 

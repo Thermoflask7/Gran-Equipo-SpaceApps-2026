@@ -6,7 +6,9 @@ using UnityEngine;
 // Menu: SpaceApps -> Importar catalogo Artemis.
 //   - Crea o actualiza una PartData por pieza en Data/Piezas (archivo = id del catalogo).
 //     Si el asset ya existe se actualizan sus valores y se conserva el GUID (no se rompen referencias).
-//   - Crea o actualiza la mision Data/Destinos/MisionArtemis.asset (mision V13 de Cristina).
+//   - Crea la mision Data/Destinos/MisionArtemis.asset (mision V13 de Cristina) si no existe.
+//     Si ya existe y alguien la cambio a mano, NO la sobrescribe: avisa en la consola que campos
+//     son distintos a la V13. Para regresarla a la V13: SpaceApps -> Restaurar mision V13.
 // Se puede correr las veces que sea, por ejemplo cuando Cristina actualice el catalogo.
 public static class CatalogImporter
 {
@@ -101,17 +103,59 @@ public static class CatalogImporter
             count++;
         }
 
-        ImportMission();
+        ImportMission(false);
         AssetDatabase.SaveAssets();
         Debug.Log("Catalogo Artemis importado: " + count + " piezas en " + PartsFolder + " y la mision en " + MissionPath);
     }
 
-    // Valores de SpaceMission_Mision_Artemis_V13.json (Drive de Cristina, carpeta MISION CALCULOS Y DETALLES).
-    static void ImportMission()
+    [MenuItem("SpaceApps/Restaurar mision V13")]
+    public static void RestoreMission()
     {
+        if (!EditorUtility.DisplayDialog("Restaurar mision V13",
+            "Se van a reemplazar todos los valores de " + MissionPath + " por los de la mision V13 de Cristina.", "Restaurar", "Cancelar"))
+            return;
+        ImportMission(true);
+        AssetDatabase.SaveAssets();
+        Debug.Log("Mision restaurada a la V13: " + MissionPath);
+    }
+
+    // Crea la mision si no existe. Si existe: con overwrite la regresa a la V13; sin overwrite
+    // solo avisa que campos son distintos (para no borrar cambios hechos despues sin querer).
+    static void ImportMission(bool overwrite)
+    {
+        DestinationData v13 = MissionV13();
         DestinationData mission = AssetDatabase.LoadAssetAtPath<DestinationData>(MissionPath);
-        bool isNew = mission == null;
-        if (isNew) mission = ScriptableObject.CreateInstance<DestinationData>();
+        if (mission == null)
+        {
+            AssetDatabase.CreateAsset(v13, MissionPath);
+            return;
+        }
+
+        string current = EditorJsonUtility.ToJson(mission);
+        string reference = EditorJsonUtility.ToJson(v13);
+        if (current == reference)
+        {
+            UnityEngine.Object.DestroyImmediate(v13);
+            return;
+        }
+        if (overwrite)
+        {
+            EditorUtility.CopySerialized(v13, mission);
+            EditorUtility.SetDirty(mission);
+        }
+        else
+        {
+            Debug.LogWarning("La mision " + MissionPath + " tiene valores distintos a la V13 y no se sobrescribio. "
+                + "Si eso no fue a proposito usa SpaceApps -> Restaurar mision V13.\nActual: " + current + "\nV13: " + reference);
+        }
+        UnityEngine.Object.DestroyImmediate(v13);
+    }
+
+    // Valores de SpaceMission_Mision_Artemis_V13.json (Drive de Cristina, carpeta MISION CALCULOS Y DETALLES).
+    static DestinationData MissionV13()
+    {
+        DestinationData mission = ScriptableObject.CreateInstance<DestinationData>();
+        mission.name = "MisionArtemis"; // mismo nombre que el asset para poder comparar
 
         mission.destinationName = "Orbita lunar tripulada (Artemis)";
         mission.description = "Lleva a 4 astronautas en Orion a una orbita alrededor de la Luna (NRHO), recolecta datos y regresa. Mision educativa inspirada en Artemis, no es una mision real de la NASA.";
@@ -129,7 +173,6 @@ public static class CatalogImporter
         mission.minSciencePoints = 40f;
         mission.maxDownlinkSeconds = 3600f;
 
-        if (isNew) AssetDatabase.CreateAsset(mission, MissionPath);
-        else EditorUtility.SetDirty(mission);
+        return mission;
     }
 }

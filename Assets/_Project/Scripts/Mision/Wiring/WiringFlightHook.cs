@@ -12,8 +12,8 @@ using UnityEngine;
 //    (after MaintenanceFlightHook registered in Awake) and opens:
 //      - wiring for its own fault, and for the events in settings.wiringEvents (EV-DE-02 "Unstable telemetry signal");
 //      - maintenance (MaintenanceFlightHook.Open) for every other Engineering event; wiring if there is no maintenance.
-// 3. Level: the first wiring board of the flight is levels[0] (the sketch), and each SOLVED board moves to the next one.
-//    An unsolved board is played again next time (and on a recovery retry).
+// 3. Boards: each opening is one round of 3 panels (3, 4 and 5 colors, 40 s in total). The first round of the flight
+//    plays boards 1-3 of WiringSettings.boards, the next one boards 4-6, and so on (wrapping around).
 // On "Continue" it calls FlightPhases.CompleteMinigame(Engineering, RawResult): raw, once, skill applied by the scoring.
 public class WiringFlightHook : MonoBehaviour
 {
@@ -35,7 +35,7 @@ public class WiringFlightHook : MonoBehaviour
     bool faultPending;    // our fault was requested and has not opened yet
     bool faultThisPhase;  // the fault was already requested in this phase
     bool minigameThisPhase;
-    int solvedBoards;
+    int roundsPlayed;
 
     WiringSettings S
     {
@@ -123,8 +123,7 @@ public class WiringFlightHook : MonoBehaviour
         }
 
         open = true;
-        int count = S.levels != null ? S.levels.Count : 0;
-        minigame.SetLevel(WiringMath.LevelIndex(solvedBoards, count));
+        minigame.SetRound(roundsPlayed);
         minigame.SetContext(PhaseName(screen.CurrentPhase));
         minigame.gameObject.SetActive(true); // OnEnable builds the board and shows the intro
     }
@@ -133,7 +132,7 @@ public class WiringFlightHook : MonoBehaviour
     {
         if (!open) return;
         open = false;
-        if (minigame.Solved) solvedBoards++;
+        roundsPlayed++; // the next wiring fault gets new panels
         phases.CompleteMinigame(TrainingFocus.Engineering, raw); // ignored if Engineering is no longer the open minigame
     }
 

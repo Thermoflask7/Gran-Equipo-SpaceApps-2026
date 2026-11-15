@@ -3,43 +3,48 @@ using UnityEngine;
 // Pure formulas of the wiring minigame (task 43). Signed: claude_c. No UI and no GameManager: easy to test.
 public static class WiringMath
 {
-    // Player result 0..1 (RAW: the engineer skill is applied later, once, by the scoring).
-    //   raw = connectedWeight * pairsConnected / pairs  +  (all connected ? (1 - connectedWeight) * speed : 0)
-    //   speed = 1 when solved in fastSeconds or less, 0 at timeLimit (linear in between).
-    // 0 when nothing is connected, never above 1.
-    public static float Raw(int connected, int pairs, bool solved, float seconds, WiringSettings s)
+    // Progress on ONE board, 0..1: share of its pairs that are connected (all connected = fixed = 1)
+    public static float BoardProgress(int connected, int pairs)
+    {
+        return pairs > 0 ? Mathf.Clamp01((float)connected / pairs) : 0f;
+    }
+
+    // Player result 0..1 for a whole round (RAW: the engineer skill is applied later, once, by the scoring).
+    //   raw = progressWeight * average(board progress, boards not reached = 0)
+    //       + (every board fixed ? (1 - progressWeight) * speed : 0)
+    //   speed = 1 when the round is done in fastSeconds or less, 0 at roundSeconds (linear in between).
+    // 0 when nothing was done, never above 1.
+    public static float Raw(float[] progress, bool allSolved, float seconds, WiringSettings s)
     {
         if (s == null) s = WiringSettings.Default;
-        if (pairs <= 0 || connected <= 0) return 0f;
-        float share = Mathf.Clamp01((float)connected / pairs);
-        float raw = s.connectedWeight * share;
-        if (solved && connected >= pairs) raw += (1f - s.connectedWeight) * Speed(seconds, s);
+        if (progress == null || progress.Length == 0) return 0f;
+        float sum = 0f;
+        foreach (float p in progress) sum += Mathf.Clamp01(p);
+        if (sum <= 0f) return 0f;
+        float raw = s.progressWeight * sum / progress.Length;
+        if (allSolved) raw += (1f - s.progressWeight) * Speed(seconds, s);
         return Mathf.Clamp01(raw);
     }
 
     public static float Speed(float seconds, WiringSettings s)
     {
         if (s == null) s = WiringSettings.Default;
-        float span = Mathf.Max(0.01f, s.timeLimit - s.fastSeconds);
-        return Mathf.Clamp01((s.timeLimit - seconds) / span);
+        float span = Mathf.Max(0.01f, s.roundSeconds - s.fastSeconds);
+        return Mathf.Clamp01((s.roundSeconds - seconds) / span);
     }
 
-    // 0 stars if not solved; 1 = solved, 2 = solved in twoStarSeconds, 3 = solved in fastSeconds
-    public static int Stars(bool solved, float seconds, WiringSettings s)
+    // One star per fixed board (0 to 3)
+    public static int Stars(int boardsSolved, int boards)
     {
-        if (s == null) s = WiringSettings.Default;
-        if (!solved) return 0;
-        int stars = 1;
-        if (seconds <= s.twoStarSeconds) stars++;
-        if (seconds <= s.fastSeconds) stars++;
-        return stars;
+        return Mathf.Clamp(boardsSolved, 0, Mathf.Max(0, boards));
     }
 
-    // Level for the n-th wiring fault of the flight (0 = first). The last level repeats.
-    public static int LevelIndex(int solvedBefore, int levelCount)
+    // Board played as number i (0-based) of round number `round` (0 = first wiring fault). Wraps around the list.
+    public static int BoardIndex(int round, int i, int perRound, int boardCount)
     {
-        if (levelCount <= 0) return 0;
-        return Mathf.Clamp(solvedBefore, 0, levelCount - 1);
+        if (boardCount <= 0) return 0;
+        int n = Mathf.Max(0, round) * Mathf.Max(1, perRound) + Mathf.Max(0, i);
+        return n % boardCount;
     }
 
     // ---------- Systems (colors) ----------
@@ -79,7 +84,7 @@ public static class WiringMath
             case 'G': return new Color(0.3f, 0.9f, 0.4f);
             case 'Y': return new Color(1f, 0.85f, 0.2f);
             case 'P': return new Color(0.75f, 0.45f, 1f);
-            case 'R': return new Color(1f, 0.45f, 0.35f);
+            case 'R': return new Color(1f, 0.4f, 0.35f);
             default: return Color.white;
         }
     }

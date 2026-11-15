@@ -5,11 +5,12 @@ using UnityEngine;
 using UnityEngine.UI;
 
 // Wiring minigame "Reconnect the systems" (task 43). Signed: claude_c.
-// Design: Docs/WiringMinigame/WIRING_MINIGAME_DESIGN.md. Among Us wires + Flow Free: drag each cable to the socket
-// of the same color, through the free corridors; cables cannot go through walls or cross each other. 45 s.
+// Design: Docs/WiringMinigame/WIRING_MINIGAME_DESIGN.md. Among Us wires on a grid: connect each color to its twin;
+// cables cannot cross or go through walls (empty squares are fine).
+// One round = 3 small panels in a row (3, 4 and 5 colors) against one shared timer (40 s).
 // Prefab: Prefabs/WiringMinigame.prefab (SpaceApps > Wiring minigame > Create prefab). The whole UI is built in code
 // the first time it is enabled, so the prefab is just this component on a full-screen RectTransform.
-// Flow: intro ("Start") -> board -> end panel ("Continue") -> Completed(RawResult) -> deactivates itself.
+// Flow: intro ("Start") -> panel 1 -> panel 2 -> panel 3 -> end panel ("Continue") -> Completed(RawResult) -> hides itself.
 // RawResult is the player's performance only (WiringMath.Raw). This component never touches GameManager results:
 // WiringFlightHook passes RawResult to FlightPhases.CompleteMinigame(Engineering, raw).
 // Testable on its own: SpaceApps > Wiring minigame > Add to open scene, then Play.
@@ -17,33 +18,37 @@ public class WiringMinigame : MonoBehaviour
 {
     [Tooltip("Empty = WiringSettings.Default")]
     public WiringSettings settings;
-    [Tooltip("Index in settings.levels played when it opens (the flight hook sets it)")]
-    public int levelIndex;
+    [Tooltip("Round played when it opens (0 = first boards; the flight hook sets it)")]
+    public int round;
 
     // Fired once when the player presses "Continue". Argument: RawResult (0..1, without skill).
     public event Action<float> Completed;
 
     public bool Playing { get { return stage == Stage.Playing; } }
     public bool Finished { get; private set; }
-    public bool Solved { get; private set; }
+    public bool Solved { get; private set; }        // every panel of the round fixed
     public float RawResult { get; private set; }
     public int Stars { get; private set; }
     public float Seconds { get; private set; }
-    public int ConnectedPairs { get; private set; }
-    public int Pairs { get { return board != null ? board.PairCount : 0; } }
+    public int BoardsSolved { get; private set; }
+    public int BoardsInRound { get { return progress != null ? progress.Length : 0; } }
+    public int CurrentBoard { get { return boardNumber; } }
     public int BoardWidth { get { return board != null ? board.Width : 1; } }
     public int BoardHeight { get { return board != null ? board.Height : 1; } }
     public WiringBoard Board { get { return board; } }
 
     WiringSettings S { get { return settings != null ? settings : WiringSettings.Default; } }
 
-    enum Stage { Intro, Playing, Ending, End }
+    enum Stage { Intro, Playing, Between, Ending, End }
     Stage stage = Stage.Intro;
 
     WiringBoard board;
+    List<WiringSettings.Level> roundBoards = new List<WiringSettings.Level>();
+    float[] progress;
+    int boardNumber;
     string context = "";
     float elapsed;
-    float endDelay;
+    float delay;
     bool reported;
 
     // UI
@@ -52,6 +57,8 @@ public class WiringMinigame : MonoBehaviour
     RectTransform boardRect;
     TMP_Text subtitle;
     TMP_Text timerText;
+    TMP_Text emptyText;
+    TMP_Text banner;
     Image timerFill;
     RectTransform systemsList;
     GameObject introPanel;
@@ -89,9 +96,9 @@ public class WiringMinigame : MonoBehaviour
 
     // ---------- Public API ----------
 
-    public void SetLevel(int index)
+    public void SetRound(int value)
     {
-        levelIndex = index;
+        round = Mathf.Max(0, value);
     }
 
     // Short text under the title, for example the flight phase ("Return")
@@ -164,15 +171,11 @@ public class WiringMinigame : MonoBehaviour
 
     void Prepare()
     {
-        List<WiringSettings.Level> levels = S.levels != null && S.levels.Count > 0 ? S.levels : WiringSettings.DefaultLevels();
-        int i = Mathf.Clamp(levelIndex, 0, levels.Count - 1);
-        string error;
-        board = WiringBoard.Parse(levels[i].grid, out error);
-        if (board == null)
-        {
-            Debug.LogError("WiringMinigame: level '" + levels[i].levelName + "' is not valid (" + error + "). Using the default level.");
-            board = WiringBoard.Parse(WiringSettings.DefaultLevels()[0].grid, out error);
-        }
+        List<WiringSettings.Level> all = S.boards != null && S.boards.Count > 0 ? S.boards : WiringSettings.DefaultBoards();
+        int perRound = Mathf.Max(1, S.boardsPerRound);
+        roundBoards.Clear();
+        for (int i = 0; i < perRound; i++) roundBoards.Add(all[WiringMath.BoardIndex(round, i, perRound, all.Count)]);
+        progress = new float[perRound];
 
         stage = Stage.Intro;
         Finished = false;
@@ -180,12 +183,35 @@ public class WiringMinigame : MonoBehaviour
         RawResult = 0f;
         Stars = 0;
         Seconds = 0f;
-        ConnectedPairs = 0;
+        BoardsSolved = 0;
         elapsed = 0f;
         reported = false;
+
+        LoadBoard(0);
+
+        introBody.text = "Some cables on Orion came loose! Fix <b>" + perRound + " panels</b> in <b>" + Mathf.RoundToInt(S.roundSeconds)
+            + " seconds</b>.\n\n<b>Connect each color to its twin. Cables can't cross!</b>\n\n"
+            + "<size=80%><color=#A6B8D1>Each panel adds one more system.</color></size>";
+        introPanel.SetActive(true);
+        endPanel.SetActive(false);
+        UpdateTimer();
+    }
+
+    void LoadBoard(int number)
+    {
+        boardNumber = number;
+        WiringSettings.Level level = roundBoards[number];
+        string error;
+        board = WiringBoard.Parse(level.grid, out error);
+        if (board == null)
+        {
+            Debug.LogError("WiringMinigame: board '" + level.levelName + "' is not valid (" + error + "). Using a default board.");
+            board = WiringBoard.Parse(WiringSettings.DefaultBoards()[0].grid, out error);
+        }
         flashTimer = 0f;
         pulse.Clear();
         wasConnected.Clear();
+        banner.gameObject.SetActive(false);
 
         BuildBoard();
         BuildSystems();
@@ -195,16 +221,8 @@ public class WiringMinigame : MonoBehaviour
         GameManager gm = GameManager.Instance;
         if (gm != null && gm.engineer != null && !string.IsNullOrEmpty(gm.engineer.astronautName))
             engineer = "Engineer: " + gm.engineer.astronautName;
-        subtitle.text = (context != "" ? context + "  ·  " : "") + levels[i].levelName + (engineer != "" ? "  ·  " + engineer : "");
-
-        List<string> names = new List<string>();
-        foreach (char c in board.Colors) names.Add(WiringMath.SystemName(c));
-        introBody.text = "Some cables on Orion came loose! Reconnect " + string.Join(", ", names.ToArray()) + ".\n\n"
-            + "<b>" + S.instruction + "</b>\n\n<size=80%><color=#A6B8D1>Red blocks are hot pipes and moving parts. "
-            + "You have " + Mathf.RoundToInt(S.timeLimit) + " seconds.</color></size>";
-        introPanel.SetActive(true);
-        endPanel.SetActive(false);
-        UpdateTimer();
+        subtitle.text = (context != "" ? context + "  ·  " : "") + "Panel " + (number + 1) + " of " + roundBoards.Count + ": " + level.levelName
+            + (engineer != "" ? "  ·  " + engineer : "");
     }
 
     void Update()
@@ -216,12 +234,21 @@ public class WiringMinigame : MonoBehaviour
         {
             elapsed += dt;
             UpdateTimer();
-            if (elapsed >= S.timeLimit) Finish();
+            if (elapsed >= S.roundSeconds) Finish();
+        }
+        else if (stage == Stage.Between)
+        {
+            delay -= dt; // the timer waits while the "panel fixed" banner shows
+            if (delay <= 0f)
+            {
+                LoadBoard(boardNumber + 1);
+                stage = Stage.Playing;
+            }
         }
         else if (stage == Stage.Ending)
         {
-            endDelay -= dt;
-            if (endDelay <= 0f) ShowEnd();
+            delay -= dt;
+            if (delay <= 0f) ShowEnd();
         }
 
         // Blocked cell flash
@@ -262,42 +289,61 @@ public class WiringMinigame : MonoBehaviour
             }
             else if (!now) wasConnected.Remove(c);
         }
-        if (board.Solved) Finish();
+        if (board.Solved) BoardDone();
+    }
+
+    void BoardDone()
+    {
+        if (stage != Stage.Playing) return;
+        board.End();
+        progress[boardNumber] = 1f;
+        BoardsSolved++;
+        Play(S.solvedClip);
+        if (boardNumber >= roundBoards.Count - 1)
+        {
+            Finish();
+            return;
+        }
+        stage = Stage.Between;
+        delay = 0.9f;
+        banner.text = "PANEL " + (boardNumber + 1) + " FIXED!";
+        banner.gameObject.SetActive(true);
     }
 
     void Finish()
     {
         if (stage != Stage.Playing) return;
         board.End();
-        Seconds = Mathf.Min(elapsed, S.timeLimit);
-        Solved = board.Solved;
-        ConnectedPairs = board.ConnectedCount;
-        RawResult = WiringMath.Raw(ConnectedPairs, board.PairCount, Solved, Seconds, S);
-        Stars = WiringMath.Stars(Solved, Seconds, S);
+        if (!board.Solved)
+            progress[boardNumber] = WiringMath.BoardProgress(board.ConnectedCount, board.PairCount);
+        Seconds = Mathf.Min(elapsed, S.roundSeconds);
+        Solved = BoardsSolved >= roundBoards.Count;
+        RawResult = WiringMath.Raw(progress, Solved, Seconds, S);
+        Stars = WiringMath.Stars(BoardsSolved, roundBoards.Count);
         Finished = true;
         stage = Stage.Ending;
-        endDelay = Solved ? 0.8f : 0.3f; // a moment to see the last cable glow
-        if (Solved) Play(S.solvedClip);
+        delay = Solved ? 0.8f : 0.3f; // a moment to see the last cable glow
         Redraw();
     }
 
     void ShowEnd()
     {
         stage = Stage.End;
+        banner.gameObject.SetActive(false);
         endPanel.SetActive(true);
         if (Solved)
         {
             endTitle.text = "ALL SYSTEMS ONLINE!";
             endTitle.color = new Color(0.4f, 1f, 0.5f);
-            endBody.text = "You reconnected every system in " + Mathf.CeilToInt(Seconds) + " seconds.";
+            endBody.text = "You fixed all " + roundBoards.Count + " panels in " + Mathf.CeilToInt(Seconds) + " seconds.";
         }
         else
         {
             endTitle.text = "TIME'S UP!";
             endTitle.color = Accent;
-            endBody.text = ConnectedPairs > 0
-                ? "Mission Control rerouted the rest. " + ConnectedPairs + " of " + board.PairCount + " systems reconnected by the crew."
-                : "Mission Control rerouted the cables from Earth. Next time, start with the shortest cable!";
+            endBody.text = BoardsSolved > 0
+                ? "You fixed " + BoardsSolved + " of " + roundBoards.Count + " panels. Mission Control rerouted the rest from Earth."
+                : "Mission Control rerouted the cables from Earth. Tip: start with the cables that hug the edges!";
         }
         endBody.text += "\n\n<color=#A6B8D1><b>Did you know?</b> " + S.lesson + "</color>";
         for (int i = 0; i < starImages.Length; i++)
@@ -307,8 +353,8 @@ public class WiringMinigame : MonoBehaviour
     void UpdateTimer()
     {
         if (timerFill == null) return;
-        float left = Mathf.Max(0f, S.timeLimit - elapsed);
-        float share = S.timeLimit > 0f ? left / S.timeLimit : 0f;
+        float left = Mathf.Max(0f, S.roundSeconds - elapsed);
+        float share = S.roundSeconds > 0f ? left / S.roundSeconds : 0f;
         timerFill.rectTransform.anchorMax = new Vector2(share, 1f);
         timerFill.color = share > 0.5f ? new Color(0.3f, 0.85f, 0.4f) : share > 0.22f ? new Color(1f, 0.7f, 0.2f) : new Color(1f, 0.3f, 0.25f);
         timerText.text = Mathf.CeilToInt(left) + " s";
@@ -364,6 +410,10 @@ public class WiringMinigame : MonoBehaviour
                     + "</color>\n<size=75%>" + (connected ? "<color=#5CFF7A>ONLINE</color>" : "<color=#FF7A6B>OFFLINE</color>") + "</size>";
             }
         }
+
+        emptyText.text = board.Solved
+            ? "<color=#5CFF7A>All systems connected!</color>"
+            : "Systems online: " + board.ConnectedCount + " / " + board.PairCount;
     }
 
     void PaintCell(Vector2Int c, bool flashing)
@@ -379,7 +429,7 @@ public class WiringMinigame : MonoBehaviour
         socketA.Clear();
         socketB.Clear();
 
-        const float maxSize = 660f;
+        const float maxSize = 600f;
         cellSize = Mathf.Floor(maxSize / Mathf.Max(board.Width, board.Height));
         boardRect.sizeDelta = new Vector2(cellSize * board.Width, cellSize * board.Height);
 
@@ -430,10 +480,10 @@ public class WiringMinigame : MonoBehaviour
     {
         Image ring = MakeImage("Socket " + color, parent, Color.Lerp(WiringMath.SystemColor(color), Color.white, 0.55f), CircleSprite());
         RectTransform rt = ring.rectTransform;
-        PlaceCell(rt, (cell.x + 0.5f) * cellSize, (cell.y + 0.5f) * cellSize, cellSize * 0.86f, cellSize * 0.86f);
+        PlaceCell(rt, (cell.x + 0.5f) * cellSize, (cell.y + 0.5f) * cellSize, cellSize * 0.8f, cellSize * 0.8f);
         Image core = MakeImage("Core", rt, WiringMath.SystemColor(color), CircleSprite());
         Stretch(core.rectTransform, 5f);
-        TMP_Text label = MakeText("Label", core.rectTransform, WiringMath.SocketLabel(color), cellSize * 0.2f, new Color(0.05f, 0.07f, 0.12f), TextAlignmentOptions.Center);
+        TMP_Text label = MakeText("Label", core.rectTransform, WiringMath.SocketLabel(color), cellSize * 0.18f, new Color(0.05f, 0.07f, 0.12f), TextAlignmentOptions.Center);
         label.fontStyle = FontStyles.Bold;
         Stretch(label.rectTransform, 0f);
         return rt;
@@ -452,7 +502,7 @@ public class WiringMinigame : MonoBehaviour
             row.anchorMax = new Vector2(1f, 1f);
             row.pivot = new Vector2(0.5f, 1f);
             row.anchoredPosition = new Vector2(0f, -y);
-            row.sizeDelta = new Vector2(0f, 78f);
+            row.sizeDelta = new Vector2(0f, 74f);
 
             Image lamp = MakeImage("Lamp", row, Color.red, CircleSprite());
             lamp.rectTransform.anchorMin = lamp.rectTransform.anchorMax = new Vector2(0f, 0.5f);
@@ -460,11 +510,11 @@ public class WiringMinigame : MonoBehaviour
             lamp.rectTransform.sizeDelta = new Vector2(30f, 30f);
             lamps[c] = lamp;
 
-            TMP_Text t = MakeText("Name", row, "", 28f, TextColor, TextAlignmentOptions.MidlineLeft);
+            TMP_Text t = MakeText("Name", row, "", 27f, TextColor, TextAlignmentOptions.MidlineLeft);
             Stretch(t.rectTransform, 0f);
             t.rectTransform.offsetMin = new Vector2(52f, 0f);
             lampTexts[c] = t;
-            y += 86f;
+            y += 80f;
         }
     }
 
@@ -516,7 +566,7 @@ public class WiringMinigame : MonoBehaviour
         title.fontStyle = FontStyles.Bold;
         TopStrip(title.rectTransform, 24f, 64f, 40f, 700f);
         subtitle = MakeText("Subtitle", window, "", 26f, DimText, TextAlignmentOptions.TopLeft);
-        TopStrip(subtitle.rectTransform, 88f, 36f, 40f, 900f);
+        TopStrip(subtitle.rectTransform, 88f, 36f, 40f, 1000f);
 
         // Timer (top right)
         Image timerBack = MakeImage("Timer", window, new Color(0.15f, 0.18f, 0.25f), null);
@@ -536,16 +586,27 @@ public class WiringMinigame : MonoBehaviour
         tt.anchoredPosition = new Vector2(-440f, -36f);
         tt.sizeDelta = new Vector2(140f, 40f);
 
-        TMP_Text instruction = MakeText("Instruction", window, S.instruction, 32f, TextColor, TextAlignmentOptions.Center);
+        TMP_Text instruction = MakeText("Instruction", window, S.howToPlay, 34f, TextColor, TextAlignmentOptions.Center);
+        instruction.fontStyle = FontStyles.Bold;
         Center(instruction.rectTransform, 0f, 340f, 1400f, 50f);
 
         // Board (center)
         Image boardBack = MakeImage("Board", window, new Color(0.03f, 0.05f, 0.1f), null);
         boardRect = boardBack.rectTransform;
-        Center(boardRect, 0f, -60f, 660f, 660f);
+        Center(boardRect, 0f, -20f, 600f, 600f);
         boardBack.raycastTarget = true;
         WiringBoardInput input = boardBack.gameObject.AddComponent<WiringBoardInput>();
         input.owner = this;
+
+        emptyText = MakeText("Empty", window, "", 28f, DimText, TextAlignmentOptions.Center);
+        Center(emptyText.rectTransform, 0f, -370f, 900f, 44f);
+
+        banner = MakeText("Banner", window, "", 72f, new Color(0.4f, 1f, 0.5f), TextAlignmentOptions.Center);
+        banner.fontStyle = FontStyles.Bold;
+        banner.outlineWidth = 0.25f;
+        banner.outlineColor = new Color32(0, 0, 0, 255);
+        Center(banner.rectTransform, 0f, -20f, 1000f, 120f);
+        banner.gameObject.SetActive(false);
 
         // Systems (left)
         TMP_Text systemsTitle = MakeText("SystemsTitle", window, "SYSTEMS", 30f, Accent, TextAlignmentOptions.TopLeft);
@@ -556,9 +617,9 @@ public class WiringMinigame : MonoBehaviour
 
         // Tips (right)
         TMP_Text tips = MakeText("Tips", window,
-            "<b><color=#FF9E33>TIPS</color></b>\n\n• Press a socket and drag.\n\n• Drag back to undo.\n\n• Click a socket to start that cable again.\n\n• Right-click a cable to erase it.",
-            26f, DimText, TextAlignmentOptions.TopLeft);
-        Center(tips.rectTransform, 590f, -10f, 300f, 560f);
+            "<b><color=#FF9E33>TIPS</color></b>\n\n• Press a socket and drag to its twin.\n\n• A cable in the way? Go around it.\n\n• Drag back to undo.\n\n• Click a socket to start again. Right-click erases.",
+            25f, DimText, TextAlignmentOptions.TopLeft);
+        Center(tips.rectTransform, 590f, -10f, 300f, 600f);
 
         // Intro panel
         introPanel = Overlay("Intro");

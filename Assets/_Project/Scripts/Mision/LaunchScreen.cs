@@ -188,9 +188,25 @@ public class LaunchScreen : MonoBehaviour
         if (Finished) return;
         Finished = true;
         PhaseProgress = 1f;
-        Log("Splashdown confirmed. Crew safe.");
-        if (finishPanel != null) finishPanel.SetActive(true);
+        MissionResults flight = GameManager.Instance.flight;
+        bool failed = flight != null && flight.HasFailed; // task 31: aborted or failed mission
+        if (!failed) Log("Splashdown confirmed. Crew safe.");
+        if (finishPanel != null)
+        {
+            finishPanel.SetActive(true);
+            if (failed) SetFinishTexts(flight.aborted ? "Mission aborted" : "Mission failed", flight.failureReason);
+        }
         if (MissionFinished != null) MissionFinished();
+    }
+
+    // End panel texts are children named "Titulo" and "Texto" (LaunchSceneBuilder); missing ones are ignored
+    void SetFinishTexts(string titleText, string bodyText)
+    {
+        foreach (TMP_Text t in finishPanel.GetComponentsInChildren<TMP_Text>(true))
+        {
+            if (t.gameObject.name == "Titulo") t.text = titleText;
+            else if (t.gameObject.name == "Texto") t.text = bodyText;
+        }
     }
 
     // "See results" button

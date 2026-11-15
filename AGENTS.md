@@ -67,4 +67,4 @@ Assets/ThirdParty/  downloaded assets (Kenney, Quaternius, NASA models)
 | P5 · Mechatronics | Scripts/Fisica, Data (real values), balancing |
 
 ## Out of scope (do not implement)
-Multiplayer, leaderboard, creative mode / importing spacecraft, real rival AI. Tech tree only if there is time left (as an app on the computer).
+Online/real-time multiplayer, creative mode / importing spacecraft, real rival AI. Tech tree only if there is time left (as an app on the computer). The local leaderboard for 1 to 4 players is in scope (task 37).

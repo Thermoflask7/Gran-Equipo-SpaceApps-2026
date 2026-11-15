@@ -42,12 +42,14 @@ public class MaintenanceFlightHook : MonoBehaviour
         minigame.gameObject.SetActive(true); // shows the intro; the player presses "Start"
     }
 
-    // The argument is FinalResult (with skill): ignored on purpose, RawResult is what the scoring expects
+    // The argument is FinalResult (with skill): ignored on purpose, RawResult is what the scoring expects.
+    // Task 31: CompleteMinigame stores the raw result once and applies the failure rules (resolve, retry or abort).
+    // A retry opens this minigame again on the next frame through Open().
     void OnCompleted(float finalResultIgnored)
     {
         if (!open) return;
         open = false;
-        FlightPhases.SetResult(GameManager.Instance.flight, TrainingFocus.Engineering, minigame.RawResult);
-        phases.MinigameDone();
+        // Returns false (and does nothing) if maintenance is no longer the open minigame: a late or duplicate callback
+        phases.CompleteMinigame(TrainingFocus.Engineering, minigame.RawResult);
     }
 }

@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf369ae48f447494f9170412c34c86b5, type: 3}
+  m_Name: EV-LU-04
+  m_EditorClassIdentifier: Assembly-CSharp::EventData
+  eventName: Calibration review
+  description: The instruments request a second check to maintain measurement consistency.
+  probability: 0.16
+  isGood: 0
+  moneyChange: 0
+  scoreChange: -1
+  phase: 2
+  weatherSensitive: 0
+  minigameRole: 3
+  lesson: Calibration helps prevent the interpretation of unreliable measurements.

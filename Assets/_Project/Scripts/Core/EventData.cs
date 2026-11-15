@@ -9,7 +9,7 @@ public class EventData : ScriptableObject
     [TextArea] public string description;
     [Range(0f, 1f)] public float probability = 0.3f; // base probability
     public bool isGood;
-    public float moneyChange; // millions of USD, can be negative
+    public float moneyChange; // fictional game credits, can be negative
     public int scoreChange;
 
     [Header("When and how it happens")]

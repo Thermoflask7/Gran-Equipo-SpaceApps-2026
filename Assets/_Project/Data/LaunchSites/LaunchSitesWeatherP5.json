@@ -1,0 +1,181 @@
+{
+  "schemaVersion": "1.0",
+  "datasetType": "launch_sites_and_synthetic_weather",
+  "sourceRepoCommit": "e290427ba958770bfacb43f2f49d1e005f89866c",
+  "sourceClass": "MIXED_REAL_LOCATION_AND_FICTIONAL_WEATHER",
+  "notes": "Only one real SLS launch site is selectable. The current physics model does not verify launch-site certification or real forecasts. The UI can read illustrative wind metadata from this JSON; the existing ScriptableObject only stores the 14 daily risk values.",
+  "sites": [
+    {
+      "id": "SITE-KSC-LC39B",
+      "siteName": "Kennedy Space Center - LC-39B",
+      "description": "Real launch pad used for Artemis SLS missions. The 14 days of weather risk and wind data are fictional game scenarios, NOT forecasts or launch authorization.",
+      "latitude": 28.627306,
+      "longitude": -80.620869,
+      "isSelectable": true,
+      "supportsSLS": true,
+      "weatherRiskByDay": [
+        0.12,
+        0.28,
+        0.53,
+        0.74,
+        0.18,
+        0.43,
+        0.86,
+        0.31,
+        0.09,
+        0.62,
+        0.39,
+        0.21,
+        0.79,
+        0.16
+      ],
+      "dailyWeather": [
+        {
+          "dayIndex": 0,
+          "label": "Day 1",
+          "windKnots": 9,
+          "precipitationChancePercent": 8,
+          "cloudCoverPercent": 18,
+          "weatherRisk": 0.12,
+          "classification": "SYNTHETIC_EDUCATIONAL_SCENARIO"
+        },
+        {
+          "dayIndex": 1,
+          "label": "Day 2",
+          "windKnots": 13,
+          "precipitationChancePercent": 19,
+          "cloudCoverPercent": 35,
+          "weatherRisk": 0.28,
+          "classification": "SYNTHETIC_EDUCATIONAL_SCENARIO"
+        },
+        {
+          "dayIndex": 2,
+          "label": "Day 3",
+          "windKnots": 19,
+          "precipitationChancePercent": 42,
+          "cloudCoverPercent": 67,
+          "weatherRisk": 0.53,
+          "classification": "SYNTHETIC_EDUCATIONAL_SCENARIO"
+        },
+        {
+          "dayIndex": 3,
+          "label": "Day 4",
+          "windKnots": 24,
+          "precipitationChancePercent": 64,
+          "cloudCoverPercent": 85,
+          "weatherRisk": 0.74,
+          "classification": "SYNTHETIC_EDUCATIONAL_SCENARIO"
+        },
+        {
+          "dayIndex": 4,
+          "label": "Day 5",
+          "windKnots": 11,
+          "precipitationChancePercent": 12,
+          "cloudCoverPercent": 26,
+          "weatherRisk": 0.18,
+          "classification": "SYNTHETIC_EDUCATIONAL_SCENARIO"
+        },
+        {
+          "dayIndex": 5,
+          "label": "Day 6",
+          "windKnots": 17,
+          "precipitationChancePercent": 36,
+          "cloudCoverPercent": 49,
+          "weatherRisk": 0.43,
+          "classification": "SYNTHETIC_EDUCATIONAL_SCENARIO"
+        },
+        {
+          "dayIndex": 6,
+          "label": "Day 7",
+          "windKnots": 28,
+          "precipitationChancePercent": 76,
+          "cloudCoverPercent": 92,
+          "weatherRisk": 0.86,
+          "classification": "SYNTHETIC_EDUCATIONAL_SCENARIO"
+        },
+        {
+          "dayIndex": 7,
+          "label": "Day 8",
+          "windKnots": 14,
+          "precipitationChancePercent": 24,
+          "cloudCoverPercent": 40,
+          "weatherRisk": 0.31,
+          "classification": "SYNTHETIC_EDUCATIONAL_SCENARIO"
+        },
+        {
+          "dayIndex": 8,
+          "label": "Day 9",
+          "windKnots": 8,
+          "precipitationChancePercent": 5,
+          "cloudCoverPercent": 12,
+          "weatherRisk": 0.09,
+          "classification": "SYNTHETIC_EDUCATIONAL_SCENARIO"
+        },
+        {
+          "dayIndex": 9,
+          "label": "Day 10",
+          "windKnots": 22,
+          "precipitationChancePercent": 55,
+          "cloudCoverPercent": 71,
+          "weatherRisk": 0.62,
+          "classification": "SYNTHETIC_EDUCATIONAL_SCENARIO"
+        },
+        {
+          "dayIndex": 10,
+          "label": "Day 11",
+          "windKnots": 16,
+          "precipitationChancePercent": 32,
+          "cloudCoverPercent": 53,
+          "weatherRisk": 0.39,
+          "classification": "SYNTHETIC_EDUCATIONAL_SCENARIO"
+        },
+        {
+          "dayIndex": 11,
+          "label": "Day 12",
+          "windKnots": 10,
+          "precipitationChancePercent": 14,
+          "cloudCoverPercent": 22,
+          "weatherRisk": 0.21,
+          "classification": "SYNTHETIC_EDUCATIONAL_SCENARIO"
+        },
+        {
+          "dayIndex": 12,
+          "label": "Day 13",
+          "windKnots": 26,
+          "precipitationChancePercent": 69,
+          "cloudCoverPercent": 89,
+          "weatherRisk": 0.79,
+          "classification": "SYNTHETIC_EDUCATIONAL_SCENARIO"
+        },
+        {
+          "dayIndex": 13,
+          "label": "Day 14",
+          "windKnots": 12,
+          "precipitationChancePercent": 10,
+          "cloudCoverPercent": 29,
+          "weatherRisk": 0.16,
+          "classification": "SYNTHETIC_EDUCATIONAL_SCENARIO"
+        }
+      ],
+      "coordinatesProvenance": "NASA Apollo/Saturn V AS-505 Postflight Trajectory report; approximate historical LC-39B coordinates.",
+      "locationClass": "REAL_FACILITY",
+      "weatherClass": "SYNTHETIC_EDUCATIONAL_SCENARIO"
+    }
+  ],
+  "referenceOnlyLocations": [
+    {
+      "name": "Kennedy Space Center - LC-39A",
+      "category": "REAL_NON_SLS_REFERENCE",
+      "isSelectable": false,
+      "supportsSLS": false,
+      "note": "Real launch pad, but not the site adopted for the SLS Artemis game model. Informational comparison only; not imported as a playable site."
+    },
+    {
+      "name": "Vandenberg Space Force Base",
+      "category": "REAL_NON_SLS_REFERENCE",
+      "isSelectable": false,
+      "supportsSLS": false,
+      "note": "Real launch center, but NOT compatible with the SLS configuration in this game without major architectural changes. Informational comparison only; not imported."
+    }
+  ]
+}

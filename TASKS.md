@@ -28,7 +28,7 @@ Valid statuses: `pending`, `in progress`, `in PR`, `done`.
 | 15 | Random events (planning and flight) | P4 | Elena | Claude | `ia/claude/eventos` | done |
 | 16 | `03_Resultados`: final score and educational explanation | P1 | Elena | Claude | `ia/claude/puntuacion-artemis` (Cristina's V16 scoring, adjusted to Artemis) | done |
 | 17 | Physics: Δv, mass and power | P5 | Elena, Cristina | Claude | `ia/claude/catalogo` (fix + Cristina's catalog) | done |
-| 18 | Data: parts, astronauts, events, sites and weather, lunar mission | P5 | Cristina | none | — (Cristina's Drive) | in progress |
+| 18 | Data: parts, astronauts, events, sites and weather, lunar mission | P5 | Cristina | claude_c | `ia/claude_c/task18-data` | in progress |
 | 19 | WebGL build | P1 | unassigned | none | — | pending |
 | 20 | Pitch for the judges | P1–P5 | unassigned | none | — | pending |
 | 21 | (Optional) Tech tree as a computer app | P2 | unassigned | none | — | pending |

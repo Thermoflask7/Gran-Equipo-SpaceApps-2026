@@ -1,0 +1,121 @@
+{
+  "schemaVersion": "1.0",
+  "datasetType": "astronaut_candidates",
+  "sourceClass": "FICTIONAL_GAME_DESIGN",
+  "target": "AstronautData",
+  "gameCrewRequirement": 4,
+  "rolesCurrentlyImplemented": 3,
+  "sourceRepoCommit": "e290427ba958770bfacb43f2f49d1e005f89866c",
+  "astronauts": [
+    {
+      "id": "AST-P01",
+      "astronautName": "Lucía Aranda",
+      "bio": "Orbital maneuvering specialist who prioritizes flight procedures and independent cross-checks.",
+      "research": 3,
+      "piloting": 9,
+      "engineering": 4,
+      "primaryRole": "Piloting",
+      "sourceClass": "FICTIONAL_GAME_DESIGN",
+      "note": "Fictional candidate and skill scores; do not portray this character as a real NASA astronaut."
+    },
+    {
+      "id": "AST-P02",
+      "astronautName": "Daniel Ibarra",
+      "bio": "Test pilot with fictional navigation experience who performs well under pressure.",
+      "research": 4,
+      "piloting": 8,
+      "engineering": 6,
+      "primaryRole": "Piloting",
+      "sourceClass": "FICTIONAL_GAME_DESIGN",
+      "note": "Fictional candidate and skill scores; do not portray this character as a real NASA astronaut."
+    },
+    {
+      "id": "AST-P03",
+      "astronautName": "Maya Torres",
+      "bio": "Methodical navigator with strong problem-solving and trajectory-analysis skills.",
+      "research": 5,
+      "piloting": 7,
+      "engineering": 7,
+      "primaryRole": "Piloting",
+      "sourceClass": "FICTIONAL_GAME_DESIGN",
+      "note": "Fictional candidate and skill scores; do not portray this character as a real NASA astronaut."
+    },
+    {
+      "id": "AST-E01",
+      "astronautName": "Sofía Navarro",
+      "bio": "Systems engineer who identifies unexpected power loads and improves maintenance procedures.",
+      "research": 4,
+      "piloting": 5,
+      "engineering": 9,
+      "primaryRole": "Engineering",
+      "sourceClass": "FICTIONAL_GAME_DESIGN",
+      "note": "Fictional candidate and skill scores; do not portray this character as a real NASA astronaut."
+    },
+    {
+      "id": "AST-E02",
+      "astronautName": "Emilio Cruz",
+      "bio": "Electrical diagnostics specialist focused on mission-system support.",
+      "research": 5,
+      "piloting": 6,
+      "engineering": 8,
+      "primaryRole": "Engineering",
+      "sourceClass": "FICTIONAL_GAME_DESIGN",
+      "note": "Fictional candidate and skill scores; do not portray this character as a real NASA astronaut."
+    },
+    {
+      "id": "AST-E03",
+      "astronautName": "Renata León",
+      "bio": "Versatile instrumentation and operations engineer.",
+      "research": 6,
+      "piloting": 5,
+      "engineering": 7,
+      "primaryRole": "Engineering",
+      "sourceClass": "FICTIONAL_GAME_DESIGN",
+      "note": "Fictional candidate and skill scores; do not portray this character as a real NASA astronaut."
+    },
+    {
+      "id": "AST-R01",
+      "astronautName": "Aina Mendoza",
+      "bio": "Lunar-observation researcher who carefully documents measurements.",
+      "research": 9,
+      "piloting": 4,
+      "engineering": 5,
+      "primaryRole": "Research",
+      "sourceClass": "FICTIONAL_GAME_DESIGN",
+      "note": "Fictional candidate and skill scores; do not portray this character as a real NASA astronaut."
+    },
+    {
+      "id": "AST-R02",
+      "astronautName": "Noah Salcedo",
+      "bio": "Data analyst and researcher focused on radiation observations.",
+      "research": 8,
+      "piloting": 5,
+      "engineering": 6,
+      "primaryRole": "Research",
+      "sourceClass": "FICTIONAL_GAME_DESIGN",
+      "note": "Fictional candidate and skill scores; do not portray this character as a real NASA astronaut."
+    },
+    {
+      "id": "AST-R03",
+      "astronautName": "Valeria Campos",
+      "bio": "Scientist specializing in experiment selection and communication of results.",
+      "research": 7,
+      "piloting": 6,
+      "engineering": 5,
+      "primaryRole": "Research",
+      "sourceClass": "FICTIONAL_GAME_DESIGN",
+      "note": "Fictional candidate and skill scores; do not portray this character as a real NASA astronaut."
+    },
+    {
+      "id": "AST-M01",
+      "astronautName": "Alex Ríos",
+      "bio": "Mission specialist with balanced skills who can support any team.",
+      "research": 7,
+      "piloting": 7,
+      "engineering": 7,
+      "primaryRole": "Mixed",
+      "sourceClass": "FICTIONAL_GAME_DESIGN",
+      "note": "Fictional candidate and skill scores; do not portray this character as a real NASA astronaut."
+    }
+  ]
+}

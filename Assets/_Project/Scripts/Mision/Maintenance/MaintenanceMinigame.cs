@@ -151,6 +151,7 @@ public class MaintenanceMinigame : MonoBehaviour
         if (!Playing || index < 0 || index >= health.Length) return;
         if (HasPanel(index)) return; // that system is repaired with its panel
         health[index] = Mathf.Min(1f, health[index] + Settings.repairAmount);
+        Sfx.Play(Sfx.MaintenanceClick);
         Refresh();
     }
 

@@ -113,6 +113,7 @@ public class LaunchScreen : MonoBehaviour
 
     void Start()
     {
+        Sfx.Play(Sfx.Launch);
         // Weather of the chosen launch day (sky, light, fog); added here so the scene builder does not need it.
         if (GetComponent<LaunchWeatherVisuals>() == null) gameObject.AddComponent<LaunchWeatherVisuals>();
         if (viewCamera != null)

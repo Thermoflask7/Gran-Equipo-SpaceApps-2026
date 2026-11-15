@@ -68,6 +68,7 @@ public class FusePanel : MonoBehaviour
     {
         if (!Running || index < 0 || index >= burned.Length || !burned[index]) return;
         burned[index] = false;
+        Sfx.Play(Sfx.MaintenanceClick);
         Refresh();
     }
 

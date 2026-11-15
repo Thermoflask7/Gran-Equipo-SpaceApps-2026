@@ -38,6 +38,13 @@ public class PropulsionPanel : MonoBehaviour
         }
     }
 
+    bool soundWired;
+
+    void PlaySwitchSound(bool isOn)
+    {
+        if (Running) Sfx.Play(Sfx.MaintenanceSwitch);
+    }
+
     public void Begin(MaintenanceSettings s)
     {
         settings = s;
@@ -45,9 +52,11 @@ public class PropulsionPanel : MonoBehaviour
         Running = true;
         foreach (Toggle t in toggles)
         {
-            t.isOn = false;
+            t.SetIsOnWithoutNotify(false);
             t.interactable = true;
+            if (!soundWired) t.onValueChanged.AddListener(PlaySwitchSound);
         }
+        soundWired = true;
         ChangeLeds();
     }
 

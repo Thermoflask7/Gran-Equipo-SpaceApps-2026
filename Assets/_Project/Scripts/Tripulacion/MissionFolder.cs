@@ -81,11 +81,13 @@ public class MissionFolder : MonoBehaviour
 
     public void NextPage()
     {
+        if (currentPage < pages.Count - 1) Sfx.Play(Sfx.FolderPage);
         ShowPage(currentPage + 1);
     }
 
     public void PreviousPage()
     {
+        if (currentPage > 0) Sfx.Play(Sfx.FolderPage);
         ShowPage(currentPage - 1);
     }
 

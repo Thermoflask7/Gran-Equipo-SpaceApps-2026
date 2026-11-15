@@ -43,6 +43,8 @@ public class PlanningStation : MonoBehaviour
     [Tooltip("1 = the map and calendar fill the view. Higher leaves a margin.")]
     [SerializeField, Range(0.7f, 1.8f)] float zoomFill = 1.15f;
     [SerializeField] float maxClickDistance = 50f;
+    [Tooltip("Log what the mouse ray hits when clicking (to debug clicks).")]
+    [SerializeField] bool debugClicks = true;
 
     public bool IsOpen { get; private set; }
     public Transform ZoomTarget => zoomTarget;
@@ -99,12 +101,27 @@ public class PlanningStation : MonoBehaviour
         var dc = DeskCamera.Instance;
         // Same gate as PcStation: only one station can zoom at a time.
         if (dc == null || dc.IsFocused || dc.IsMoving) return;
-        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
+        bool overUi = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
 
         var cam = dc.GetComponent<Camera>();
         Ray ray = cam.ScreenPointToRay(mouse.position.ReadValue());
-        if (!Physics.Raycast(ray, out RaycastHit hit, maxClickDistance)) return;
-        if (IsPlanningHit(hit.collider.transform))
+        var hits = Physics.RaycastAll(ray, maxClickDistance, ~0, QueryTriggerInteraction.Ignore);
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+        bool planningHit = false;
+        foreach (var h in hits)
+        {
+            if (map != null && (h.collider.transform == map || h.collider.transform.IsChildOf(map))) continue;
+            if (IsPlanningHit(h.collider.transform)) { planningHit = true; break; }
+        }
+
+        if (debugClicks)
+        {
+            string first = hits.Length > 0 ? hits[0].collider.name : "nothing";
+            Debug.Log("[PlanningStation] Click: overUI=" + overUi + ", first hit=" + first + ", calendar/globe hit=" + planningHit);
+        }
+
+        if (planningHit && !overUi)
             Open();
     }
 
@@ -180,6 +197,7 @@ public class PlanningStation : MonoBehaviour
             cal = new Bounds(calendar.position, new Vector3(0.46f, 0.42f, 0.08f));
 
         Vector3 normal = WallNormal();
+        Vector3 calHalf = new Vector3(Mathf.Abs(normal.z) * cal.extents.x + Mathf.Abs(normal.x) * cal.extents.z, 0f, 0f);
         float width = Mathf.Max(0.1f, mapWidth);
         float aspect = Mathf.Max(0.1f, mapAspect);
         float height = width / aspect;
@@ -189,15 +207,18 @@ public class PlanningStation : MonoBehaviour
         if (wallRight.sqrMagnitude < 1e-6f) wallRight = Vector3.right;
         wallRight.Normalize();
 
-        Vector3 calLeft = cal.center - wallRight * cal.extents.x;
+        Vector3 calLeft = cal.center - wallRight * calHalf.x;
         Vector3 center = calLeft - wallRight * (mapGap + width * 0.5f);
         center += Vector3.up * mapHeightOffset;
         // Keep the map on the wall plane, then push it toward the camera.
-        Vector3 wallPoint = cal.center;
+        // The calendar hangs on the wall, so its back face marks the wall plane.
+        float depth = Mathf.Abs(normal.x) * cal.extents.x + Mathf.Abs(normal.z) * cal.extents.z;
+        Vector3 wallPoint = cal.center - normal * depth;
         center -= normal * Vector3.Dot(center - wallPoint, normal);
         center += normal * mapWallOffset;
 
-        map.SetPositionAndRotation(center, Quaternion.LookRotation(normal, Vector3.up));
+        // Unity's Quad shows its front face along -Z, so -Z must point at the camera.
+        map.SetPositionAndRotation(center, Quaternion.LookRotation(-normal, Vector3.up));
         map.localScale = new Vector3(width, height, 1f);
     }
 
@@ -263,7 +284,14 @@ public class PlanningStation : MonoBehaviour
         {
             Vector3 toCam = cam.position - from;
             toCam.y = 0f;
-            if (toCam.sqrMagnitude > 1e-6f) return toCam.normalized;
+            if (toCam.sqrMagnitude > 1e-6f)
+            {
+                // The room walls are axis-aligned: snap to the closest world axis
+                // so the map lies flat on the wall instead of facing the camera at an angle.
+                if (Mathf.Abs(toCam.x) > Mathf.Abs(toCam.z))
+                    return new Vector3(Mathf.Sign(toCam.x), 0f, 0f);
+                return new Vector3(0f, 0f, Mathf.Sign(toCam.z));
+            }
         }
         return Vector3.back;
     }

@@ -7,6 +7,9 @@
 //   GameManager.Instance.flight.pilotingResult = 0.8f;      // RAW minigame result (0 to 1),
 //                                                           // NOT multiplied by SkillMultiplier
 //   GameManager.Instance.flight.flightFinished = true;      // when the flight ends (well or badly)
+//
+// Failure state (task 31, claude_c): written ONLY by MissionFailureRules.RecordFailure, once per game.
+// Once failureCode is set, no milestone can be awarded any more (FlightPhases.MarkPhaseDone checks HasFailed).
 [System.Serializable]
 public class MissionResults
 {
@@ -28,6 +31,19 @@ public class MissionResults
     public float experimentFraction = -1f; // experiments done / experiments planned
     public float downlinkFraction = -1f;   // data sent to Earth / data planned (cannot be greater than experimentFraction)
 
+    // ---------- Failure and abort (task 31) ----------
+    public string failureCode = "";      // "" = no failure. DEPARTURE_FAILURE, LUNAR_ORBIT_FAILURE or RETURN_FAILURE
+    public string failureReason = "";    // short English explanation for the log and Results
+    public EventPhase failurePhase = EventPhase.Planning; // phase that failed (only meaningful if HasFailed)
+    public bool aborted;                 // the mission was ended early (departure or lunar orbit), not just "objectives missed"
+    public int recoveryAttempts;         // maintenance attempts made to recover from serious/critical incidents
+    public bool recoveryCompleted;       // the last incident that needed recovery was resolved
+
+    public bool HasFailed
+    {
+        get { return !string.IsNullOrEmpty(failureCode); }
+    }
+
     public void Reset()
     {
         launched = false;
@@ -41,5 +57,11 @@ public class MissionResults
         researchResult = -1f;
         experimentFraction = -1f;
         downlinkFraction = -1f;
+        failureCode = "";
+        failureReason = "";
+        failurePhase = EventPhase.Planning;
+        aborted = false;
+        recoveryAttempts = 0;
+        recoveryCompleted = false;
     }
 }

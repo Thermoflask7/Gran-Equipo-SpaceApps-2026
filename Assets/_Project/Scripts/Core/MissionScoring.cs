@@ -47,7 +47,8 @@ public static class MissionScoring
         ScoreResult r = Evaluate(InputsFromGame(gm));
         if (r.problem != "") return r;
 
-        if (!gm.flight.launched || !gm.flight.flightFinished)
+        MissionResults f = gm.flight;
+        if (!f.HasFailed && (!f.launched || !f.flightFinished))
         {
             // Not launched yet or the flight has not finished: neither won nor lost
             r.status = "PENDING";
@@ -57,13 +58,19 @@ public static class MissionScoring
         {
             // Conditions that only exist in the game (in addition to those in Evaluate)
             List<string> gameGates = new List<string>();
+            // Task 31: an in-flight failure or abort goes first; the other failed gates are kept
+            if (f.aborted) gameGates.Add(MissionFailureRules.AbortGate);
+            if (f.HasFailed) gameGates.Add(f.failureCode);
             if (!RocketPhysics.IsRocketValid(gm.rocketParts, gm.mission)) gameGates.Add("ROCKET_INVALID");
             if (!gm.IsCrewReady()) gameGates.Add("CREW_NOT_READY");
-            if (gameGates.Count > 0)
+            for (int g = gameGates.Count - 1; g >= 0; g--)
             {
-                r.failedGates.InsertRange(0, gameGates);
-                r.status = "FAILURE";
+                if (r.failedGates.Contains(gameGates[g])) gameGates.RemoveAt(g); // no duplicate reasons
             }
+            if (gameGates.Count > 0) r.failedGates.InsertRange(0, gameGates);
+            if (r.failedGates.Count > 0) r.status = "FAILURE"; // a terminal failure is never PENDING or SUCCESS
+            r.aborted = f.aborted;
+            r.failureReason = f.failureReason;
         }
         r.competitive = r.status == "SUCCESS" ? r.total : 0f;
         return r;

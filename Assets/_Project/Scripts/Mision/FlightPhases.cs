@@ -7,20 +7,21 @@ using UnityEngine;
 // LaunchScreen moves the rocket and the cameras; this script decides what happens in each phase:
 //   - One random event per phase (RandomEvents: weather and crew change the chance), written in the mission control log.
 //   - The planned minigames of each phase (GDD: piloting in the departure, research in lunar orbit),
-//     plus the minigame of any event with a minigameRole.
+//     plus the minigame of any bad event with a minigameRole.
 //   - The flight milestones in GameManager.flight (departureDone, lunarOrbitDone, safeReturnDone, flightFinished),
 //     which MissionScoring uses for the final score.
+//   - Task 31: failure, abort and recovery (MissionFailureRules). A critical result in a safety-critical action
+//     ends the mission; a serious incident gets a recovery attempt; science never aborts the flight.
 // A phase does not end until its event and its minigames are done (it turns off LaunchScreen.autoAdvance).
 //
 // For the minigames (tasks 12, 13, 14), register one handler per role (in Awake or OnEnable):
 //   flightPhases.RegisterMinigame(TrainingFocus.Piloting, OpenMyMinigame);
-//   // when it ends:
-//   FlightPhases.SetResult(GameManager.Instance.flight, TrainingFocus.Piloting, rawResult0to1);
-//   flightPhases.MinigameDone();
+//   // when it ends (RAW result 0..1, never multiplied by the skill):
+//   flightPhases.CompleteMinigame(TrainingFocus.Piloting, rawResult0to1);
+// CompleteMinigame stores the result, applies the failure rules and resumes (or ends) the flight.
+// The old pair SetResult + MinigameDone still works, but it skips the failure rules.
 // The flight is paused (LaunchScreen.paused) while a minigame is open. A role with no registered handler
-// is skipped safely: the log says so and the flight goes on (audit F06: it can never stay paused forever
-// because of a role nobody handles). MinigameRequested is still fired for every minigame, for UI that only
-// wants to know (it does not pause the flight by itself).
+// is skipped safely and never causes a failure (audit F06 / task 31). MinigameRequested is informative only.
 public class FlightPhases : MonoBehaviour
 {
     [Serializable]
@@ -29,6 +30,15 @@ public class FlightPhases : MonoBehaviour
         public EventPhase phase = EventPhase.Departure;
         public TrainingFocus role = TrainingFocus.Piloting;
         [Range(0f, 1f)] public float atProgress = 0.5f; // point of the phase where it opens (0 to 1)
+    }
+
+    // One minigame waiting to be played: why it was asked for and which attempt it is
+    struct Request
+    {
+        public TrainingFocus role;
+        public EventSeverity incident; // Minor for planned minigames
+        public string source;          // event name, "" if planned
+        public int attempt;            // 0 = first try
     }
 
     [Tooltip("Empty = the LaunchScreen on this object, or the one in the scene")]
@@ -40,6 +50,9 @@ public class FlightPhases : MonoBehaviour
     [Tooltip("Point of each phase (0 to 1) where the random event is rolled")]
     [Range(0f, 1f)] public float eventAtProgress = 0.5f;
 
+    [Tooltip("Task 31 thresholds. Empty = MissionFailureSettings.Default")]
+    public MissionFailureSettings failureSettings;
+
     // Departure: piloting during the liftoff view (first 35 %). Lunar orbit: research.
     // Return has none by default: a second piloting result would be averaged with the first one (see SetResult).
     public List<PlannedMinigame> plannedMinigames = new List<PlannedMinigame>
@@ -50,16 +63,23 @@ public class FlightPhases : MonoBehaviour
 
     // A minigame opened (the flight is already paused). Informative only: to handle a role, use RegisterMinigame.
     public event Action<TrainingFocus> MinigameRequested;
-    readonly Dictionary<TrainingFocus, Action> handlers = new Dictionary<TrainingFocus, Action>();
     // A random event happened in the flight (for example, to show it on the big screen).
     public event Action<EventData> EventHappened;
+    // The mission ended early or failed (task 31). Fired once, with the failure reason.
+    public event Action<string> MissionTerminated;
 
     public TrainingFocus CurrentMinigame { get; private set; } = TrainingFocus.None; // None = no minigame open
     public EventData LastEvent { get; private set; }
+    public bool Terminated { get { return Flight != null && Flight.HasFailed; } }
 
-    readonly List<TrainingFocus> queue = new List<TrainingFocus>();
+    readonly Dictionary<TrainingFocus, Action> handlers = new Dictionary<TrainingFocus, Action>();
+    readonly List<Request> queue = new List<Request>();
     readonly List<int> plannedDone = new List<int>(); // indexes of plannedMinigames already handled in this phase
+    Request current;
     bool eventRolled;
+
+    MissionResults Flight { get { return GameManager.Instance.flight; } }
+    MissionFailureSettings Settings { get { return failureSettings != null ? failureSettings : MissionFailureSettings.Default; } }
 
     void Awake()
     {
@@ -90,8 +110,8 @@ public class FlightPhases : MonoBehaviour
 
     void Update()
     {
-        if (screen == null || screen.Finished) return;
-        if (CurrentMinigame != TrainingFocus.None) return; // waiting for MinigameDone()
+        if (screen == null || screen.Finished || Terminated) return;
+        if (CurrentMinigame != TrainingFocus.None) return; // waiting for CompleteMinigame / MinigameDone
 
         EventPhase phase = screen.CurrentPhase;
         float progress = screen.PhaseProgress;
@@ -108,7 +128,7 @@ public class FlightPhases : MonoBehaviour
             if (m == null || m.phase != phase || plannedDone.Contains(i)) continue;
             if (progress < m.atProgress) continue;
             plannedDone.Add(i);
-            queue.Add(m.role);
+            queue.Add(new Request { role = m.role, incident = EventSeverity.Minor, source = "", attempt = 0 });
         }
 
         if (queue.Count > 0)
@@ -125,19 +145,28 @@ public class FlightPhases : MonoBehaviour
 
     void OnPhaseStarted(EventPhase phase)
     {
+        if (Terminated) return;
+
         // The phase before this one ended well (also when the test "Skip" button jumps ahead)
         EventPhase before;
-        if (PhaseBefore(phase, out before)) MarkPhaseDone(GameManager.Instance.flight, before);
+        if (PhaseBefore(phase, out before)) MarkPhaseDone(Flight, before);
 
         eventRolled = false;
         plannedDone.Clear();
         queue.Clear();
         if (CurrentMinigame != TrainingFocus.None) MinigameDone();
+
+        // Departure: an invalid spacecraft cannot fly, whatever the crew training (only in a real launched game)
+        if (phase == EventPhase.Departure)
+        {
+            string problem = MissionFailureRules.PreflightProblem(GameManager.Instance);
+            if (problem != "") FailMission(EventPhase.Departure, MissionFailureRules.DepartureFailure, problem);
+        }
     }
 
     void OnMissionFinished()
     {
-        MarkPhaseDone(GameManager.Instance.flight, EventPhase.Return);
+        MarkPhaseDone(Flight, EventPhase.Return); // does nothing if the mission already failed
         queue.Clear();
         if (screen != null) screen.paused = false;
         CurrentMinigame = TrainingFocus.None;
@@ -153,34 +182,39 @@ public class FlightPhases : MonoBehaviour
         }
         if (list == null || list.Count == 0) return;
 
-        EventData e = RandomEvents.RollAndApply(list, phase);
+        EventData e = RandomEvents.RollAndApply(list, phase); // never repeats an event that already happened
         if (e == null) return;
 
         LastEvent = e;
         screen.Log(EventLogText(e));
         if (EventHappened != null) EventHappened(e);
 
-        // A bad event on a role opens that role's minigame (for example, a failure -> maintenance)
-        if (!e.isGood && e.minigameRole != TrainingFocus.None) queue.Add(e.minigameRole);
+        // A bad event on a role opens that role's minigame (for example, a failure -> maintenance).
+        // Its severity (Auto = Serious) decides what a critical result means. A negative score or money alone never fails the mission.
+        if (!e.isGood && e.minigameRole != TrainingFocus.None)
+            RequestMinigame(e.minigameRole, MissionFailureRules.SeverityOf(e), e.eventName);
     }
 
     // ---------- Minigames ----------
 
     void OpenNextMinigame()
     {
-        TrainingFocus role = queue[0];
+        Request request = queue[0];
         queue.RemoveAt(0);
+        TrainingFocus role = request.role;
 
         Action open;
         if (!handlers.TryGetValue(role, out open) || open == null)
         {
+            // Not implemented yet (tasks 12/14) or not in the scene: never a failure, and no result is invented
             screen.Log(RoleName(role) + " minigame not available yet: skipped.");
             return;
         }
 
+        current = request;
         CurrentMinigame = role;
         screen.paused = true;
-        screen.Log(RoleName(role) + " minigame.");
+        screen.Log(RoleName(role) + " minigame" + (request.attempt > 0 ? " (recovery attempt " + (request.attempt + 1) + ")." : "."));
         if (MinigameRequested != null) MinigameRequested(role);
         try
         {
@@ -204,8 +238,8 @@ public class FlightPhases : MonoBehaviour
 
     public void UnregisterMinigame(TrainingFocus role, Action open)
     {
-        Action current;
-        if (handlers.TryGetValue(role, out current) && current == open) handlers.Remove(role);
+        Action existing;
+        if (handlers.TryGetValue(role, out existing) && existing == open) handlers.Remove(role);
     }
 
     public bool HasMinigame(TrainingFocus role)
@@ -213,7 +247,60 @@ public class FlightPhases : MonoBehaviour
         return handlers.ContainsKey(role);
     }
 
-    // Called by the minigame when it ends (after writing its result). Resumes the flight.
+    // Queues a minigame for an incident (for example a scripted failure). It opens on the next Update,
+    // one at a time. Ignored after the mission has failed.
+    public void RequestMinigame(TrainingFocus role, EventSeverity incident, string source)
+    {
+        if (role == TrainingFocus.None || Terminated) return;
+        if (incident == EventSeverity.Auto) incident = EventSeverity.Serious;
+        queue.Add(new Request { role = role, incident = incident, source = source ?? "", attempt = 0 });
+    }
+
+    // Task 31: the authoritative way to end a minigame. Stores the RAW result once, applies the failure rules
+    // and resumes the flight, asks for a recovery attempt, or ends the mission.
+    // Returns false (and changes nothing) if that minigame is not the open one: duplicate callbacks are ignored.
+    public bool CompleteMinigame(TrainingFocus role, float rawResult)
+    {
+        if (role == TrainingFocus.None || role != CurrentMinigame || Terminated) return false;
+        if (float.IsNaN(rawResult) || float.IsInfinity(rawResult))
+        {
+            Debug.LogWarning("FlightPhases: invalid " + RoleName(role) + " result (" + rawResult + "), counted as 0.");
+            rawResult = 0f;
+        }
+
+        MissionResults f = Flight;
+        SetResult(f, role, rawResult); // raw, clamped; the scoring applies the skill once
+        GameManager gm = GameManager.Instance;
+        float skill = gm.SkillMultiplier(RandomEvents.AstronautFor(role), role);
+        EventPhase phase = screen != null ? screen.CurrentPhase : EventPhase.Departure;
+        MissionFailureRules.Outcome o = MissionFailureRules.Judge(role, phase, rawResult, skill, current.incident, current.attempt, Settings);
+
+        bool recovery = current.incident == EventSeverity.Serious || current.incident == EventSeverity.Critical;
+        if (recovery)
+        {
+            f.recoveryAttempts++;
+            f.recoveryCompleted = o.decision == MissionFailureRules.Decision.Continue;
+        }
+        if (o.message != "" && screen != null) screen.Log(o.message);
+
+        Request done = current;
+        CurrentMinigame = TrainingFocus.None;
+
+        if (o.decision == MissionFailureRules.Decision.Fail)
+        {
+            FailMission(phase, o.code, o.message);
+            return true;
+        }
+        if (o.decision == MissionFailureRules.Decision.Retry)
+        {
+            done.attempt++;
+            queue.Insert(0, done); // opens next frame, after the minigame has closed itself
+        }
+        if (screen != null) screen.paused = false;
+        return true;
+    }
+
+    // Resumes the flight without judging the result (old API, and used when a minigame cannot open).
     public void MinigameDone()
     {
         if (CurrentMinigame == TrainingFocus.None) return;
@@ -221,17 +308,38 @@ public class FlightPhases : MonoBehaviour
         if (screen != null) screen.paused = false;
     }
 
+    // Ends the mission ONCE with a failure: records it, drops every queued minigame and finishes the flight.
+    // Usable by future minigames (for example a critical return action). Returns false if it had already failed.
+    public bool FailMission(EventPhase phase, string code, string reason)
+    {
+        if (!MissionFailureRules.RecordFailure(Flight, phase, code, reason)) return false;
+        queue.Clear();
+        CurrentMinigame = TrainingFocus.None;
+        if (screen != null)
+        {
+            screen.paused = false;
+            screen.Log(reason);
+            screen.Finish(); // shows the end panel; OnMissionFinished awards nothing because the mission failed
+        }
+        if (MissionTerminated != null) MissionTerminated(reason);
+        return true;
+    }
+
     // ---------- Helpers (static, also used by the tests) ----------
 
     // Writes the milestone of a phase that ended well. The return also ends the flight.
+    // Task 31: nothing is awarded after a failure, and a milestone needs the previous one.
     public static void MarkPhaseDone(MissionResults flight, EventPhase phase)
     {
-        if (flight == null) return;
+        if (flight == null || flight.HasFailed) return;
         if (phase == EventPhase.Departure) flight.departureDone = true;
-        else if (phase == EventPhase.LunarOrbit) flight.lunarOrbitDone = true;
+        else if (phase == EventPhase.LunarOrbit)
+        {
+            if (flight.departureDone) flight.lunarOrbitDone = true;
+        }
         else if (phase == EventPhase.Return)
         {
-            flight.safeReturnDone = true;
+            if (flight.departureDone && flight.lunarOrbitDone) flight.safeReturnDone = true;
             flight.flightFinished = true;
         }
     }
@@ -255,7 +363,7 @@ public class FlightPhases : MonoBehaviour
     public static void SetResult(MissionResults flight, TrainingFocus role, float raw)
     {
         if (flight == null) return;
-        raw = Mathf.Clamp01(raw);
+        raw = MissionFailureRules.Clean(raw);
         if (role == TrainingFocus.Piloting) flight.pilotingResult = Combine(flight.pilotingResult, raw);
         else if (role == TrainingFocus.Engineering) flight.repairResult = Combine(flight.repairResult, raw);
         else if (role == TrainingFocus.Research) flight.researchResult = Combine(flight.researchResult, raw);

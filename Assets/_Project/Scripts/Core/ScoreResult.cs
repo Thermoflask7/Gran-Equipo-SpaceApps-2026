@@ -31,4 +31,8 @@ public class ScoreResult
     public string status = "PENDING";  // SUCCESS, FAILURE, PENDING or INVALID
     public List<string> failedGates = new List<string>();
     public string problem = "";        // if the inputs are not valid, the reason (and everything stays at 0)
+
+    // Task 31: an abort maps to status FAILURE, but keeps its own flag and reason
+    public bool aborted;               // the mission ended early (gate MISSION_ABORT)
+    public string failureReason = "";  // MissionResults.failureReason ("" = no in-flight failure)
 }

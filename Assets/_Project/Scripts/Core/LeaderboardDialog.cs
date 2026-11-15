@@ -9,7 +9,8 @@ using UnityEngine.UI;
 // Arcade-style leaderboard popup (task 37). Signed: Grok.
 // Opened by the "Leaderboard" button on 03_Resultados. If the game's score makes the top 10, it first asks
 // the player's name (remembered for next time) and saves the score; then it shows the top 10 with the new
-// entry highlighted. Built at runtime on its own overlay canvas, so no scene needs changes.
+// entry highlighted. The main menu opens only the top 10 (OpenBoard, with a Clear button).
+// Built at runtime on its own overlay canvas, so no scene needs changes.
 public class LeaderboardDialog : MonoBehaviour
 {
     const string LastNameKey = "SpaceApps.LastPlayerName";
@@ -28,6 +29,9 @@ public class LeaderboardDialog : MonoBehaviour
     TMP_InputField input;
     TMP_Text boardNote;
     TMP_Text boardList;
+    GameObject clearButton;
+    TMP_Text clearLabel;
+    bool clearArmed;
 
     LeaderboardEntry pending;
     Action<int> onSaved;
@@ -43,6 +47,7 @@ public class LeaderboardDialog : MonoBehaviour
         instance.pending = pending;
         instance.onSaved = onSaved;
         instance.panel.SetActive(true);
+        instance.clearButton.SetActive(false);
 
         if (pending == null)
         {
@@ -60,6 +65,25 @@ public class LeaderboardDialog : MonoBehaviour
             return;
         }
         instance.AskName(rank);
+    }
+
+    // Main menu (task 37d): only the top 10, with a "Clear" button (asks to confirm with a second click)
+    public static void OpenBoard()
+    {
+        Open(null, -1, null);
+        instance.clearButton.SetActive(true);
+    }
+
+    void ClearClicked()
+    {
+        if (!clearArmed)
+        {
+            clearArmed = true;
+            clearLabel.text = "Sure? Click again";
+            return;
+        }
+        Leaderboard.Clear();
+        ShowBoard(-1, "Leaderboard cleared.");
     }
 
     public static void Close()
@@ -108,6 +132,8 @@ public class LeaderboardDialog : MonoBehaviour
         nameStep.SetActive(false);
         boardStep.SetActive(true);
         boardNote.text = note;
+        clearArmed = false;
+        clearLabel.text = "Clear";
         List<LeaderboardEntry> top = Leaderboard.Load();
         boardList.text = top.Count == 0 ? "No scores yet. Finish a mission to be the first!" : RankingText(top, highlightRank);
     }
@@ -171,6 +197,10 @@ public class LeaderboardDialog : MonoBehaviour
         dialog.boardList.alignment = TextAlignmentOptions.TopLeft;
         dialog.boardList.lineSpacing = 18f;
         AddButton(board, "CloseButton", "Close", new Vector2(0f, -350f), new Vector2(260f, 64f), GrayColor, Close);
+        Image clear = AddButton(board, "ClearButton", "Clear", new Vector2(-400f, -350f), new Vector2(240f, 64f),
+            new Color(0.6f, 0.2f, 0.2f), dialog.ClearClicked);
+        dialog.clearButton = clear.gameObject;
+        dialog.clearLabel = clear.GetComponentInChildren<TMP_Text>();
 
         dialog.panel.SetActive(false);
         return dialog;

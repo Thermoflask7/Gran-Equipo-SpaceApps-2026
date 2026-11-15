@@ -5,7 +5,7 @@ using UnityEngine;
 // and the three results. No UI, so it is tested in edit mode (SpaceApps > Research minigame > Tests).
 //   experimentFraction = captured data / planned data            (data-weighted: big ice scans count more)
 //   downlinkFraction   = data that reached Earth / planned data, never above experimentFraction
-//   raw                = 0.45 x experiments + 0.45 x downlink + 0.05 x gold-star share + 0.05 x alien share (0..1)
+//   raw                = 0.45 x experiments + 0.45 x downlink + 0.10 x gold-star share (0..1)
 // raw never includes the scientist skill: MissionScoring multiplies by it once.
 public static class ResearchMath
 {
@@ -103,13 +103,12 @@ public static class ResearchMath
         return Mathf.Min(Clean(sentBits / plannedBits), Clean(experimentFraction));
     }
 
-    public static float Raw(float experimentFraction, float downlinkFraction, float goldShare, float alienShare, ResearchSettings s)
+    public static float Raw(float experimentFraction, float downlinkFraction, float goldShare, ResearchSettings s)
     {
         if (s == null) s = ResearchSettings.Default;
         return Clean(s.experimentWeight * Clean(experimentFraction)
                    + s.downlinkWeight * Clean(downlinkFraction)
-                   + s.goldWeight * Clean(goldShare)
-                   + s.alienWeight * Clean(alienShare));
+                   + s.goldWeight * Clean(goldShare));
     }
 
     // Beam seconds needed to send ALL the planned data: min + extra x (real downlink time / mission maximum).

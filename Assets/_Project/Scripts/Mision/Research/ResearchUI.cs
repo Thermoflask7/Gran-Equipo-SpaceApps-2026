@@ -75,24 +75,6 @@ public static class ResearchUI
         return mouse != null && mouse.leftButton.isPressed;
     }
 
-    // Cartoon alien made of circles: green head, two big eyes, two antennae. Pivot at the bottom of the head.
-    public static RectTransform Alien(Transform parent, Sprite circle)
-    {
-        RectTransform root = Box(parent, "Alien", new Vector2(80f, 80f), Vector2.zero, new Color(0f, 0f, 0f, 0f));
-        Color green = new Color(0.45f, 0.9f, 0.35f);
-        Box(root, "AntennaL", new Vector2(4f, 30f), new Vector2(-16f, 48f), green).localRotation = Quaternion.Euler(0f, 0f, 20f);
-        Box(root, "AntennaR", new Vector2(4f, 30f), new Vector2(16f, 48f), green).localRotation = Quaternion.Euler(0f, 0f, -20f);
-        Circle(root, "TipL", 12f, new Vector2(-22f, 62f), new Color(1f, 0.85f, 0.2f), circle);
-        Circle(root, "TipR", 12f, new Vector2(22f, 62f), new Color(1f, 0.85f, 0.2f), circle);
-        Circle(root, "Head", 72f, Vector2.zero, green, circle);
-        Circle(root, "EyeL", 24f, new Vector2(-14f, 6f), Color.white, circle);
-        Circle(root, "EyeR", 24f, new Vector2(14f, 6f), Color.white, circle);
-        Circle(root, "PupilL", 10f, new Vector2(-12f, 4f), Color.black, circle);
-        Circle(root, "PupilR", 10f, new Vector2(16f, 4f), Color.black, circle);
-        Box(root, "Smile", new Vector2(22f, 4f), new Vector2(0f, -16f), new Color(0.15f, 0.35f, 0.1f));
-        return root;
-    }
-
     public static Color ColorOf(ResearchMath.TargetType type)
     {
         if (type == ResearchMath.TargetType.Spark) return new Color(0.75f, 1f, 0.3f);

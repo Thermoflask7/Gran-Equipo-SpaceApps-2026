@@ -13,26 +13,20 @@ MonoBehaviour:
   m_Name: ResearchSettings
   m_EditorClassIdentifier: Assembly-CSharp::ResearchSettings
   safariSeconds: 30
-  landmarkTargets: 5
-  sparkTargets: 6
+  landmarkTargets: 6
+  sparkTargets: 12
   iceTargets: 3
   landmarkSeconds: 3.5
-  sparkSeconds: 1.5
+  sparkSeconds: 2.2
   iceHoldSeconds: 1.5
   viewfinderRadius: 90
   goldRadius: 35
-  alienTimes:
-  - 12
-  - 24
-  alienSeconds: 1.5
   catcherSeconds: 25
-  lossOfSignalStart: 10
-  lossOfSignalEnd: 16
   beamHalfAngle: 12
   minBeamSeconds: 8
   extraBeamSeconds: 10
-  earthPeriodSeconds: 12
+  earthPeriodSeconds: 9
+  earthBobSeconds: 5.5
   experimentWeight: 0.45
   downlinkWeight: 0.45
-  goldWeight: 0.05
-  alienWeight: 0.05
+  goldWeight: 0.1

@@ -10,5 +10,4 @@ public class ResearchResult
     public int sciencePhotos;
     public int targetsShown;
     public float goldShare;          // gold-star landmarks / landmarks photographed
-    public float alienShare;         // alien photos / alien appearances
 }

@@ -53,7 +53,7 @@ public static class ResearchMinigameTests
     static void Planning(PartData lunar, PartData rad, PartData heavy, PartData antenna)
     {
         List<ResearchMath.Target> plan = ResearchMath.PlanTargets(new List<PartData> { lunar, rad, antenna }, S);
-        Check("LUNAR + RAD: 5 landmarks + 6 sparks", Count(plan, ResearchMath.TargetType.Landmark) == 5 && Count(plan, ResearchMath.TargetType.Spark) == 6 && plan.Count == 11);
+        Check("LUNAR + RAD: 6 landmarks + 12 sparks", Count(plan, ResearchMath.TargetType.Landmark) == 6 && Count(plan, ResearchMath.TargetType.Spark) == 12 && plan.Count == 18);
         // Floats near 1e8 are only precise to a few units: compare with a relative tolerance (0.001 %)
         Check("Planned data = RocketPhysics.DataBits (125 Mbit)",
             NearRel(ResearchMath.PlannedBits(plan), RocketPhysics.DataBits(new List<PartData> { lunar, rad, antenna }))
@@ -70,7 +70,7 @@ public static class ResearchMinigameTests
         Check("Targets spawn in order, early enough to cross the screen", ordered && inside);
 
         List<ResearchMath.Target> all = ResearchMath.PlanTargets(new List<PartData> { lunar, rad, heavy, antenna }, S);
-        Check("HEAVY adds 3 ice scans (14 targets)", Count(all, ResearchMath.TargetType.Ice) == 3 && all.Count == 14);
+        Check("HEAVY adds 3 ice scans (21 targets)", Count(all, ResearchMath.TargetType.Ice) == 3 && all.Count == 21);
         Check("Each ice scan carries a third of 250 Mbit", NearRel(Find(all, ResearchMath.TargetType.Ice).bits, 250000000f / 3f));
 
         List<ResearchMath.Target> none = ResearchMath.PlanTargets(new List<PartData> { antenna }, S);
@@ -86,16 +86,16 @@ public static class ResearchMinigameTests
         Check("Everything captured = 1", Near(ResearchMath.ExperimentFraction(b, b), 1f, 0.0001f));
         Check("No planned data = 0 (no division by zero)", ResearchMath.ExperimentFraction(10f, 0f) == 0f && ResearchMath.DownlinkFraction(10f, 0f, 1f) == 0f);
         Check("Downlink never above experiments", Near(ResearchMath.DownlinkFraction(b, b, 0.6f), 0.6f, 0.0001f));
-        Check("NaN is 0", ResearchMath.ExperimentFraction(float.NaN, b) == 0f && ResearchMath.Raw(float.NaN, 0f, 0f, 0f, S) == 0f);
-        Check("Doing nothing: raw 0", ResearchMath.Raw(0f, 0f, 0f, 0f, S) == 0f);
-        Check("Perfect play: raw 1", Near(ResearchMath.Raw(1f, 1f, 1f, 1f, S), 1f, 0.0001f));
-        // Attentive player of the design table: 4/5 landmarks (2 gold), 5/6 sparks, 85 % sent, 1 alien
-        float exp = (4f * 20f + 5f * 25f / 6f) / 125f;
+        Check("NaN is 0", ResearchMath.ExperimentFraction(float.NaN, b) == 0f && ResearchMath.Raw(float.NaN, 0f, 0f, S) == 0f);
+        Check("Doing nothing: raw 0", ResearchMath.Raw(0f, 0f, 0f, S) == 0f);
+        Check("Perfect play: raw 1", Near(ResearchMath.Raw(1f, 1f, 1f, S), 1f, 0.0001f));
+        // Attentive player of the design table: 5/6 landmarks (2 gold), 10/12 sparks, 85 % of it sent
+        float exp = (5f * 100f / 6f + 10f * 25f / 12f) / 125f;
         float down = ResearchMath.DownlinkFraction(0.85f * exp * b, b, exp);
-        float raw = ResearchMath.Raw(exp, down, 0.5f, 0.5f, S);
-        Check("Attentive player (design table): exp 0.81, downlink 0.69, raw 0.72",
-            Near(exp, 0.81f, 0.01f) && Near(down, 0.69f, 0.01f) && Near(raw, 0.72f, 0.01f));
-        Check("Alien alone is at most 5 %", ResearchMath.Raw(0f, 0f, 0f, 1f, S) <= 0.05f + 0.0001f);
+        float raw = ResearchMath.Raw(exp, down, 2f / 5f, S);
+        Check("Attentive player (design table): exp 0.83, downlink 0.71, raw 0.73",
+            Near(exp, 0.83f, 0.01f) && Near(down, 0.71f, 0.01f) && Near(raw, 0.73f, 0.01f));
+        Check("Gold stars alone are at most 10 %", ResearchMath.Raw(0f, 0f, 1f, S) <= 0.10f + 0.0001f);
     }
 
     static void Beam(DestinationData mission, PartData lunar, PartData rad, PartData heavy, PartData antenna)
@@ -105,7 +105,7 @@ public static class ResearchMinigameTests
         float three = ResearchMath.BeamSecondsForAll(new List<PartData> { lunar, rad, heavy, antenna }, mission, S);
         Check("Beam time: LUNAR + RAD 9.9 s, HEAVY 11.9 s, all three 13.8 s",
             Near(two, 9.93f, 0.05f) && Near(heavyOnly, 11.86f, 0.05f) && Near(three, 13.79f, 0.05f));
-        Check("All beam times fit in the visible-Earth time", three < S.catcherSeconds - (S.lossOfSignalEnd - S.lossOfSignalStart));
+        Check("All beam times fit in the Signal Catcher time", three < S.catcherSeconds - 5f);
         float none = ResearchMath.BeamSecondsForAll(new List<PartData> { lunar, rad }, mission, S);
         Check("No antenna: infinite beam time, send rate 0", float.IsInfinity(none) && ResearchMath.SendRate(125f, none) == 0f);
         Check("Send rate = planned data / beam time", Near(ResearchMath.SendRate(125f, 10f), 12.5f, 0.0001f));
@@ -139,8 +139,8 @@ public static class ResearchMinigameTests
             gm.flight.researchResult = -1f;
             Check("Without research the mission fails the science gates", MissionScoring.EvaluateGame(gm).failedGates.Contains("SCIENCE"));
 
-            ResearchFlightHook.Write(gm.flight, new ResearchResult { experimentFraction = 0.81f, downlinkFraction = 0.69f });
-            FlightPhases.SetResult(gm.flight, TrainingFocus.Research, 0.72f);
+            ResearchFlightHook.Write(gm.flight, new ResearchResult { experimentFraction = 0.83f, downlinkFraction = 0.71f });
+            FlightPhases.SetResult(gm.flight, TrainingFocus.Research, 0.73f);
             ScoreResult r = MissionScoring.EvaluateGame(gm);
             Check("Attentive research makes a valid game a SUCCESS (" + string.Join(",", r.failedGates) + ")", r.status == "SUCCESS");
 

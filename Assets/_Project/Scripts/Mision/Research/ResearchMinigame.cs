@@ -110,7 +110,7 @@ public class ResearchMinigame : MonoBehaviour
         if (ice > 0) sb.AppendLine("- Ice sensor: " + ice + " dark craters. Hold the click on the blue ice.");
         sb.AppendLine(hasAntenna ? "- Long-range antenna: ready." : "- No long-range antenna: the data cannot be sent home.");
         sb.AppendLine();
-        sb.Append("Keep your eyes open... something else might be hiding in the craters!");
+        sb.Append("Targets come from every direction: keep your eyes open!");
         return sb.ToString();
     }
 
@@ -152,14 +152,9 @@ public class ResearchMinigame : MonoBehaviour
         ResearchResult r = new ResearchResult();
         r.plannedBits = ResearchMath.PlannedBits(plan);
         r.targetsShown = safari != null ? safari.TargetsShown : 0;
-        int landmarks = 0, gold = 0, aliens = 0;
+        int landmarks = 0, gold = 0;
         foreach (ResearchPhoto p in photos)
         {
-            if (p.alien)
-            {
-                aliens++;
-                continue;
-            }
             r.sciencePhotos++;
             r.capturedBits += p.bits;
             if (p.type == ResearchMath.TargetType.Landmark)
@@ -170,11 +165,9 @@ public class ResearchMinigame : MonoBehaviour
         }
         r.sentBits = catcher != null ? Mathf.Min(catcher.SentBits, r.capturedBits) : 0f;
         r.goldShare = landmarks > 0 ? gold / (float)landmarks : 0f;
-        int appearances = S.alienTimes != null ? S.alienTimes.Length : 0;
-        r.alienShare = appearances > 0 ? Mathf.Clamp01(aliens / (float)appearances) : 0f;
         r.experimentFraction = ResearchMath.ExperimentFraction(r.capturedBits, r.plannedBits);
         r.downlinkFraction = ResearchMath.DownlinkFraction(r.sentBits, r.plannedBits, r.experimentFraction);
-        r.raw = ResearchMath.Raw(r.experimentFraction, r.downlinkFraction, r.goldShare, r.alienShare, S);
+        r.raw = ResearchMath.Raw(r.experimentFraction, r.downlinkFraction, r.goldShare, S);
         return r;
     }
 
@@ -197,30 +190,30 @@ public class ResearchMinigame : MonoBehaviour
                     CanvasGroup group = thumb.gameObject.AddComponent<CanvasGroup>();
                     group.alpha = 0.35f;
                 }
-                string label = p.alien ? "Surprise!" : p.sent ? "Home" : "On board";
-                Color color = p.alien ? new Color(0.6f, 1f, 0.5f) : p.sent ? new Color(0.4f, 1f, 0.5f) : new Color(0.7f, 0.7f, 0.75f);
+                string label = p.sent ? "Home" : "On board";
+                Color color = p.sent ? new Color(0.4f, 1f, 0.5f) : new Color(0.7f, 0.7f, 0.75f);
                 ResearchUI.Label(cell, "State", label, 14f, new Vector2(0f, -32f), new Vector2(80f, 20f), color);
             }
         }
         if (albumText != null) albumText.text = AlbumText(Result, photos, hasAntenna);
     }
 
-    // End-of-minigame text: results, the alien stamp and one lesson
+    // End-of-minigame text: results, one fact about what was photographed and one lesson
     public static string AlbumText(ResearchResult r, List<ResearchPhoto> photos, bool antenna)
     {
         StringBuilder sb = new StringBuilder();
-        bool alien = false;
-        foreach (ResearchPhoto p in photos) if (p.alien) alien = true;
+        bool ice = false;
+        foreach (ResearchPhoto p in photos) if (p.type == ResearchMath.TargetType.Ice) ice = true;
 
         sb.AppendLine("Experiments: " + (r.experimentFraction * 100f).ToString("0") + " % of the planned data ("
             + r.sciencePhotos + " of " + r.targetsShown + " targets).");
         sb.AppendLine("Data home: " + (r.downlinkFraction * 100f).ToString("0") + " %.   Research performance: "
             + (r.raw * 100f).ToString("0") + " %.");
         sb.AppendLine();
-        if (alien)
+        if (ice)
         {
-            sb.AppendLine("<b>Surprise photo!</b> No aliens have ever been found on the Moon. The real treasure lunar missions look for is "
-                + "water ice hidden in craters that never see sunlight: one day it could give astronauts water, air and rocket fuel.");
+            sb.AppendLine("<b>Water ice!</b> Some craters near the lunar poles never see sunlight and hide water ice: "
+                + "one day it could give astronauts water, air and rocket fuel.");
             sb.AppendLine();
         }
         if (r.plannedBits <= 0f)

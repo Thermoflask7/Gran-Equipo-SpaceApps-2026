@@ -5,10 +5,10 @@ using UnityEngine;
 using UnityEngine.UI;
 
 // Game 2 of the research minigame (task 14, claude_c): Signal Catcher.
-// Earth swings across the sky above the Moon's edge. Hold the mouse button and move it to aim the antenna:
-// while the beam touches Earth, the photos fly home as envelopes (oldest first). For a few seconds the Moon
-// hides Earth (loss of signal) and nothing can be sent. Sending speed comes from planning
-// (ResearchMath.BeamSecondsForAll: more data = more beam time needed). No antenna = no beam.
+// Earth moves around the sky above the Moon's edge (left-right and up-down, always in view).
+// Hold the mouse button and move it to aim the antenna: while the beam touches Earth, the photos fly home as
+// envelopes (oldest first). Sending speed comes from planning (ResearchMath.BeamSecondsForAll: more data = more
+// beam time needed). No antenna = no beam.
 public class SignalCatcher : MonoBehaviour
 {
     public RectTransform area;
@@ -19,7 +19,6 @@ public class SignalCatcher : MonoBehaviour
     public event Action Finished;
     public bool Running { get; private set; }
     public float SentBits { get; private set; }
-    public float LossOfSignalSeconds { get; private set; }
 
     ResearchSettings settings;
     List<ResearchPhoto> photos;
@@ -50,7 +49,6 @@ public class SignalCatcher : MonoBehaviour
         capturedBits = 0f;
         foreach (ResearchPhoto p in photos) capturedBits += p.bits;
         SentBits = 0f;
-        LossOfSignalSeconds = 0f;
         time = 0f;
         everTouched = false;
         envelopeTimer = 0f;
@@ -59,7 +57,7 @@ public class SignalCatcher : MonoBehaviour
         envelopeAge.Clear();
         ResearchUI.Clear(area);
 
-        // Earth first, then the Moon over it (so the Moon can hide Earth), then the antenna
+        // Earth, the Moon's edge, then the antenna
         earth = ResearchUI.Circle(area, "Earth", 90f, EarthPosition(0f), new Color(0.2f, 0.45f, 0.95f), circle);
         ResearchUI.Circle(earth, "Land", 34f, new Vector2(-12f, 10f), new Color(0.3f, 0.75f, 0.35f), circle);
         ResearchUI.Circle(earth, "Cloud", 26f, new Vector2(16f, -14f), new Color(1f, 1f, 1f, 0.8f), circle);
@@ -98,21 +96,12 @@ public class SignalCatcher : MonoBehaviour
         envelopeAge.Clear();
     }
 
-    bool InLossOfSignal(float t)
-    {
-        return t >= settings.lossOfSignalStart && t < settings.lossOfSignalEnd;
-    }
-
-    // Earth swings left-right in the sky; during loss of signal it sinks behind the Moon's edge
+    // Earth swings left-right and bobs up-down in the sky, always above the Moon's edge so it can always be aimed at
     Vector2 EarthPosition(float t)
     {
-        float x = Mathf.Sin(t * 2f * Mathf.PI / settings.earthPeriodSeconds) * Half.x * 0.7f;
-        float sky = Half.y * 0.55f;
-        float hidden = -Half.y * 0.75f;
-        float down = 0f;
-        if (t > settings.lossOfSignalStart - 1f && t < settings.lossOfSignalEnd + 1f)
-            down = Mathf.Clamp01(Mathf.Min(t - (settings.lossOfSignalStart - 1f), (settings.lossOfSignalEnd + 1f) - t));
-        return new Vector2(x, Mathf.Lerp(sky, hidden, down));
+        float x = Mathf.Sin(t * 2f * Mathf.PI / settings.earthPeriodSeconds) * Half.x * 0.75f;
+        float y = Mathf.Lerp(Half.y * 0.05f, Half.y * 0.75f, 0.5f + 0.5f * Mathf.Sin(t * 2f * Mathf.PI / settings.earthBobSeconds));
+        return new Vector2(x, y);
     }
 
     void Update()
@@ -132,11 +121,9 @@ public class SignalCatcher : MonoBehaviour
         }
         dish.localRotation = Quaternion.Euler(0f, 0f, -dishAngle);
 
-        bool los = InLossOfSignal(time);
-        if (los) LossOfSignalSeconds += dt;
         Vector2 toEarth = earth.anchoredPosition - pivot;
         float earthAngle = Mathf.Atan2(toEarth.x, toEarth.y) * Mathf.Rad2Deg;
-        bool onEarth = antenna && !los && Mathf.Abs(ResearchMath.AngleGap(dishAngle, earthAngle)) <= settings.beamHalfAngle;
+        bool onEarth = antenna && Mathf.Abs(ResearchMath.AngleGap(dishAngle, earthAngle)) <= settings.beamHalfAngle;
         if (beam != null) beam.color = onEarth ? new Color(0.4f, 1f, 0.5f, 0.3f) : new Color(1f, 0.9f, 0.3f, 0.18f);
 
         if (onEarth && SentBits < capturedBits)
@@ -157,9 +144,7 @@ public class SignalCatcher : MonoBehaviour
         if (infoLabel != null && antenna && capturedBits > 0f)
         {
             float pct = SentBits / capturedBits * 100f;
-            if (los) infoLabel.text = "Loss of signal: the Moon is blocking Earth. Your data stays safe on board. Back in "
-                + Mathf.CeilToInt(settings.lossOfSignalEnd - time) + " s";
-            else infoLabel.text = (onEarth ? "Sending... " : "Aim the beam at Earth! ") + "Data home: " + pct.ToString("0") + " %";
+            infoLabel.text = (onEarth ? "Sending... " : "Aim the beam at Earth! ") + "Data home: " + pct.ToString("0") + " %";
         }
 
         // Done: time is up, or everything is home
@@ -171,7 +156,7 @@ public class SignalCatcher : MonoBehaviour
         }
     }
 
-    // Photos reach Earth in the order they were taken. The alien photo (no data) rides along once sending has started.
+    // Photos reach Earth in the order they were taken.
     void MarkSent()
     {
         if (!everTouched) return;

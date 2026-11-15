@@ -56,6 +56,13 @@ public static class CrewTraining
         SyncFocus(gm);
     }
 
+    // Used when an astronaut leaves a slot (the points go back to the pool)
+    public static void ClearSlotPoints(GameManager gm, int slot)
+    {
+        EnsurePoints(gm);
+        for (int f = 0; f < 3; f++) gm.trainingPoints[slot * 3 + f] = 0;
+    }
+
     public static void ClearPoints(GameManager gm)
     {
         gm.trainingPoints = new int[9];

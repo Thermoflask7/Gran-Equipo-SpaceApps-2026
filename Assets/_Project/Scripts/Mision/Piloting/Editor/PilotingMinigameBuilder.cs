@@ -100,7 +100,7 @@ public static class PilotingMinigameBuilder
         Place(info.rectTransform, new Vector2(0, -565), new Vector2(1100, 110));
         game.infoLabel = info;
 
-        game.fireButton = CreateButton(box, "Fire", "FIRE  [Space]", new Vector2(0, -690), new Vector2(380, 84), FireColor);
+        game.fireButton = CreateButton(box, "Fire", "FIRE  (click)", new Vector2(0, -690), new Vector2(380, 84), FireColor);
         game.fireButton.gameObject.SetActive(false);
         game.startButton = CreateButton(box, "Start", "Start", new Vector2(0, -690), new Vector2(320, 70), ButtonColor);
         game.continueButton = CreateButton(box, "Continue", "Continue", new Vector2(0, -690), new Vector2(320, 70), ButtonColor);

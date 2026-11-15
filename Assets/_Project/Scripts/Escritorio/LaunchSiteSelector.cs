@@ -29,6 +29,11 @@ public class LaunchSiteSelector : MonoBehaviour
         public bool labelOnRight = true;
         public float latitude;
         public float longitude;
+        [Tooltip("Info text shown in the panel above the calendar (TMP rich text). Empty = built-in text.")]
+        [TextArea(4, 12)] public string info;
+
+        /// <summary>The info text, falling back to the built-in text for this site id.</summary>
+        public string InfoText => string.IsNullOrEmpty(info) ? DefaultInfo(id) : info;
     }
 
     [SerializeField] List<Site> sites = DefaultSites();
@@ -58,6 +63,60 @@ public class LaunchSiteSelector : MonoBehaviour
     PlanningStation station;
     int selectedIndex = -1;
     float alpha = 1f;
+
+    const string H = "<color=#F28C26><b>";
+    const string HE = "</b></color>";
+
+    /// <summary>Real-world info about each launch site (English, TMP rich text).</summary>
+    public static string DefaultInfo(string id)
+    {
+        switch (id)
+        {
+            case "KSC":
+                return H + "Location" + HE + "\n" +
+                    "Merritt Island, Florida, USA (28.6\u00b0 N, 80.6\u00b0 W), on the Atlantic coast next to Cape Canaveral.\n\n" +
+                    H + "Who uses it" + HE + "\n" +
+                    "NASA's main launch center. Launch Complex 39A is leased to SpaceX; Launch Complex 39B is NASA's pad for the SLS rocket.\n\n" +
+                    H + "What it is used for" + HE + "\n" +
+                    "Crewed and heavy-lift launches. Launching east over the ocean adds speed from Earth's rotation, which suits low Earth orbit, the Moon and deep space.\n\n" +
+                    H + "Key operations" + HE + "\n" +
+                    "\u2022 Apollo 11 lifted off from LC-39A on July 16, 1969.\n" +
+                    "\u2022 Home of the Space Shuttle program (1981-2011).\n" +
+                    "\u2022 SpaceX Demo-2 (May 30, 2020) restarted crewed launches from US soil.\n" +
+                    "\u2022 Artemis I launched on SLS from LC-39B on November 16, 2022.\n" +
+                    "\u2022 The Vehicle Assembly Building stacks rockets before they roll to the pad.";
+            case "CCSFS":
+                return H + "Location" + HE + "\n" +
+                    "Cape Canaveral, Florida, USA (28.5\u00b0 N, 80.6\u00b0 W), just south of Kennedy Space Center.\n\n" +
+                    H + "Who uses it" + HE + "\n" +
+                    "Run by the US Space Force (Space Launch Delta 45). Commercial pads include SpaceX SLC-40, ULA SLC-41 and Blue Origin LC-36.\n\n" +
+                    H + "What it is used for" + HE + "\n" +
+                    "The busiest US launch range: satellites, cargo and crew to the ISS, military payloads and planetary probes.\n\n" +
+                    H + "Key operations" + HE + "\n" +
+                    "\u2022 First launch from the Cape: Bumper 8, July 24, 1950.\n" +
+                    "\u2022 Explorer 1, the first US satellite, January 31, 1958.\n" +
+                    "\u2022 Mercury flights: Alan Shepard (1961) and John Glenn's first US orbit (1962).\n" +
+                    "\u2022 The Gemini crewed missions of the 1960s.\n" +
+                    "\u2022 New Horizons (2006) and the Mars rovers Curiosity (2011) and Perseverance (2020).\n\n" +
+                    "<i>Note: in real life SLS only launches from Kennedy LC-39B.</i>";
+            case "VSFB":
+                return H + "Location" + HE + "\n" +
+                    "Near Lompoc, Santa Barbara County, California, USA (34.7\u00b0 N, 120.6\u00b0 W), on the Pacific coast.\n\n" +
+                    H + "Who uses it" + HE + "\n" +
+                    "Run by the US Space Force (Space Launch Delta 30). Used by SpaceX (SLC-4E), ULA, Firefly and NASA science missions.\n\n" +
+                    H + "What it is used for" + HE + "\n" +
+                    "Polar and sun-synchronous orbits: rockets fly south over the open Pacific without passing over cities. Ideal for Earth-observation satellites. Also used for missile tests.\n\n" +
+                    H + "Key operations" + HE + "\n" +
+                    "\u2022 First launch: Discoverer 1, February 28, 1959, aimed at a polar orbit.\n" +
+                    "\u2022 SLC-6 was built for Space Shuttle launches, but no Shuttle ever flew from it.\n" +
+                    "\u2022 Landsat Earth-observation satellites.\n" +
+                    "\u2022 NASA's DART asteroid-impact mission launched here in November 2021.\n" +
+                    "\u2022 Minuteman III missile test launches.\n\n" +
+                    "<i>Note: in real life SLS only launches from Kennedy LC-39B.</i>";
+            default:
+                return "No information for this site yet.";
+        }
+    }
 
     public static List<Site> DefaultSites()
     {

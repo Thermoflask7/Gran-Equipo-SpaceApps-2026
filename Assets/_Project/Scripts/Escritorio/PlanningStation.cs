@@ -67,6 +67,7 @@ public class PlanningStation : MonoBehaviour
     float mapAlpha = 1f;
     float mapAlphaTarget = 1f;
     LaunchSiteSelector launchSites;
+    LaunchSiteInfoPanel infoPanel;
 
     /// <summary>The launch site markers on the map (created in Play mode if missing).</summary>
     public LaunchSiteSelector LaunchSites => launchSites;
@@ -156,6 +157,13 @@ public class PlanningStation : MonoBehaviour
         if (!Application.isPlaying || map == null) return;
         launchSites = map.GetComponent<LaunchSiteSelector>();
         if (launchSites == null) launchSites = map.gameObject.AddComponent<LaunchSiteSelector>();
+        if (calendar != null)
+        {
+            var dc = DeskCamera.Instance;
+            Camera eventCam = dc != null ? dc.GetComponent<Camera>() : Camera.main;
+            infoPanel = LaunchSiteInfoPanel.Create(transform, map, Encapsulate(calendar), eventCam);
+            launchSites.SelectionChanged += infoPanel.ShowSite;
+        }
         mapAlpha = 0f;
         mapAlphaTarget = 0f;
         ApplyMapAlpha();
@@ -198,6 +206,7 @@ public class PlanningStation : MonoBehaviour
         mapBlock.SetColor(BaseColorId, new Color(1f, 1f, 1f, mapAlpha));
         r.SetPropertyBlock(mapBlock);
         if (launchSites != null) launchSites.SetAlpha(mapAlpha);
+        if (infoPanel != null) infoPanel.SetAlpha(mapAlpha);
     }
 
     bool IsPlanningHit(Transform hit)
@@ -326,6 +335,7 @@ public class PlanningStation : MonoBehaviour
             if (has) frame.Encapsulate(cal);
             else { frame = cal; has = frame.size.sqrMagnitude > 1e-8f; }
         }
+        if (has && infoPanel != null) frame.Encapsulate(infoPanel.WorldBounds());
         if (!has) return false;
 
         Vector3 normal = WallNormal();

@@ -96,8 +96,8 @@ public class MissionSelect : MonoBehaviour
         planet.GetComponent<LayoutElement>().preferredHeight = 130;
 
         AddText(card.transform, MissionName(mission), 40, FontStyles.Bold, Color.white, TextAlignmentOptions.Center);
-        if (!string.IsNullOrEmpty(mission.missionName))
-            AddText(card.transform, ShortName(mission), 24, FontStyles.Normal, new Color(0.75f, 0.82f, 0.92f), TextAlignmentOptions.Center);
+        if (!string.IsNullOrEmpty(mission.tagline))
+            AddText(card.transform, mission.tagline, 24, FontStyles.Normal, new Color(0.75f, 0.82f, 0.92f), TextAlignmentOptions.Center);
         if (mission.locked) AddText(card.transform, "Coming soon", 26, FontStyles.Italic, new Color(0.65f, 0.7f, 0.78f), TextAlignmentOptions.Center);
         else AddText(card.transform, "Available", 26, FontStyles.Bold, new Color(0.55f, 0.9f, 0.6f), TextAlignmentOptions.Center);
 
@@ -132,7 +132,7 @@ public class MissionSelect : MonoBehaviour
             return;
         }
 
-        AddText(detailsArea, "<b>" + MissionName(selected) + "</b>   <size=75%><color=#9FB0C3>" + ShortName(selected) + "</color>   " + DifficultyText(selected) + "</size>",
+        AddText(detailsArea, "<b>" + MissionName(selected) + "</b>   <size=75%>" + DifficultyText(selected) + "</size>",
             44, FontStyles.Normal, Color.white, TextAlignmentOptions.Left);
         AddText(detailsArea, selected.description, 28, FontStyles.Normal, new Color(0.85f, 0.9f, 0.96f), TextAlignmentOptions.Left);
 
@@ -226,7 +226,7 @@ public class MissionSelect : MonoBehaviour
     {
         string n = (m.destinationName + " " + m.name).ToLower();
         if (n.Contains("mars")) return new Color(0.85f, 0.42f, 0.25f);
-        if (n.Contains("satellite")) return new Color(0.3f, 0.55f, 0.95f); // Earth
+        if (n.Contains("satellite") || n.Contains("earth")) return new Color(0.3f, 0.55f, 0.95f); // Earth
         return new Color(0.78f, 0.78f, 0.8f); // Moon
     }
 }

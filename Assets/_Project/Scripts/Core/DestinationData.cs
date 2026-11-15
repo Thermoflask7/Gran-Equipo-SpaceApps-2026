@@ -6,6 +6,7 @@ using UnityEngine;
 public class DestinationData : ScriptableObject
 {
     public string missionName;     // name of the mission in the game, e.g. "Selene" (empty = use destinationName)
+    public string tagline;         // one short line under the name on the mission card
     public string destinationName;
     [TextArea] public string description;
     public float launchDeltaV;   // no longer used: the SLS is a complete service (kept so assets do not break)

@@ -42,7 +42,7 @@ public static class MainMenuBuilder
         // The Spanish names are the ones created by older versions of this menu (so they also get replaced).
         foreach (string n in new[] { "State", "NextButton", "Buttons", "SettingsPanel", "SpaceAppsPanel",
             "Estado", "BotonSiguiente", "Botones", "PanelAjustes", "PanelSpaceApps",
-            "SpaceBackground", "GameTitle", "GameSubtitle", "MissionPanel" })
+            "SpaceBackground", "LaunchBackground", "GameTitle", "GameSubtitle", "MissionPanel" })
         {
             Transform t = root.Find(n);
             if (t != null) Object.DestroyImmediate(t.gameObject);
@@ -58,10 +58,10 @@ public static class MainMenuBuilder
             Transform t = root.Find(n);
             if (t != null) t.gameObject.SetActive(false);
         }
-        GameObject bg = new GameObject("SpaceBackground", typeof(RectTransform), typeof(RawImage), typeof(SpaceBackground));
+        // Animated background: sky, hills and a rocket lifting off (drawn in code by LaunchBackground)
+        GameObject bg = new GameObject("LaunchBackground", typeof(RectTransform), typeof(LaunchBackground));
         bg.transform.SetParent(root, false);
         Stretch((RectTransform)bg.transform);
-        bg.GetComponent<RawImage>().raycastTarget = false;
         bg.transform.SetAsFirstSibling();
 
         TextMeshProUGUI title = CreateText(root, "GameTitle", GameTitle, 110);
@@ -180,10 +180,10 @@ public static class MainMenuBuilder
         select.cardSprite = RoundedSprite;
         select.planetSprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Knob.psd");
         // Ordered from easy to hard. Only Selene can be played; the others are "Coming soon".
-        select.missions.Add(LockedMission("MissionSatellite", "Satellite launch", "Put a satellite into orbit around the Earth.", 1));
+        select.missions.Add(LockedMission("MissionSatellite", "Eos", "Satellite launch", "Put a satellite in orbit", "Launch an uncrewed rocket and put a satellite into orbit around the Earth.", 1));
         select.missions.Add(Selene());
-        select.missions.Add(LockedMission("MissionMoonLanding", "Moon landing", "Land a crew on the Moon and bring it back home.", 3));
-        select.missions.Add(LockedMission("MissionMars", "Mars landing", "Land a crew on Mars.", 3));
+        select.missions.Add(LockedMission("MissionMoonLanding", "Endymion", "Moon landing", "Land a crew on the Moon", "Land a crew on the surface of the Moon and bring them back home.", 3));
+        select.missions.Add(LockedMission("MissionMars", "Deimos", "Mars landing", "Land a crew on Mars", "The longest trip: land a crew on Mars.", 3));
 
         GameObject row = new GameObject("Cards", typeof(RectTransform), typeof(HorizontalLayoutGroup));
         row.transform.SetParent(body, false);
@@ -222,7 +222,7 @@ public static class MainMenuBuilder
     }
 
     // "Coming soon" mission: only a name, a description and a difficulty, no numbers (it cannot be played)
-    static DestinationData LockedMission(string file, string name, string description, int difficulty)
+    static DestinationData LockedMission(string file, string missionName, string name, string tagline, string description, int difficulty)
     {
         string path = DestinationsFolder + file + ".asset";
         DestinationData m = AssetDatabase.LoadAssetAtPath<DestinationData>(path);
@@ -231,7 +231,9 @@ public static class MainMenuBuilder
             m = ScriptableObject.CreateInstance<DestinationData>();
             AssetDatabase.CreateAsset(m, path);
         }
+        m.missionName = missionName;
         m.destinationName = name;
+        m.tagline = tagline;
         m.description = description;
         m.locked = true;
         m.difficulty = difficulty;
@@ -248,6 +250,7 @@ public static class MainMenuBuilder
         if (m == null) return null;
         m.missionName = "Selene";
         m.destinationName = "Crewed lunar orbit";
+        m.tagline = "Orbit the Moon with 3 astronauts";
         m.description = "Take 3 astronauts to an orbit around the Moon, collect scientific data and bring them back home safely.";
         m.difficulty = 2;
         EditorUtility.SetDirty(m);

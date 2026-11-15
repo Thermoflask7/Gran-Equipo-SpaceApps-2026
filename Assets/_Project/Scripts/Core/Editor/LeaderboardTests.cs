@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-// Leaderboard and player session tests (task 37a). Signed: Grok.
+// Leaderboard tests (task 37). Signed: Grok.
 // Menu: SpaceApps -> Leaderboard -> Run tests. Uses a separate PlayerPrefs key, the real leaderboard is not touched.
 //       SpaceApps -> Leaderboard -> Log saved / Clear saved: look at or wipe the real one.
 public static class LeaderboardTests
@@ -25,7 +25,8 @@ public static class LeaderboardTests
             Leaderboard.Clear();
             TopTen();
             Leaderboard.Clear();
-            Session();
+            RankPreview();
+            Names();
         }
         finally
         {
@@ -59,30 +60,6 @@ public static class LeaderboardTests
         }
     }
 
-    // Play mode in 03_Resultados: plays a sample turn for a 2-player session ("Tester A", "Tester B") and SAVES it
-    // in the real leaderboard, to see the Leaderboard sections and the "Next player" button. Clear saved afterwards.
-    [MenuItem("SpaceApps/Leaderboard/Test: 2-player results turn")]
-    static void TestResultsTurn()
-    {
-        ResultsScreen screen = Object.FindAnyObjectByType<ResultsScreen>();
-        if (screen == null)
-        {
-            Debug.LogWarning("Leaderboard test: open 03_Resultados and press Play first.");
-            return;
-        }
-        GameManager gm = GameManager.Instance;
-        if (!gm.session.IsStarted || !gm.session.HasNextPlayer) gm.session.Start(new List<string> { "Tester A", "Tester B" });
-        ResultsSample.Fill(gm, Random.value > 0.5f);
-        screen.useTestValues = false;
-        screen.Show();
-    }
-
-    [MenuItem("SpaceApps/Leaderboard/Test: 2-player results turn", true)]
-    static bool PlayModeOnly()
-    {
-        return Application.isPlaying;
-    }
-
     static void Ordering()
     {
         Check("first entry is rank 0", Leaderboard.Add(Entry("A", 0f, 40f)) == 0);
@@ -104,29 +81,22 @@ public static class LeaderboardTests
         Check("worst one dropped", top[top.Count - 1].playerName == "P1");
     }
 
-    static void Session()
+    static void Names()
     {
-        PlayerSession s = new PlayerSession();
-        Check("no session: Player 1", s.CurrentName == "Player 1" && !s.IsStarted && s.PlayerCount == 1);
-
-        s.Start(new List<string> { " Ana ", "", "<b>Bob</b>", "Dana", "Extra" });
-        Check("max 4 players", s.players.Count == 4);
-        Check("names cleaned", s.players[0] == "Ana" && s.players[1] == "Player 2" && s.players[2] == "bBob/b");
-
-        ScoreResult win = new ScoreResult { total = 80f, competitive = 80f, status = "SUCCESS" };
-        ScoreResult lose = new ScoreResult { total = 70f, competitive = 0f, status = "FAILURE" };
-        int rank = s.RecordTurn(lose, null);
-        Check("turn saved once", s.RecordTurn(win, null) == rank && Leaderboard.Load().Count == 1);
-        Check("next player", s.NextPlayer() && s.CurrentName == "Player 2" && !s.turnRecorded);
-        s.RecordTurn(win, null);
-        List<LeaderboardEntry> round = s.RoundRanking();
-        Check("round ranking best first", round.Count == 2 && round[0].playerName == "Player 2" && round[0].success);
-        s.NextPlayer();
-        s.NextPlayer();
-        Check("no player after the 4th", !s.NextPlayer() && s.CurrentName == "Dana");
-        Check("long name cut", PlayerSession.CleanName("ABCDEFGHIJKLMNOPQRST", 1).Length == PlayerSession.MaxNameLength);
+        Check("name trimmed", Leaderboard.CleanName("  Ana ") == "Ana");
+        Check("empty name is Player", Leaderboard.CleanName("") == "Player" && Leaderboard.CleanName(null) == "Player");
+        Check("no rich text tags", Leaderboard.CleanName("<b>Bob</b>") == "bBob/b");
+        Check("long name cut", Leaderboard.CleanName("ABCDEFGHIJKLMNOPQRST").Length == Leaderboard.MaxNameLength);
     }
 
+    static void RankPreview()
+    {
+        Check("empty board: rank 0", Leaderboard.RankFor(Entry("X", 10f, 10f)) == 0);
+        for (int i = 0; i < 10; i++) Leaderboard.Add(Entry("P" + i, 50f + i, 50f + i));
+        Check("preview does not save", Leaderboard.Load().Count == Leaderboard.MaxEntries);
+        Check("too low: -1", Leaderboard.RankFor(Entry("Low", 10f, 10f)) == -1);
+        Check("preview matches Add", Leaderboard.RankFor(Entry("Mid", 55.5f, 55.5f)) == Leaderboard.Add(Entry("Mid", 55.5f, 55.5f)));
+    }
     static LeaderboardEntry Entry(string name, float competitive, float diagnostic)
     {
         return new LeaderboardEntry { playerName = name, competitive = competitive, diagnostic = diagnostic, success = competitive > 0f };

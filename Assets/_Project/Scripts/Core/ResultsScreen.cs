@@ -24,9 +24,12 @@ public class ResultsScreen : MonoBehaviour
     public float bodySize = 28f;
     public Color headerColor = new Color(0.13f, 0.19f, 0.34f, 0.95f);
 
-    // Task 37c: local leaderboard
-    bool sampleGame;            // test values: nothing is saved in the leaderboard
-    int leaderboardRank = -1;   // 0-based rank of this turn in the top 10 (-1 = not in it or not saved)
+    // Task 37: local leaderboard (single player, arcade style)
+    ScoreResult lastResult;
+    bool canSaveScore;          // the game finished (success or failure)
+    bool scoreSaved;            // saved (or did not make the top 10): once per game
+    int savedRank = -1;         // 0-based rank of this game in the top 10 (-1 = none)
+    GameObject leaderboardButton;
 
     void Start()
     {
@@ -36,20 +39,16 @@ public class ResultsScreen : MonoBehaviour
     public void Show()
     {
         GameManager gm = GameManager.Instance;
-        sampleGame = false;
         if (useTestValues && !gm.flight.launched && gm.rocketParts.Count == 0)
         {
             ResultsSample.Fill(gm, !failingTestValues);
-            sampleGame = true;
             Debug.Log("ResultsScreen: no game was played, showing test values.");
         }
 
         ScoreResult r = MissionScoring.SaveFinalScore();
-        if (!sampleGame && (r.status == "SUCCESS" || r.status == "FAILURE"))
-        {
-            leaderboardRank = gm.session.RecordTurn(r, gm); // once per turn, even if Show runs again
-            SetupMenuButton(gm);
-        }
+        lastResult = r;
+        canSaveScore = r.problem == "" && (r.status == "SUCCESS" || r.status == "FAILURE");
+        AddLeaderboardButton();
         if (title != null) title.text = TitleFor(r);
         if (score != null) score.text = r.total.ToString("0") + " / 100";
         if (content != null) BuildSections(r, gm);
@@ -101,8 +100,6 @@ public class ResultsScreen : MonoBehaviour
             }
         }
 
-        AddLeaderboard(gm);
-
         AddText("<b>Score breakdown</b>", headerSize, content).margin = new Vector4(0, 16, 0, 0);
         AddFoldout("Planning   <color=#8FB8FF>" + r.planning.ToString("0.0") + " / 45</color>", PlanningText(r), false);
         AddFoldout("Mission   <color=#8FB8FF>" + r.mission.ToString("0.0") + " / 55</color>", MissionText(r), false);
@@ -119,73 +116,43 @@ public class ResultsScreen : MonoBehaviour
         }
     }
 
-    // ---------- Leaderboard (task 37c) ----------
+    // ---------- Leaderboard (task 37) ----------
 
-    // This round's ranking (2 to 4 players) and the saved top 10, with this turn highlighted
-    void AddLeaderboard(GameManager gm)
+    // "Leaderboard" button next to "Back to menu": asks the player's name (arcade style), saves this game's
+    // score once and shows the top 10. It is a runtime copy of the menu button, so the scene is not changed.
+    void AddLeaderboardButton()
     {
-        if (sampleGame || !gm.session.turnRecorded) return;
-        PlayerSession s = gm.session;
-        LeaderboardEntry mine = s.roundEntries.Count > 0 ? s.roundEntries[s.roundEntries.Count - 1] : null;
-
-        AddText("<b>Leaderboard</b>", headerSize, content).margin = new Vector4(0, 16, 0, 0);
-        if (s.PlayerCount > 1 && mine != null)
+        if (leaderboardButton != null) return;
+        NextSceneButton menu = FindAnyObjectByType<NextSceneButton>();
+        Button button;
+        if (menu != null)
         {
-            string roundHeader = (s.HasNextPlayer ? "This round so far" : "This round: final ranking")
-                                 + "   <color=#8FB8FF>" + s.roundEntries.Count + " / " + s.PlayerCount + " players</color>";
-            AddFoldout(roundHeader, RankingText(s.RoundRanking(), mine), true);
+            GameObject copy = Instantiate(menu.gameObject, menu.transform.parent);
+            copy.name = "LeaderboardButton";
+            Destroy(copy.GetComponent<NextSceneButton>());
+            button = copy.GetComponent<Button>();
+            button.onClick.RemoveAllListeners(); // drops the copied "go to menu" listener
+            RectTransform rt = (RectTransform)copy.transform;
+            RectTransform source = (RectTransform)menu.transform;
+            rt.anchoredPosition = source.anchoredPosition - new Vector2(source.rect.width + 30f, 0f);
+            TMP_Text label = copy.GetComponentInChildren<TMP_Text>();
+            if (label != null) label.text = "Leaderboard";
         }
-
-        List<LeaderboardEntry> top = Leaderboard.Load();
-        LeaderboardEntry saved = leaderboardRank >= 0 && leaderboardRank < top.Count ? top[leaderboardRank] : null;
-        string place = saved != null ? s.CurrentName + " is #" + (leaderboardRank + 1)
-                                     : s.CurrentName + " is not in the top " + Leaderboard.MaxEntries;
-        AddFoldout("Top " + Leaderboard.MaxEntries + "   <color=#8FB8FF>" + place + "</color>", RankingText(top, saved), s.PlayerCount == 1);
+        else button = LeaderboardDialog.CreateCornerButton();
+        leaderboardButton = button.gameObject;
+        button.onClick.AddListener(OpenLeaderboard);
     }
 
-    static string RankingText(List<LeaderboardEntry> list, LeaderboardEntry highlight)
+    void OpenLeaderboard()
     {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < list.Count; i++)
+        LeaderboardEntry pending = null;
+        if (canSaveScore && !scoreSaved) pending = Leaderboard.EntryFrom("", lastResult, GameManager.Instance);
+        LeaderboardDialog.Open(pending, savedRank, rank =>
         {
-            LeaderboardEntry e = list[i];
-            string result = e.success ? "<color=#6FCF97>Success</color>"
-                                      : "<color=#EB5757>Failed</color>  <size=80%>(learning " + e.diagnostic.ToString("0") + ")</size>";
-            string line = (i + 1) + ".<pos=7%>" + e.playerName + "<pos=45%>" + e.competitive.ToString("0.0") + "<pos=60%>" + result;
-            if (e == highlight) line = "<color=#FFD54F><b>" + line + "   (you)</b></color>";
-            if (i > 0) sb.Append('\n');
-            sb.Append(line);
-        }
-        return sb.ToString();
-    }
-
-    // More players waiting: the "Back to menu" button becomes "Next player: name" (same mission, fresh game)
-    void SetupMenuButton(GameManager gm)
-    {
-        PlayerSession s = gm.session;
-        if (!s.HasNextPlayer) return;
-        NextSceneButton next = FindAnyObjectByType<NextSceneButton>();
-        if (next == null) return;
-        Button button = next.GetComponent<Button>();
-        button.onClick.RemoveAllListeners(); // drops NextSceneButton's "go to menu" listener (added in its Awake)
-        button.onClick.AddListener(() =>
-        {
-            if (!s.NextPlayer()) return;
-            DestinationData mission = gm.mission;
-            gm.ResetGame();
-            gm.mission = mission;
-            gm.GoToScene(Scenes.Planning);
+            scoreSaved = true; // once per game
+            savedRank = rank;
         });
-        TMP_Text label = button.GetComponentInChildren<TMP_Text>();
-        if (label != null)
-        {
-            label.enableAutoSizing = true;
-            label.fontSizeMax = label.fontSize;
-            label.fontSizeMin = 18f;
-            label.text = "Next player: " + s.players[s.current + 1];
-        }
     }
-
     TMP_Text AddText(string text, float size, Transform parent)
     {
         GameObject go = new GameObject("Text", typeof(RectTransform), typeof(TextMeshProUGUI));

@@ -9,11 +9,13 @@ using UnityEngine;
 // The numbers come from MissionScoring (ScoreResult): if the scoring formula changes, the leaderboard
 // keeps working; old entries just are not comparable (use Clear).
 //
+// Single player, arcade style: at the end of a game the Results "Leaderboard" button asks the name (LeaderboardDialog).
 // Use:  int rank = Leaderboard.Add(Leaderboard.EntryFrom("Ana", result, gm));   // 0-based, -1 = not in the top
 //       List<LeaderboardEntry> top = Leaderboard.Load();
 public static class Leaderboard
 {
     public const int MaxEntries = 10;
+    public const int MaxNameLength = 16;
     public const string DefaultKey = "SpaceApps.Leaderboard.v1";
 
     // Changed only by the editor tests, so they do not touch the real leaderboard
@@ -68,6 +70,32 @@ public static class Leaderboard
         PlayerPrefs.Save();
     }
 
+    // 0-based rank the entry would get, without saving it (-1 = it would not make the top)
+    public static int RankFor(LeaderboardEntry entry)
+    {
+        if (entry == null) return -1;
+        List<LeaderboardEntry> entries = Load();
+        int index = entries.Count;
+        for (int i = 0; i < entries.Count; i++)
+        {
+            if (Compare(entry, entries[i]) < 0)
+            {
+                index = i;
+                break;
+            }
+        }
+        return index < MaxEntries ? index : -1;
+    }
+
+    // Trimmed, no TMP rich text tags, at most MaxNameLength characters; empty = "Player"
+    public static string CleanName(string name)
+    {
+        string n = name == null ? "" : name.Trim();
+        n = n.Replace("<", "").Replace(">", "");
+        if (n.Length > MaxNameLength) n = n.Substring(0, MaxNameLength).Trim();
+        return n.Length == 0 ? "Player" : n;
+    }
+
     // Negative = a goes above b
     public static int Compare(LeaderboardEntry a, LeaderboardEntry b)
     {
@@ -79,7 +107,7 @@ public static class Leaderboard
     public static LeaderboardEntry EntryFrom(string playerName, ScoreResult r, GameManager gm)
     {
         LeaderboardEntry e = new LeaderboardEntry();
-        e.playerName = PlayerSession.CleanName(playerName, 1);
+        e.playerName = CleanName(playerName);
         if (r != null)
         {
             e.competitive = Mathf.Round(r.competitive * 10f) / 10f;

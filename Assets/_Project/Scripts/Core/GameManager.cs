@@ -59,9 +59,6 @@ public class GameManager : MonoBehaviour
     [Header("Flight (filled in by the phases and minigames, read by Results)")]
     public MissionResults flight = new MissionResults();
 
-    [Header("Players (task 37: 1 to 4 players in turns, NOT cleared by ResetGame)")]
-    public PlayerSession session = new PlayerSession();
-
     void Awake()
     {
         if (instance != null && instance != this)

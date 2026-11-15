@@ -53,12 +53,14 @@ public class MissionSelect : MonoBehaviour
         UpdateSelection();
     }
 
-    // "Start mission" button: asks who is playing (1 to 4 players, task 37b), then PlayerSetupDialog starts
-    // the session, resets the game and loads planning
+    // "Start mission" button
     public void StartMission()
     {
         if (selected == null || selected.locked) return;
-        PlayerSetupDialog.Open(selected);
+        GameManager gm = GameManager.Instance;
+        gm.ResetGame();
+        gm.mission = selected;
+        gm.GoToScene(Scenes.Planning);
     }
 
     // ---------- Cards ----------

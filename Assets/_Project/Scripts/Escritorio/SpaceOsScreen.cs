@@ -45,6 +45,13 @@ public class SpaceOsScreen : MonoBehaviour
     public ComputerDesktop Desktop => desktop;
     public bool CrtEnabled => crtEnabled;
 
+    /// <summary>Enciende o apaga el filtro CRT (cambia el material de la malla del monitor).</summary>
+    public void SetCrtEnabled(bool value)
+    {
+        crtEnabled = value;
+        if (isActiveAndEnabled) ApplyMaterial();
+    }
+
     public void SetUICamera(Camera value) => uiCamera = value;
     public void SetDesktop(ComputerDesktop value) => desktop = value;
     public void SetScreenRenderer(MeshRenderer value) => screenRenderer = value;

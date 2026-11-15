@@ -132,6 +132,7 @@ public static class PcDeskBuilder
                 spaceOs.SetPlacement(keptPos, keptEuler, Vector3.zero);
             AssignDesktop(desktop, refs);
             EnsureSpaceMart(desktop);
+            EnsureAjustes(desktop);
             station.SetDesktop(desktop);
             if (spaceOs != null) spaceOs.Refresh();
             EditorUtility.SetDirty(station);
@@ -481,6 +482,13 @@ public static class PcDeskBuilder
     }
 
     const string SpaceMartCatalogPath = "Assets/_Project/Data/Tienda/SpaceMartCatalog.asset";
+
+    static void EnsureAjustes(ComputerDesktop desktop)
+    {
+        if (desktop == null) return;
+        if (desktop.GetComponent<AjustesApp>() == null)
+            Undo.AddComponent<AjustesApp>(desktop.gameObject);
+    }
 
     static void EnsureSpaceMart(ComputerDesktop desktop)
     {

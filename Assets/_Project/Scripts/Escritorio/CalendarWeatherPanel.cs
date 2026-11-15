@@ -40,6 +40,7 @@ public class CalendarWeatherPanel : MonoBehaviour
         public Image fill;
         public TextMeshProUGUI weekday;
         public TextMeshProUGUI date;
+        public Image ring; // red circle around the date of the chosen day
         public Image icon;
         public TextMeshProUGUI wind;
         public TextMeshProUGUI rain;
@@ -51,6 +52,7 @@ public class CalendarWeatherPanel : MonoBehaviour
     // Static so GameManager.launchSite stays valid after the planning scene unloads.
     static readonly Dictionary<string, LaunchSiteData> runtimeSites = new Dictionary<string, LaunchSiteData>();
     static readonly Dictionary<WeatherCondition, Sprite> icons = new Dictionary<WeatherCondition, Sprite>();
+    static Sprite ringSprite;
 
     CanvasGroup sheetGroup;
     CanvasGroup headerGroup;
@@ -177,6 +179,13 @@ public class CalendarWeatherPanel : MonoBehaviour
 
         c.weekday = CreateText("Weekday", fillRt, "", 26f, TextAlignmentOptions.TopLeft, DarkText, true);
         Stretch(c.weekday.rectTransform, 0.08f, 0.78f, 0.7f, 0.96f);
+        var ringRt = CreateImage("Ring", fillRt, SelectedBorder);
+        Stretch(ringRt, 0.62f, 0.72f, 0.98f, 1f);
+        c.ring = ringRt.GetComponent<Image>();
+        c.ring.sprite = RingSprite();
+        c.ring.preserveAspect = true;
+        c.ring.raycastTarget = false;
+        c.ring.gameObject.SetActive(false);
         c.date = CreateText("Date", fillRt, "", 22f, TextAlignmentOptions.TopRight, GrayText, false);
         Stretch(c.date.rectTransform, 0.5f, 0.78f, 0.92f, 0.96f);
 
@@ -221,10 +230,18 @@ public class CalendarWeatherPanel : MonoBehaviour
                          first.AddDays(LaunchWeatherModel.Days - 1).ToString("MMM d", System.Globalization.CultureInfo.InvariantCulture);
         if (!hasSite)
         {
+            // Big centered message while the sheet is empty
             siteText.text = "Launch calendar";
-            hintText.text = "Pick a launch site on the map first.";
+            hintText.fontSize = 34f;
+            hintText.alignment = TextAlignmentOptions.Center;
+            Stretch(hintText.rectTransform, 0.05f, 0.15f, 0.95f, 0.8f);
+            hintText.text = "<b>First, pick a launch site on the map</b>\n\n<size=75%>Every site has its own weather. " +
+                            "Then choose the day with the lowest launch risk.</size>";
             return;
         }
+        hintText.fontSize = 22f;
+        hintText.alignment = TextAlignmentOptions.TopLeft;
+        Stretch(hintText.rectTransform, 0.03f, 0.80f, 0.97f, 0.885f);
 
         siteText.text = site.displayName;
         DayWeather[] days = LaunchWeatherModel.GetForecast(site.id);
@@ -240,6 +257,8 @@ public class CalendarWeatherPanel : MonoBehaviour
             c.riskBar.anchorMax = new Vector2(Mathf.Max(0.06f, d.risk), 1f);
             c.riskFill.color = d.risk < 0.35f ? RiskLow : (d.risk < 0.7f ? RiskMid : RiskHigh);
             bool sel = i == selectedDay;
+            c.ring.gameObject.SetActive(sel);
+            c.date.color = sel ? SelectedBorder : GrayText;
             c.border.color = sel ? SelectedBorder : CardBorder;
             c.fill.color = sel ? SelectedFill : CardColor;
             var fillRt = c.fill.rectTransform;
@@ -253,7 +272,7 @@ public class CalendarWeatherPanel : MonoBehaviour
             hintText.text = d.Weekday + " " + d.date.ToString("MMM d", System.Globalization.CultureInfo.InvariantCulture) +
                             " selected: " + d.condition + ", launch risk " + Mathf.RoundToInt(d.risk * 100f) + "%";
         }
-        else hintText.text = "Pick a launch day.";
+        else hintText.text = "Pick a launch day. The bar is the launch risk: <color=#3DAB59>green = safe</color>, <color=#D13333>red = risky</color>.";
     }
 
     void SelectDay(int day)
@@ -304,6 +323,29 @@ public class CalendarWeatherPanel : MonoBehaviour
         if (headerGroup != null) headerGroup.alpha = alpha;
         if (sheetCanvas != null) sheetCanvas.enabled = on;
         if (headerCanvas != null) headerCanvas.enabled = on;
+    }
+
+    // Hand-drawn-looking red circle (a ring a bit thicker on one side)
+    static Sprite RingSprite()
+    {
+        if (ringSprite != null) return ringSprite;
+        const int size = 64;
+        var tex = new Texture2D(size, size, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, name = "CalendarRing" };
+        var px = new Color32[size * size];
+        float c = (size - 1) * 0.5f;
+        for (int y = 0; y < size; y++)
+        for (int x = 0; x < size; x++)
+        {
+            float d = Mathf.Sqrt((x - c) * (x - c) + (y - c) * (y - c));
+            float thick = 3f + 1.5f * (x / (float)size); // thicker on the right, like a marker stroke
+            float edge = Mathf.Abs(d - (c - 4f));
+            byte a = (byte)(Mathf.Clamp01(thick - edge) * 255f);
+            px[y * size + x] = new Color32(255, 255, 255, a);
+        }
+        tex.SetPixels32(px);
+        tex.Apply(false, true);
+        ringSprite = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f));
+        return ringSprite;
     }
 
     // ---------- Weather icons (drawn once at runtime, no image assets needed) ----------

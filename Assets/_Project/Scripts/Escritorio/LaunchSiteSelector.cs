@@ -7,8 +7,9 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 /// Launch site markers on the planning wall world map (task 6). Lives on the WorldMap quad.
-/// Markers are built at runtime from <see cref="sites"/>; clicking one selects it (red),
-/// the others stay white. Only clickable while the PlanningStation is zoomed in.
+/// Markers are map pins built at runtime from <see cref="sites"/>: white, orange under the mouse,
+/// red with a small bounce when clicked. The tip of the pin sits on the site.
+/// Only clickable while the PlanningStation is zoomed in.
 /// Positions are UVs on WorldMap.png (0,0 = top-left), calibrated by hand because the
 /// map does not use an equirectangular projection.
 /// </summary>
@@ -39,9 +40,10 @@ public class LaunchSiteSelector : MonoBehaviour
     [SerializeField] List<Site> sites = DefaultSites();
 
     [Header("Look")]
-    [SerializeField] float markerSize = 0.028f;
-    [SerializeField] float labelFontSize = 0.16f;
+    [SerializeField] float markerSize = 0.05f;
+    [SerializeField] float labelFontSize = 0.28f;
     [SerializeField] Color normalColor = Color.white;
+    [SerializeField] Color hoverColor = new Color(1f, 0.6f, 0.15f, 1f);
     [SerializeField] Color selectedColor = new Color(0.95f, 0.12f, 0.12f, 1f);
     [SerializeField] float wallOffset = 0.002f;
     [SerializeField] float maxClickDistance = 50f;
@@ -57,65 +59,87 @@ public class LaunchSiteSelector : MonoBehaviour
     readonly List<TextMeshPro> labels = new List<TextMeshPro>();
     readonly List<Collider> markerColliders = new List<Collider>();
     Transform container;
+    MapDecor decor;
     Material markerMaterial;
-    Texture2D circleTexture;
+    Texture2D pinTexture;
     MaterialPropertyBlock block;
     PlanningStation station;
     int selectedIndex = -1;
+    int hoverIndex = -1;
+    float selectedTime = -10f;
+    readonly List<Vector3> sitePositions = new List<Vector3>(); // where each pin tip touches the map
     float alpha = 1f;
 
     const string H = "<color=#F28C26><b>";
     const string HE = "</b></color>";
 
-    /// <summary>Real-world info about each launch site (English, TMP rich text).</summary>
+    /// <summary>Real-world info about each launch site (English, TMP rich text). No agency or program names.</summary>
     public static string DefaultInfo(string id)
     {
         switch (id)
         {
             case "KSC":
-                return H + "Location" + HE + "\n" +
-                    "Merritt Island, Florida, USA (28.6\u00b0 N, 80.6\u00b0 W), on the Atlantic coast next to Cape Canaveral.\n\n" +
-                    H + "Who uses it" + HE + "\n" +
-                    "NASA's main launch center. Launch Complex 39A is leased to SpaceX; Launch Complex 39B is NASA's pad for the SLS rocket.\n\n" +
-                    H + "What it is used for" + HE + "\n" +
-                    "Crewed and heavy-lift launches. Launching east over the ocean adds speed from Earth's rotation, which suits low Earth orbit, the Moon and deep space.\n\n" +
-                    H + "Key operations" + HE + "\n" +
-                    "\u2022 Apollo 11 lifted off from LC-39A on July 16, 1969.\n" +
-                    "\u2022 Home of the Space Shuttle program (1981-2011).\n" +
-                    "\u2022 SpaceX Demo-2 (May 30, 2020) restarted crewed launches from US soil.\n" +
-                    "\u2022 Artemis I launched on SLS from LC-39B on November 16, 2022.\n" +
-                    "\u2022 The Vehicle Assembly Building stacks rockets before they roll to the pad.";
+                return H + "WHY IT MATTERS" + HE + "\n" +
+                    "Rockets launch east over the Atlantic, so Earth's spin adds speed for free and the flight path stays away from towns. " +
+                    "That makes it the classic site for crewed missions to the Moon.\n\n" +
+                    H + "HISTORY" + HE + "\n" +
+                    "• The first crewed Moon landing mission lifted off from here in July 1969.\n" +
+                    "• The space shuttles launched from here from 1981 to 2011.\n" +
+                    "• A giant assembly building stacks the rockets before they roll out to the pad.";
             case "CCSFS":
-                return H + "Location" + HE + "\n" +
-                    "Cape Canaveral, Florida, USA (28.5\u00b0 N, 80.6\u00b0 W), just south of Kennedy Space Center.\n\n" +
-                    H + "Who uses it" + HE + "\n" +
-                    "Run by the US Space Force (Space Launch Delta 45). Commercial pads include SpaceX SLC-40, ULA SLC-41 and Blue Origin LC-36.\n\n" +
-                    H + "What it is used for" + HE + "\n" +
-                    "The busiest US launch range: satellites, cargo and crew to the ISS, military payloads and planetary probes.\n\n" +
-                    H + "Key operations" + HE + "\n" +
-                    "\u2022 First launch from the Cape: Bumper 8, July 24, 1950.\n" +
-                    "\u2022 Explorer 1, the first US satellite, January 31, 1958.\n" +
-                    "\u2022 Mercury flights: Alan Shepard (1961) and John Glenn's first US orbit (1962).\n" +
-                    "\u2022 The Gemini crewed missions of the 1960s.\n" +
-                    "\u2022 New Horizons (2006) and the Mars rovers Curiosity (2011) and Perseverance (2020).\n\n" +
-                    "<i>Note: in real life SLS only launches from Kennedy LC-39B.</i>";
+                return H + "WHY IT MATTERS" + HE + "\n" +
+                    "Right next to Kennedy, with the same eastward boost over the ocean. " +
+                    "It is the busiest launch range in the country, with many commercial pads, so the schedule is crowded.\n\n" +
+                    H + "HISTORY" + HE + "\n" +
+                    "• First launch from the Cape: July 1950.\n" +
+                    "• The first US satellite launched from here in 1958.\n" +
+                    "• The first US astronauts flew from here in 1961 and 1962.\n" +
+                    "• Many Mars rovers and planetary probes started their trip here.";
             case "VSFB":
-                return H + "Location" + HE + "\n" +
-                    "Near Lompoc, Santa Barbara County, California, USA (34.7\u00b0 N, 120.6\u00b0 W), on the Pacific coast.\n\n" +
-                    H + "Who uses it" + HE + "\n" +
-                    "Run by the US Space Force (Space Launch Delta 30). Used by SpaceX (SLC-4E), ULA, Firefly and NASA science missions.\n\n" +
-                    H + "What it is used for" + HE + "\n" +
-                    "Polar and sun-synchronous orbits: rockets fly south over the open Pacific without passing over cities. Ideal for Earth-observation satellites. Also used for missile tests.\n\n" +
-                    H + "Key operations" + HE + "\n" +
-                    "\u2022 First launch: Discoverer 1, February 28, 1959, aimed at a polar orbit.\n" +
-                    "\u2022 SLC-6 was built for Space Shuttle launches, but no Shuttle ever flew from it.\n" +
-                    "\u2022 Landsat Earth-observation satellites.\n" +
-                    "\u2022 NASA's DART asteroid-impact mission launched here in November 2021.\n" +
-                    "\u2022 Minuteman III missile test launches.\n\n" +
-                    "<i>Note: in real life SLS only launches from Kennedy LC-39B.</i>";
+                return H + "WHY IT MATTERS" + HE + "\n" +
+                    "Rockets fly south over the open Pacific into polar orbits, which pass over the whole planet: great for Earth-watching satellites. " +
+                    "But launching south gets no help from Earth's spin, so going to the Moon costs more fuel.\n\n" +
+                    H + "HISTORY" + HE + "\n" +
+                    "• First launch in 1959, toward a polar orbit.\n" +
+                    "• A pad was built for the space shuttle, but none ever flew from it.\n" +
+                    "• Many Earth-observation satellites were launched here.\n" +
+                    "• An asteroid-deflection test mission launched here in 2021.";
             default:
                 return "No information for this site yet.";
         }
+    }
+
+    /// <summary>Where the site is, in a few words.</summary>
+    public static string Region(string id)
+    {
+        if (id == "KSC" || id == "CCSFS") return "Florida, USA  |  Atlantic coast";
+        if (id == "VSFB") return "California, USA  |  Pacific coast";
+        return "";
+    }
+
+    /// <summary>True if rockets from this site launch east (and get Earth's spin boost).</summary>
+    public static bool LaunchesEast(string id)
+    {
+        return id != "VSFB";
+    }
+
+    /// <summary>
+    /// Latitude/longitude to a UV on WorldMap.png ((0,0) = top-left). Linear in both, fitted to the
+    /// hand-calibrated Kennedy and Vandenberg spots; good enough for the grid lines and the equator.
+    /// </summary>
+    public static Vector2 GeoToUv(float latitude, float longitude)
+    {
+        const float kLat = 28.6273f, kLon = -80.6209f, kU = 0.1704f, kV = 0.3559f;
+        const float vLat = 34.7420f, vLon = -120.5724f, vU = 0.0609f, vV = 0.3165f;
+        float u = kU + (longitude - kLon) * (kU - vU) / (kLon - vLon);
+        float v = kV + (latitude - kLat) * (kV - vV) / (kLat - vLat);
+        return new Vector2(u, v);
+    }
+
+    /// <summary>Speed Earth's rotation gives an eastward launch at this latitude (m/s).</summary>
+    public static float SpinBoost(float latitude)
+    {
+        return 465.1f * Mathf.Cos(latitude * Mathf.Deg2Rad);
     }
 
     public static List<Site> DefaultSites()
@@ -140,7 +164,7 @@ public class LaunchSiteSelector : MonoBehaviour
     void OnDestroy()
     {
         if (markerMaterial != null) Destroy(markerMaterial);
-        if (circleTexture != null) Destroy(circleTexture);
+        if (pinTexture != null) Destroy(pinTexture);
     }
 
     void Build()
@@ -149,6 +173,7 @@ public class LaunchSiteSelector : MonoBehaviour
         markerRenderers.Clear();
         labels.Clear();
         markerColliders.Clear();
+        sitePositions.Clear();
 
         // Undo the map's non-uniform scale so children work in meters.
         var go = new GameObject("LaunchSites");
@@ -157,6 +182,9 @@ public class LaunchSiteSelector : MonoBehaviour
         Vector3 s = transform.localScale;
         container.localScale = new Vector3(1f / Mathf.Max(1e-4f, s.x), 1f / Mathf.Max(1e-4f, s.y), 1f);
         float width = s.x, height = s.y;
+
+        // Frame, plaque, grid and equator: between the map and the pins
+        decor = MapDecor.Create(container, width, height, -wallOffset * 0.5f);
 
         EnsureMaterial();
         for (int i = 0; i < sites.Count; i++)
@@ -174,9 +202,9 @@ public class LaunchSiteSelector : MonoBehaviour
             var box = marker.AddComponent<BoxCollider>();
             box.size = new Vector3(1.8f, 1.8f, 0.2f);
             marker.transform.SetParent(container, false);
-            marker.transform.localPosition = pos;
             marker.transform.localRotation = Quaternion.identity;
-            marker.transform.localScale = new Vector3(markerSize, markerSize, markerSize);
+            sitePositions.Add(pos);
+            PlacePin(marker.transform, pos, 1f);
             var r = marker.GetComponent<Renderer>();
             r.sharedMaterial = markerMaterial;
             r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
@@ -198,8 +226,11 @@ public class LaunchSiteSelector : MonoBehaviour
             tmp.rectTransform.sizeDelta = new Vector2(0.3f, 0.03f);
             float side = site.labelOnRight ? 1f : -1f;
             tmp.rectTransform.pivot = new Vector2(site.labelOnRight ? 0f : 1f, 0.5f);
-            labelGo.transform.localPosition = pos + new Vector3(side * markerSize * 0.75f, 0f, -0.001f);
+            // Next to the round head of the pin
+            labelGo.transform.localPosition = pos + new Vector3(side * markerSize * 0.4f, markerSize * 0.68f, -0.001f);
             labelGo.transform.localRotation = Quaternion.identity;
+            // Drawn after the (transparent) map, so the map never hides it
+            tmp.fontMaterial.renderQueue = 3002;
             labels.Add(tmp);
         }
         Refresh();
@@ -207,30 +238,41 @@ public class LaunchSiteSelector : MonoBehaviour
 
     void EnsureMaterial()
     {
-        if (circleTexture == null) circleTexture = MakeCircle(128);
+        if (pinTexture == null) pinTexture = MakePin(128);
         if (markerMaterial != null) return;
         // Copy the map material so the marker uses the same (already included) URP Unlit transparent variant.
         var mapRenderer = GetComponent<Renderer>();
         Material src = mapRenderer != null ? mapRenderer.sharedMaterial : null;
         markerMaterial = src != null ? new Material(src) : new Material(Shader.Find("Universal Render Pipeline/Unlit"));
         markerMaterial.name = "LaunchSiteMarker (runtime)";
-        markerMaterial.SetTexture(BaseMapId, circleTexture);
-        markerMaterial.mainTexture = circleTexture;
+        markerMaterial.SetTexture(BaseMapId, pinTexture);
+        markerMaterial.mainTexture = pinTexture;
         markerMaterial.renderQueue = 3001;
     }
 
-    static Texture2D MakeCircle(int size)
+    // Map pin: round head on top, point at the bottom center of the texture.
+    // Body is white (tinted by the marker color), with a dark rim and a dark hole in the head.
+    static Texture2D MakePin(int size)
     {
-        var tex = new Texture2D(size, size, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, name = "LaunchSiteCircle" };
+        var tex = new Texture2D(size, size, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, name = "LaunchSitePin" };
         var px = new Color32[size * size];
-        float c = (size - 1) * 0.5f;
+        float cx = (size - 1) * 0.5f;
+        float cy = size * 0.66f;       // head center
+        float r = size * 0.3f;         // head radius
+        float tipY = size * 0.02f;     // point of the pin
         for (int y = 0; y < size; y++)
         for (int x = 0; x < size; x++)
         {
-            float d = Mathf.Sqrt((x - c) * (x - c) + (y - c) * (y - c)) / c;
-            byte a = (byte)(Mathf.Clamp01((1f - d) * c * 0.5f) * 255f);
-            // White fill with a dark rim so the marker reads on land and ocean.
-            byte v = d > 0.78f ? (byte)30 : (byte)255;
+            float dx = x - cx, dy = y - cy;
+            float headDist = Mathf.Sqrt(dx * dx + dy * dy) / r; // < 1 inside the head
+            // Cone from the tip up to the head: half width grows from 0 at the tip to r at the head center
+            float coneHalf = y < cy && y > tipY ? r * (y - tipY) / (cy - tipY) : -1f;
+            float coneDist = coneHalf > 0f ? Mathf.Abs(dx) / coneHalf : 2f;
+            float d = Mathf.Min(headDist, coneDist);
+            byte a = (byte)(Mathf.Clamp01((1f - d) * r * 0.5f) * 255f);
+            byte v = 255;
+            if (d > 0.8f) v = 40;               // rim
+            if (headDist < 0.38f) v = 50;       // hole in the head
             px[y * size + x] = new Color32(v, v, v, a);
         }
         tex.SetPixels32(px);
@@ -238,17 +280,33 @@ public class LaunchSiteSelector : MonoBehaviour
         return tex;
     }
 
+    // The quad is centered, so move it up half its size: the pin tip lands on the site
+    void PlacePin(Transform pin, Vector3 sitePos, float scale)
+    {
+        float size = markerSize * scale;
+        pin.localScale = new Vector3(size, size, size);
+        pin.localPosition = sitePos + new Vector3(0f, size * 0.49f, 0f);
+    }
+
     void Update()
     {
         if (station == null) station = GetComponentInParent<PlanningStation>();
-        if (station == null || !station.IsOpen) return;
+        AnimatePins();
+        if (station == null || !station.IsOpen) { SetHover(-1); return; }
         var mouse = Mouse.current;
-        if (mouse == null || !mouse.leftButton.wasPressedThisFrame) return;
-        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
+        if (mouse == null) return;
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) { SetHover(-1); return; }
 
+        int index = PinUnderMouse(mouse);
+        SetHover(index);
+        if (index >= 0 && mouse.leftButton.wasPressedThisFrame) Select(index);
+    }
+
+    int PinUnderMouse(Mouse mouse)
+    {
         var dc = DeskCamera.Instance;
         Camera cam = dc != null ? dc.GetComponent<Camera>() : Camera.main;
-        if (cam == null) return;
+        if (cam == null) return -1;
         Ray ray = cam.ScreenPointToRay(mouse.position.ReadValue());
         var hits = Physics.RaycastAll(ray, maxClickDistance, ~0, QueryTriggerInteraction.Collide);
         float best = float.PositiveInfinity;
@@ -258,7 +316,31 @@ public class LaunchSiteSelector : MonoBehaviour
             int i = markerColliders.IndexOf(h.collider);
             if (i >= 0 && h.distance < best) { best = h.distance; index = i; }
         }
-        if (index >= 0) Select(index);
+        return index;
+    }
+
+    void SetHover(int index)
+    {
+        if (index == hoverIndex) return;
+        hoverIndex = index;
+        Refresh();
+    }
+
+    // Hovered pins grow a little; the selected one bounces when clicked
+    void AnimatePins()
+    {
+        for (int i = 0; i < markerRenderers.Count && i < sitePositions.Count; i++)
+        {
+            if (markerRenderers[i] == null) continue;
+            float scale = 1f;
+            if (i == hoverIndex) scale = 1.2f;
+            if (i == selectedIndex)
+            {
+                float t = Time.time - selectedTime;
+                scale = 1.25f * (1f + 0.3f * Mathf.Exp(-6f * t) * Mathf.Sin(18f * t));
+            }
+            PlacePin(markerRenderers[i].transform, sitePositions[i], scale);
+        }
     }
 
     /// <summary>Select a site by index (-1 clears). The selected marker turns red.</summary>
@@ -267,6 +349,7 @@ public class LaunchSiteSelector : MonoBehaviour
         if (index < -1 || index >= sites.Count) return;
         if (index == selectedIndex) return;
         selectedIndex = index;
+        selectedTime = Time.time;
         Refresh();
         SelectionChanged?.Invoke(Selected);
     }
@@ -275,6 +358,7 @@ public class LaunchSiteSelector : MonoBehaviour
     public void SetAlpha(float value)
     {
         alpha = Mathf.Clamp01(value);
+        if (decor != null) decor.SetAlpha(alpha);
         Refresh();
     }
 
@@ -285,7 +369,7 @@ public class LaunchSiteSelector : MonoBehaviour
         {
             var r = markerRenderers[i];
             if (r == null) continue;
-            Color c = i == selectedIndex ? selectedColor : normalColor;
+            Color c = i == selectedIndex ? selectedColor : (i == hoverIndex ? hoverColor : normalColor);
             c.a *= alpha;
             r.GetPropertyBlock(block);
             block.SetColor(BaseColorId, c);
@@ -295,7 +379,7 @@ public class LaunchSiteSelector : MonoBehaviour
         {
             var t = labels[i];
             if (t == null) continue;
-            t.color = i == selectedIndex ? selectedColor : Color.white;
+            t.color = i == selectedIndex ? selectedColor : (i == hoverIndex ? hoverColor : Color.white);
             t.alpha = alpha;
         }
     }

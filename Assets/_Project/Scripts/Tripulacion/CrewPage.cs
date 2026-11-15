@@ -58,12 +58,14 @@ public class CrewPage : MonoBehaviour
         {
             int s = slot;
             if (assignButtons[slot] != null) assignButtons[slot].onClick.AddListener(() => AssignSelected(s));
+            FitText(slotNames[slot], 26f);
 
             for (int f = 0; f < 3; f++)
             {
                 Button b = trainingButtons[slot * 3 + f];
-                TrainingFocus focus = Focuses[f];
-                if (b != null) b.onClick.AddListener(() => SetTraining(s, focus));
+                int focusIndex = f;
+                if (b != null) b.onClick.AddListener(() => TrainPoint(s, focusIndex));
+                if (b != null) FitText(b.GetComponentInChildren<TMP_Text>(), 20f);
             }
         }
     }
@@ -95,6 +97,15 @@ public class CrewPage : MonoBehaviour
             b.onClick.AddListener(() => Select(astronaut));
             candidateButtons.Add(b);
         }
+    }
+
+    // The slot and training texts now have two parts, so they shrink to fit the prefab boxes
+    static void FitText(TMP_Text text, float maxSize)
+    {
+        if (text == null) return;
+        text.enableAutoSizing = true;
+        text.fontSizeMin = 12f;
+        text.fontSizeMax = maxSize;
     }
 
     bool SameList(List<AstronautData> list)
@@ -145,6 +156,13 @@ public class CrewPage : MonoBehaviour
         Refresh();
     }
 
+    // One click = +1 training point; past the max (or with no points left) it goes back to 0
+    public void TrainPoint(int slot, int focusIndex)
+    {
+        CrewTraining.CyclePoint(GameManager.Instance, slot, focusIndex);
+        Refresh();
+    }
+
     // ---------- Texts and colors ----------
 
     public void Refresh()
@@ -163,7 +181,13 @@ public class CrewPage : MonoBehaviour
         }
 
         if (nameText != null) nameText.text = selected != null ? selected.astronautName : "No candidates. Run SpaceApps > Import P5 data.";
-        if (bioText != null) bioText.text = selected != null ? selected.bio : "";
+        if (bioText != null)
+        {
+            string bio = selected != null ? selected.bio : "";
+            if (selected != null && selected.trait != CrewTrait.None)
+                bio += "\n\n<b>Trait: " + CrewTraining.TraitName(selected.trait) + "</b>\n" + CrewTraining.TraitDescription(selected.trait);
+            bioText.text = bio;
+        }
         if (portraitImage != null)
         {
             portraitImage.sprite = selected != null ? selected.portrait : null;
@@ -175,26 +199,48 @@ public class CrewPage : MonoBehaviour
             if (assignButtons[slot] != null) assignButtons[slot].interactable = selected != null && GetCrew(gm, slot) != selected;
 
             AstronautData crew = GetCrew(gm, slot);
-            if (slotNames[slot] != null) slotNames[slot].text = crew != null ? crew.astronautName : "<i>empty</i>";
+            if (slotNames[slot] != null) slotNames[slot].text = SlotLabel(gm, slot);
 
-            TrainingFocus training = GetTraining(gm, slot);
             for (int f = 0; f < 3; f++)
             {
                 Button b = trainingButtons[slot * 3 + f];
-                if (b != null) b.image.color = training == Focuses[f] ? Selected : Normal;
+                if (b == null) continue;
+                int points = CrewTraining.Points(gm, slot, f);
+                b.image.color = points > 0 ? Selected : Normal;
+                TMP_Text label = b.GetComponentInChildren<TMP_Text>();
+                if (label != null) label.text = Focuses[f] + " <b>" + points + "</b>";
             }
         }
 
         if (tipText != null) tipText.text = BuildTip(gm);
     }
 
+    // "Name  (Trait)" and, below, the flight readiness and fatigue
+    static string SlotLabel(GameManager gm, int slot)
+    {
+        AstronautData crew = GetCrew(gm, slot);
+        if (crew == null) return "<i>empty</i>";
+        string text = crew.astronautName;
+        if (crew.trait != CrewTrait.None) text += "  <size=70%>(" + CrewTraining.TraitName(crew.trait) + ")</size>";
+        text += "\n<size=70%>Flight readiness: <b>" + CrewTraining.Readiness(gm, slot) + "</b>";
+        if (CrewTraining.IsTired(gm, crew)) text += "  <color=#B03020>Tired: -15 % in flight</color>";
+        return text + "</size>";
+    }
+
     public static string BuildTip(GameManager gm)
     {
+        string points = "Training points left: <b>" + CrewTraining.PointsLeft(gm) + " of " + CrewTraining.PointPool + "</b>. ";
         if (gm.pilot == null || gm.engineer == null || gm.scientist == null)
-            return "Read the profiles and choose a pilot, an engineer and a scientist.";
+            return points + "Read the profiles and choose a pilot, an engineer and a scientist.";
         if (gm.pilotTraining == TrainingFocus.None || gm.engineerTraining == TrainingFocus.None || gm.scientistTraining == TrainingFocus.None)
-            return "Choose what each astronaut trains before the flight.";
-        return "Crew ready. Training improves that skill during the flight minigames, so it helps most when it matches the role.";
+            return points + "Click a skill to give it a point (click past " + CrewTraining.MaxPerSkill + " to reset). Every astronaut needs at least one.";
+        for (int slot = 0; slot < 3; slot++)
+        {
+            AstronautData a = GetCrew(gm, slot);
+            if (CrewTraining.IsTired(gm, a)) return points + a.astronautName + " is tired from too much training: take a point away.";
+            if (CrewTraining.LonerPenalty(gm, a) > 0) return points + "A Loner is hurting the crew. A Team player on board would fix it.";
+        }
+        return points + "Crew ready. Only the skill of each role counts in flight.";
     }
 
     // ---------- Crew helpers (slot 0 pilot, 1 engineer, 2 scientist) ----------

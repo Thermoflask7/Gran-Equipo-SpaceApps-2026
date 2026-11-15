@@ -54,8 +54,10 @@ public static class ResearchMinigameTests
     {
         List<ResearchMath.Target> plan = ResearchMath.PlanTargets(new List<PartData> { lunar, rad, antenna }, S);
         Check("LUNAR + RAD: 5 landmarks + 6 sparks", Count(plan, ResearchMath.TargetType.Landmark) == 5 && Count(plan, ResearchMath.TargetType.Spark) == 6 && plan.Count == 11);
+        // Floats near 1e8 are only precise to a few units: compare with a relative tolerance (0.001 %)
         Check("Planned data = RocketPhysics.DataBits (125 Mbit)",
-            Near(ResearchMath.PlannedBits(plan), RocketPhysics.DataBits(new List<PartData> { lunar, rad, antenna }), 1f) && Near(ResearchMath.PlannedBits(plan), 125000000f, 1f));
+            NearRel(ResearchMath.PlannedBits(plan), RocketPhysics.DataBits(new List<PartData> { lunar, rad, antenna }))
+            && NearRel(ResearchMath.PlannedBits(plan), 125000000f));
         Check("Types are interleaved", plan.Count > 1 && plan[0].type != plan[1].type);
 
         bool ordered = true;
@@ -69,7 +71,7 @@ public static class ResearchMinigameTests
 
         List<ResearchMath.Target> all = ResearchMath.PlanTargets(new List<PartData> { lunar, rad, heavy, antenna }, S);
         Check("HEAVY adds 3 ice scans (14 targets)", Count(all, ResearchMath.TargetType.Ice) == 3 && all.Count == 14);
-        Check("Each ice scan carries a third of 250 Mbit", Near(Find(all, ResearchMath.TargetType.Ice).bits, 250000000f / 3f, 1f));
+        Check("Each ice scan carries a third of 250 Mbit", NearRel(Find(all, ResearchMath.TargetType.Ice).bits, 250000000f / 3f));
 
         List<ResearchMath.Target> none = ResearchMath.PlanTargets(new List<PartData> { antenna }, S);
         Check("No instruments: no targets, no planned data", none.Count == 0 && ResearchMath.PlannedBits(none) == 0f);
@@ -183,6 +185,11 @@ public static class ResearchMinigameTests
     static bool Near(float a, float b, float tolerance)
     {
         return Mathf.Abs(a - b) <= tolerance;
+    }
+
+    static bool NearRel(float a, float b)
+    {
+        return Mathf.Abs(a - b) <= Mathf.Max(1f, Mathf.Abs(b) * 0.00001f);
     }
 
     static void Check(string name, bool ok)

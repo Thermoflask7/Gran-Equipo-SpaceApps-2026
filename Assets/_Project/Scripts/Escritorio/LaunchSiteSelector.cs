@@ -59,6 +59,7 @@ public class LaunchSiteSelector : MonoBehaviour
     readonly List<TextMeshPro> labels = new List<TextMeshPro>();
     readonly List<Collider> markerColliders = new List<Collider>();
     Transform container;
+    MapDecor decor;
     Material markerMaterial;
     Texture2D pinTexture;
     MaterialPropertyBlock block;
@@ -122,6 +123,19 @@ public class LaunchSiteSelector : MonoBehaviour
         return id != "VSFB";
     }
 
+    /// <summary>
+    /// Latitude/longitude to a UV on WorldMap.png ((0,0) = top-left). Linear in both, fitted to the
+    /// hand-calibrated Kennedy and Vandenberg spots; good enough for the grid lines and the equator.
+    /// </summary>
+    public static Vector2 GeoToUv(float latitude, float longitude)
+    {
+        const float kLat = 28.6273f, kLon = -80.6209f, kU = 0.1704f, kV = 0.3559f;
+        const float vLat = 34.7420f, vLon = -120.5724f, vU = 0.0609f, vV = 0.3165f;
+        float u = kU + (longitude - kLon) * (kU - vU) / (kLon - vLon);
+        float v = kV + (latitude - kLat) * (kV - vV) / (kLat - vLat);
+        return new Vector2(u, v);
+    }
+
     /// <summary>Speed Earth's rotation gives an eastward launch at this latitude (m/s).</summary>
     public static float SpinBoost(float latitude)
     {
@@ -168,6 +182,9 @@ public class LaunchSiteSelector : MonoBehaviour
         Vector3 s = transform.localScale;
         container.localScale = new Vector3(1f / Mathf.Max(1e-4f, s.x), 1f / Mathf.Max(1e-4f, s.y), 1f);
         float width = s.x, height = s.y;
+
+        // Frame, plaque, grid and equator: between the map and the pins
+        decor = MapDecor.Create(container, width, height, -wallOffset * 0.5f);
 
         EnsureMaterial();
         for (int i = 0; i < sites.Count; i++)
@@ -341,6 +358,7 @@ public class LaunchSiteSelector : MonoBehaviour
     public void SetAlpha(float value)
     {
         alpha = Mathf.Clamp01(value);
+        if (decor != null) decor.SetAlpha(alpha);
         Refresh();
     }
 

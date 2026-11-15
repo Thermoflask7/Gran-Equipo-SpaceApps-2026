@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -40,6 +41,8 @@ public class PlanningStation : MonoBehaviour
     [SerializeField] float mapWallOffset = 0.01f;
     [Tooltip("Seconds for the map to fade in when zooming and fade out when returning.")]
     [SerializeField, Min(0f)] float mapFadeDuration = 1f;
+    [Tooltip("Tint over the map image (softens the bright green land).")]
+    [SerializeField] Color mapTint = new Color(0.86f, 0.92f, 0.86f, 1f);
 
     [Header("Zoom")]
     [Tooltip("1 = the map and calendar fill the view. Higher leaves a margin.")]
@@ -102,6 +105,42 @@ public class PlanningStation : MonoBehaviour
         if (backButton == null) return;
         backButton.onClick.RemoveListener(Close);
         backButton.onClick.AddListener(Close);
+        StyleBackButton();
+    }
+
+    // Same look as the other desk windows: dark blue with an orange line and bold white text
+    void StyleBackButton()
+    {
+        var image = backButton.GetComponent<Image>();
+        if (image != null) image.color = new Color(0.08f, 0.10f, 0.20f, 1f);
+        var colors = backButton.colors;
+        colors.highlightedColor = new Color(1f, 0.75f, 0.45f, 1f);
+        colors.pressedColor = new Color(0.8f, 0.8f, 0.8f, 1f);
+        backButton.colors = colors;
+        var label = backButton.GetComponentInChildren<TMP_Text>();
+        if (label != null)
+        {
+            label.text = "BACK TO DESK";
+            label.color = Color.white;
+            label.fontStyle = FontStyles.Bold;
+            label.characterSpacing = 4f;
+            label.enableAutoSizing = true;
+            label.fontSizeMin = 10f;
+            label.fontSizeMax = 24f;
+        }
+        if (backButton.transform.Find("Accent") == null)
+        {
+            var accent = new GameObject("Accent", typeof(RectTransform), typeof(Image));
+            accent.transform.SetParent(backButton.transform, false);
+            var rt = (RectTransform)accent.transform;
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = new Vector2(1f, 0f);
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = new Vector2(0f, 3f);
+            var img = accent.GetComponent<Image>();
+            img.color = new Color(0.95f, 0.55f, 0.15f, 1f);
+            img.raycastTarget = false;
+        }
     }
 
     void Update()
@@ -206,7 +245,7 @@ public class PlanningStation : MonoBehaviour
         if (r == null) return;
         if (mapBlock == null) mapBlock = new MaterialPropertyBlock();
         r.GetPropertyBlock(mapBlock);
-        mapBlock.SetColor(BaseColorId, new Color(1f, 1f, 1f, mapAlpha));
+        mapBlock.SetColor(BaseColorId, new Color(mapTint.r, mapTint.g, mapTint.b, mapAlpha));
         r.SetPropertyBlock(mapBlock);
         if (launchSites != null) launchSites.SetAlpha(mapAlpha);
         if (infoPanel != null) infoPanel.SetAlpha(mapAlpha);

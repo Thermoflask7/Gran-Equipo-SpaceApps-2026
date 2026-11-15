@@ -11,7 +11,7 @@ using UnityEngine.UI;
 // Folder look: cream paper, dark ink, red stamp and button.
 //   TutorialPopup.ShowOnce("folder")  -> shows that station's texts (TutorialTexts) the first time only
 //   TutorialPopup.Show("folder")      -> shows it again (the "?" button)
-//   TutorialPopup.Show(title, body, buttonLabel, stamp)
+//   TutorialPopup.Show(title, body, buttonLabel, stamp, stampImage) -> stampImage (optional) replaces the stamp word
 // While it is open: a full-screen backdrop blocks clicks on the desk (the stations ignore clicks over UI),
 // the PC screen stops taking clicks (ComputerDesktop.SetInteractive) and Escape closes the popup
 // instead of returning the camera to the desk (DeskCamera.EscapeReturns).
@@ -32,6 +32,7 @@ public class TutorialPopup : MonoBehaviour
     TextMeshProUGUI bodyText;
     TextMeshProUGUI buttonText;
     TextMeshProUGUI stampText;
+    RawImage stampImage;
     GameObject helpButton;
     string helpId;
 
@@ -57,13 +58,14 @@ public class TutorialPopup : MonoBehaviour
         Show(TutorialTexts.Title(id), BulletList(TutorialTexts.Bullets(id)), "Got it", "HOW TO");
     }
 
-    public static void Show(string title, string body, string buttonLabel, string stamp)
+    public static void Show(string title, string body, string buttonLabel, string stamp, Texture2D stampImage = null)
     {
         TutorialPopup popup = Get();
         popup.titleText.text = title;
         popup.bodyText.text = body;
         popup.buttonText.text = buttonLabel;
-        popup.stampText.text = stamp;
+        popup.stampText.text = stampImage != null ? "" : stamp;
+        popup.SetStampImage(stampImage);
         if (!popup.panel.activeSelf) popup.Block();
         popup.panel.SetActive(true);
         popup.panel.transform.SetAsLastSibling();
@@ -76,14 +78,45 @@ public class TutorialPopup : MonoBehaviour
         instance.Unblock();
     }
 
-    // Small "?" button in the corner that reopens a tutorial. null hides it.
+    // Small "?" button that reopens a tutorial, placed next to each station's own buttons. null hides it.
     public static void SetHelp(string id)
     {
         if (instance == null && id == null) return;
         TutorialPopup popup = Get();
+        if (popup.helpId != id && id != null) PlaceHelp((RectTransform)popup.helpButton.transform, id);
         popup.helpId = id;
         bool show = id != null;
         if (popup.helpButton.activeSelf != show) popup.helpButton.SetActive(show);
+    }
+
+    // Where the "?" goes in each station, so it does not cover that station's UI (1920x1080 reference)
+    static void PlaceHelp(RectTransform rt, string id)
+    {
+        Vector2 anchor = Vector2.one;         // top right corner by default
+        Vector2 position = new Vector2(-30f, -30f);
+        float size = 72f;
+        switch (id)
+        {
+            case TutorialTexts.Folder:    position = new Vector2(-30f, -14f); break;            // above the folder, right of its tab
+            case TutorialTexts.SpaceMart: position = new Vector2(-30f, -30f); break;            // beside the monitor
+            case TutorialTexts.Rocket:    position = new Vector2(-104f, -8f); size = 64f; break; // title bar, left of the X
+            case TutorialTexts.Launch:    position = new Vector2(-176f, -20f); size = 56f; break; // left of the Back button
+            case TutorialTexts.Planning:  anchor = Vector2.zero; position = new Vector2(208f, 32f); size = 52f; break; // right of Back
+        }
+        rt.anchorMin = rt.anchorMax = rt.pivot = anchor;
+        rt.anchoredPosition = position;
+        rt.sizeDelta = new Vector2(size, size);
+        TMP_Text label = rt.GetComponentInChildren<TMP_Text>();
+        if (label != null) label.fontSize = size * 0.64f;
+    }
+
+    void SetStampImage(Texture2D texture)
+    {
+        stampImage.texture = texture;
+        stampImage.gameObject.SetActive(texture != null);
+        if (texture == null) return;
+        float height = 170f; // keeps the image's own proportions
+        stampImage.rectTransform.sizeDelta = new Vector2(height * texture.width / Mathf.Max(1, texture.height), height);
     }
 
     public static string BulletList(string[] bullets)
@@ -221,6 +254,15 @@ public class TutorialPopup : MonoBehaviour
         popup.stampText = AddText(stamp, "Label", "", 34f, StampRed);
         popup.stampText.fontStyle = FontStyles.Bold;
         popup.stampText.characterSpacing = 6f;
+
+        // Stamp picture (welcome), same corner, a bit tilted
+        RectTransform stampPicture = NewRect("StampImage", card);
+        stampPicture.anchorMin = stampPicture.anchorMax = Vector2.one;
+        stampPicture.anchoredPosition = new Vector2(-130f, -80f);
+        stampPicture.localRotation = Quaternion.Euler(0f, 0f, 12f);
+        popup.stampImage = stampPicture.gameObject.AddComponent<RawImage>();
+        popup.stampImage.raycastTarget = false;
+        stampPicture.gameObject.SetActive(false);
 
         // Title
         RectTransform title = NewRect("Title", card);

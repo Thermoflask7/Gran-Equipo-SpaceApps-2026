@@ -56,7 +56,8 @@ public class DeskTutorials : MonoBehaviour
     {
         GameManager gm = GameManager.Instance;
         gm.welcomeSeen = true;
-        TutorialPopup.Show(TutorialTexts.WelcomeTitle, TutorialTexts.WelcomeBody(gm), TutorialTexts.WelcomeButton, "TOP SECRET");
+        Texture2D stamp = Resources.Load<Texture2D>(TutorialTexts.WelcomeStampPath); // null = the word "TOP SECRET"
+        TutorialPopup.Show(TutorialTexts.WelcomeTitle, TutorialTexts.WelcomeBody(gm), TutorialTexts.WelcomeButton, "TOP SECRET", stamp);
     }
 
     void FindStations()

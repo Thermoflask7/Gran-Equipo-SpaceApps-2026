@@ -43,6 +43,7 @@ public class GameManager : MonoBehaviour
     public TrainingFocus pilotTraining;
     public TrainingFocus engineerTraining;
     public TrainingFocus scientistTraining;
+    public int[] trainingPoints = new int[9]; // CrewTraining: slot * 3 + focus (Piloting, Engineering, Research)
 
     [Header("Launch")]
     public LaunchSiteData launchSite;
@@ -91,6 +92,7 @@ public class GameManager : MonoBehaviour
         pilotTraining = TrainingFocus.None;
         engineerTraining = TrainingFocus.None;
         scientistTraining = TrainingFocus.None;
+        trainingPoints = new int[9];
         launchSite = null;
         launchDay = -1;
         weatherRisk = 0f;
@@ -173,26 +175,11 @@ public class GameManager : MonoBehaviour
             && scientistTraining != TrainingFocus.None;
     }
 
-    // Astronaut's skill in their role (0 to 10) + 2 if they trained in the same thing, max 10.
+    // Astronaut's skill in a role (0 to 1) with training points, traits and fatigue (see CrewTraining).
     // The minigames multiply their result (0 to 1) by SkillMultiplier.
     public float SkillMultiplier(AstronautData astronaut, TrainingFocus role)
     {
-        if (astronaut == null) return 0.5f;
-        int skill = 0;
-        if (role == TrainingFocus.Piloting) skill = astronaut.piloting;
-        if (role == TrainingFocus.Engineering) skill = astronaut.engineering;
-        if (role == TrainingFocus.Research) skill = astronaut.research;
-        if (TrainingOf(astronaut) == role) skill += 2;
-        if (skill > 10) skill = 10;
-        return skill / 10f;
-    }
-
-    TrainingFocus TrainingOf(AstronautData astronaut)
-    {
-        if (astronaut == pilot) return pilotTraining;
-        if (astronaut == engineer) return engineerTraining;
-        if (astronaut == scientist) return scientistTraining;
-        return TrainingFocus.None;
+        return CrewTraining.Multiplier(this, astronaut, role);
     }
 
     // ---------- Launch ----------

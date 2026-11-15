@@ -1,9 +1,9 @@
 using UnityEngine;
 
 /// <summary>
-/// Proyecta el Canvas de SpaceOS en una RenderTexture y la muestra en la malla curva del monitor.
-/// La colocacion por defecto es el ajuste manual de Mateo en 01_Planeacion.
-/// Con crtEnabled se usa el shader CRT; si se apaga, un Unlit plano.
+/// Renders the SpaceOS Canvas to a RenderTexture and shows it on the curved monitor mesh.
+/// The default placement is Mateo's manual fit in 01_Planeacion.
+/// With crtEnabled it uses the CRT shader; when off, a flat Unlit one.
 /// </summary>
 [ExecuteAlways]
 [DisallowMultipleComponent]
@@ -15,11 +15,11 @@ public class SpaceOsScreen : MonoBehaviour
     [Header("Colocacion (local a computer_old_2)")]
     [SerializeField] Vector3 localPosition = DefaultLocalPosition;
     [SerializeField] Vector3 localEulerAngles = DefaultLocalEuler;
-    [Tooltip("Desplazamiento extra sobre la pose base, en espacio local de la pantalla.")]
+    [Tooltip("Extra offset over the base pose, in the screen's local space.")]
     [SerializeField] Vector3 extraOffset = Vector3.zero;
 
     [Header("CRT")]
-    [Tooltip("Si esta apagado, la pantalla usa el material Unlit plano (sin scanlines ni vineta).")]
+    [Tooltip("When off, the screen uses the flat Unlit material (no scanlines or vignette).")]
     [SerializeField] bool crtEnabled = true;
     [SerializeField] Material crtMaterialTemplate;
     [SerializeField] Material plainMaterialTemplate;
@@ -45,7 +45,7 @@ public class SpaceOsScreen : MonoBehaviour
     public ComputerDesktop Desktop => desktop;
     public bool CrtEnabled => crtEnabled;
 
-    /// <summary>Enciende o apaga el filtro CRT (cambia el material de la malla del monitor).</summary>
+    /// <summary>Turns the CRT filter on or off (swaps the monitor mesh material).</summary>
     public void SetCrtEnabled(bool value)
     {
         crtEnabled = value;
@@ -69,7 +69,7 @@ public class SpaceOsScreen : MonoBehaviour
         ApplyPlacement();
     }
 
-    /// <summary>Aplica localPosition + extraOffset y la rotacion al transform.</summary>
+    /// <summary>Applies localPosition + extraOffset and the rotation to the transform.</summary>
     public void ApplyPlacement()
     {
         transform.localPosition = localPosition + extraOffset;
@@ -78,8 +78,8 @@ public class SpaceOsScreen : MonoBehaviour
     }
 
     /// <summary>
-    /// Traduce el UV de la malla al UV del canvas/RT. Si el shader CRT aplica
-    /// barrel distortion, se usa la misma formula para que los clics coincidan.
+    /// Maps the mesh UV to the canvas/RT UV. If the CRT shader applies
+    /// barrel distortion, the same formula is used so clicks line up.
     /// </summary>
     public Vector2 MeshUvToCanvasUv(Vector2 uv)
     {
@@ -207,7 +207,7 @@ public class SpaceOsScreen : MonoBehaviour
         if (screenRenderer == null) screenRenderer = GetComponent<MeshRenderer>();
         if (screenRenderer == null) return;
 
-        // El asset se queda asignado en la escena (no un Material DontSave que al guardar queda en None).
+        // The asset stays assigned in the scene (not a DontSave Material that becomes None when saved).
         Material template = crtEnabled ? crtMaterialTemplate : plainMaterialTemplate;
         if (template == null) template = crtMaterialTemplate != null ? crtMaterialTemplate : plainMaterialTemplate;
         if (template != null) screenRenderer.sharedMaterial = template;

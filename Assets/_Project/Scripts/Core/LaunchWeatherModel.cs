@@ -27,7 +27,7 @@ public struct DayWeather
 /// Each site has a climate profile; days follow a Markov chain (weather tends to persist),
 /// wind and rain depend on the condition plus noise. One seed per game run: the forecast
 /// stays the same while you play and changes on the next run (or with Reseed).
-/// Kennedy and Cape Canaveral are ~10 km apart, so they share the sky and only differ a bit in wind.
+/// Merritt Island and Cape Canaveral are ~10 km apart, so they share the sky and only differ a bit in wind.
 /// </summary>
 public static class LaunchWeatherModel
 {

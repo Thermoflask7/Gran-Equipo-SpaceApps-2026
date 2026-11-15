@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ART-SLS-BLOCK1
   m_EditorClassIdentifier: Assembly-CSharp::PartData
   catalogId: ART-SLS-BLOCK1
-  partName: SLS Block 1 launch service (core + boosters + ICPS)
+  partName: Heavy launcher, standard (core stage + boosters + upper stage)
   type: 9
   description: 'Complete heritage launch architecture: ascent service plus translunar upper stage; not a component physically assembled from V8 parts.'
   icon: {fileID: 0}

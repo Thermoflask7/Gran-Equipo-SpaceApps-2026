@@ -357,7 +357,7 @@ public class SpaceMartApp : MonoBehaviour
         if (part == null) return Color.gray;
         string filter = SpaceMart.FilterOf(part.type);
         if (filter == "Launcher") return new Color(0.95f, 0.60f, 0.25f);
-        if (filter == "Orion") return new Color(0.85f, 0.85f, 0.90f);
+        if (filter == "Spacecraft") return new Color(0.85f, 0.85f, 0.90f);
         if (filter == "Science") return new Color(0.40f, 0.75f, 0.55f);
         if (filter == "Power") return new Color(0.40f, 0.75f, 0.95f);
         return new Color(0.70f, 0.55f, 0.40f);

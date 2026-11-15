@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ART-LAS-ORION
   m_EditorClassIdentifier: Assembly-CSharp::PartData
   catalogId: ART-LAS-ORION
-  partName: Orion launch abort system
+  partName: Abort tower
   type: 8
   description: Required crew safety element during ascent; released before translunar flight.
   icon: {fileID: 0}

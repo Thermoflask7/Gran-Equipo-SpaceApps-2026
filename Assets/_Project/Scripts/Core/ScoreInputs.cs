@@ -1,9 +1,9 @@
-// Score inputs (Cristina's V16 adapted to the Artemis physics: the SLS is a complete service).
+// Score inputs (Cristina's V16 adapted to the lunar physics: the launcher is a complete service).
 // In the game they are filled in with MissionScoring.InputsFromGame(); in the tests too.
 public class ScoreInputs
 {
     // Engineering (all of it comes from RocketPhysics)
-    public float deliveryCapacity;    // kg the chosen SLS carries to translunar injection (payloadCapacity)
+    public float deliveryCapacity;    // kg the chosen launcher carries to translunar injection (payloadCapacity)
     public float tliMass;             // kg, RocketPhysics.TliMass
     public float craftDvAvailable;    // m/s, RocketPhysics.SpacecraftDeltaV
     public float craftDvRequired;     // m/s, mission.requiredDeltaV

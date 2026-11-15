@@ -12,7 +12,7 @@ using UnityEngine.UI;
 // Do not add this prefab to 01_Planeacion: that would be a second shop UI.
 //   SpaceApps > SpaceMart > Create prefab
 //       Creates Assets/_Project/Prefabs/SpaceMart.prefab with every part in Data/Piezas
-//       and the Artemis mission, with category tabs on top of the list.
+//       and the lunar mission, with category tabs on top of the list.
 //       It can be run again (for example after importing the catalog).
 //   SpaceApps > SpaceMart > Add to open scene
 //       Puts the prefab inside the Canvas of the open scene (creates a Canvas and an EventSystem if missing).
@@ -134,7 +134,7 @@ public static class SpaceMartBuilder
         shop.catalog = LoadCatalog();
         shop.mission = AssetDatabase.LoadAssetAtPath<DestinationData>(MissionPath);
         if (shop.catalog.Count == 0)
-            Debug.LogWarning("SpaceMart: no parts in " + PartsFolder + ". Run SpaceApps > Import Artemis catalog first.");
+            Debug.LogWarning("SpaceMart: no parts in " + PartsFolder + ". Run SpaceApps > Import mission catalog first.");
         if (shop.mission == null)
             Debug.LogWarning("SpaceMart: mission not found at " + MissionPath + ".");
 

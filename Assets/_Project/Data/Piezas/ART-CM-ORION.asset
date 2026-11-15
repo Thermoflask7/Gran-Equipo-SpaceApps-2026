@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ART-CM-ORION
   m_EditorClassIdentifier: Assembly-CSharp::PartData
   catalogId: ART-CM-ORION
-  partName: "Orion crew module \u2014 reference"
+  partName: Crew capsule
   type: 0
   description: Crew cabin and return capsule, with integrated baseline crew protection.
   icon: {fileID: 0}

@@ -1,7 +1,7 @@
 using UnityEngine;
 
 // Tunable thresholds for mission failure (task 31, claude_c). These are GAMEPLAY values for an educational
-// game, chosen for playability; they are NOT NASA flight-certification limits.
+// game, chosen for playability; they are NOT real flight-certification limits.
 // Optional asset: Create > SpaceApps > Mission failure settings, then drag it to FlightPhases.failureSettings.
 // Without an asset, MissionFailureSettings.Default (the values below) is used.
 //

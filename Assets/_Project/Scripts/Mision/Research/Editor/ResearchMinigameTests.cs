@@ -28,7 +28,7 @@ public static class ResearchMinigameTests
         PartData antenna = Part("ART-COMMS-DS");
         if (mission == null || lunar == null || rad == null || heavy == null || antenna == null)
         {
-            Debug.LogError("Research minigame tests: the Artemis catalog could not be loaded (SpaceApps > Import Artemis catalog).");
+            Debug.LogError("Research minigame tests: the mission catalog could not be loaded (SpaceApps > Import mission catalog).");
             return;
         }
 

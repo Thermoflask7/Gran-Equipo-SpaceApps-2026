@@ -5,10 +5,10 @@ using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// Camara del escritorio (01_Planeacion). Va en la Main Camera.
-/// API compartida: cualquier estacion (PC, folder, globo...) y la navegacion
-/// entre estaciones (tarea 2) deben mover la camara con FocusOn / ReturnToDesk /
-/// SetDeskPose en vez de tocar el transform directamente.
+/// Desk camera (01_Planeacion). Goes on the Main Camera.
+/// Shared API: every station (PC, folder, globe...) and the navigation
+/// between stations (task 2) must move the camera with FocusOn / ReturnToDesk /
+/// SetDeskPose instead of touching the transform directly.
 /// </summary>
 [DisallowMultipleComponent]
 [RequireComponent(typeof(Camera))]
@@ -16,7 +16,7 @@ public class DeskCamera : MonoBehaviour
 {
     static DeskCamera instance;
 
-    /// <summary>La DeskCamera de la escena (se busca si no se ha registrado).</summary>
+    /// <summary>The scene's DeskCamera (searched for if it has not registered yet).</summary>
     public static DeskCamera Instance
     {
         get
@@ -26,21 +26,21 @@ public class DeskCamera : MonoBehaviour
         }
     }
 
-    [Tooltip("Segundos que tarda en ir o regresar.")]
+    [Tooltip("Seconds it takes to go or come back.")]
     [SerializeField] float moveDuration = 0.6f;
 
-    [Tooltip("Near clip mientras esta enfocada (de cerca la pantalla queda a menos de 0.3 m).")]
+    [Tooltip("Near clip while focused (up close the screen is less than 0.3 m away).")]
     [SerializeField] float focusNearClip = 0.01f;
 
-    [Tooltip("Escape regresa al escritorio cuando esta enfocada.")]
+    [Tooltip("Escape returns to the desk while focused.")]
     [SerializeField] bool escapeReturns = true;
     public bool EscapeReturns { get { return escapeReturns; } set { escapeReturns = value; } } // TutorialPopup turns it off while open
 
     [Header("Eventos")]
-    public UnityEvent onFocused;   // llego al objetivo
-    public UnityEvent onReturned;  // llego de vuelta al escritorio
+    public UnityEvent onFocused;   // arrived at the target
+    public UnityEvent onReturned;  // arrived back at the desk
 
-    /// <summary>Se dispara al EMPEZAR a regresar (boton Volver, Escape o codigo).</summary>
+    /// <summary>Fires when the return STARTS (Back button, Escape or code).</summary>
     public event Action ReturnStarted;
 
     public bool IsFocused => CurrentTarget != null;
@@ -73,17 +73,17 @@ public class DeskCamera : MonoBehaviour
         if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame) ReturnToDesk();
     }
 
-    /// <summary>Cambia la pose base a la que regresa ReturnToDesk (para la tarea 2).</summary>
+    /// <summary>Changes the base pose ReturnToDesk goes back to (for task 2).</summary>
     public void SetDeskPose(Vector3 position, Quaternion rotation)
     {
         deskPosition = position;
         deskRotation = rotation;
     }
 
-    /// <summary>Toma la pose actual de la camara como pose del escritorio.</summary>
+    /// <summary>Takes the current camera pose as the desk pose.</summary>
     public void SaveCurrentAsDeskPose() => SetDeskPose(transform.position, transform.rotation);
 
-    /// <summary>Mueve la camara suavemente hasta la pose de target.</summary>
+    /// <summary>Moves the camera smoothly to the target pose.</summary>
     public void FocusOn(Transform target, Action onArrived = null)
     {
         if (target == null) return;
@@ -97,7 +97,7 @@ public class DeskCamera : MonoBehaviour
         });
     }
 
-    /// <summary>Regresa suavemente a la pose del escritorio.</summary>
+    /// <summary>Smoothly returns to the desk pose.</summary>
     public void ReturnToDesk(Action onArrived = null)
     {
         if (!IsFocused && !IsMoving) { onArrived?.Invoke(); return; }

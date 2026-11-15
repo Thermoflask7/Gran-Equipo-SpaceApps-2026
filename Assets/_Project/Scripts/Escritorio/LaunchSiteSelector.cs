@@ -88,7 +88,7 @@ public class LaunchSiteSelector : MonoBehaviour
                     "• A giant assembly building stacks the rockets before they roll out to the pad.";
             case "CCSFS":
                 return H + "WHY IT MATTERS" + HE + "\n" +
-                    "Right next to Kennedy, with the same eastward boost over the ocean. " +
+                    "Right next to Merritt Island, with the same eastward boost over the ocean. " +
                     "It is the busiest launch range in the country, with many commercial pads, so the schedule is crowded.\n\n" +
                     H + "HISTORY" + HE + "\n" +
                     "• First launch from the Cape: July 1950.\n" +
@@ -125,7 +125,7 @@ public class LaunchSiteSelector : MonoBehaviour
 
     /// <summary>
     /// Latitude/longitude to a UV on WorldMap.png ((0,0) = top-left). Linear in both, fitted to the
-    /// hand-calibrated Kennedy and Vandenberg spots; good enough for the grid lines and the equator.
+    /// hand-calibrated Merritt Island and Vandenberg spots; good enough for the grid lines and the equator.
     /// </summary>
     public static Vector2 GeoToUv(float latitude, float longitude)
     {
@@ -146,7 +146,7 @@ public class LaunchSiteSelector : MonoBehaviour
     {
         return new List<Site>
         {
-            new Site { id = "KSC", displayName = "Kennedy Space Center", mapUv = new Vector2(0.1704f, 0.3559f),
+            new Site { id = "KSC", displayName = "Merritt Island, Pad 39B", mapUv = new Vector2(0.1704f, 0.3559f),
                        nudge = new Vector2(-0.004f, 0.016f), labelOnRight = true, latitude = 28.6273f, longitude = -80.6209f },
             new Site { id = "CCSFS", displayName = "Cape Canaveral SFS", mapUv = new Vector2(0.1709f, 0.3586f),
                        nudge = new Vector2(0.006f, -0.016f), labelOnRight = true, latitude = 28.4889f, longitude = -80.5778f },

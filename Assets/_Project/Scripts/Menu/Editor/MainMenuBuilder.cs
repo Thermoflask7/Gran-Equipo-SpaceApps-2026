@@ -16,7 +16,7 @@ public static class MainMenuBuilder
     static readonly Color BoxColor = new Color(0.05f, 0.07f, 0.14f, 0.95f);
 
     // Placeholder name of the game: change it here and run the menu again
-    const string GameTitle = "Space Mission Simulator";
+    const string GameTitle = "Space Mission Simulator Astra";
     const string GameSubtitle = "Plan it. Build it. Fly it.";
 
     const string DestinationsFolder = "Assets/_Project/Data/Destinos/";
@@ -99,14 +99,14 @@ public static class MainMenuBuilder
         BuildSettings(settingsPanel, settingsBody);
 
         Transform infoBody;
-        GameObject infoPanel = CreatePanel(root, "SpaceAppsPanel", "NASA Space Apps Challenge 2026", menu, out infoBody, new Vector2(1300, 850));
+        GameObject infoPanel = CreatePanel(root, "SpaceAppsPanel", "About Astra", menu, out infoBody, new Vector2(1300, 850));
         TextMeshProUGUI info = CreateText(infoBody, "Text",
-            "<b>The challenge</b>\n" +
-            "Space Mission Design Game, proposed by the Canadian Space Agency: a game to understand how a space mission is planned and carried out.\n\n" +
+            "<b>The game</b>\n" +
+            "Space Mission Simulator Astra: a game to understand how a space mission is planned and carried out.\n\n" +
             "<b>Our project</b>\n" +
             "You plan a crewed lunar orbit mission: you read the mission, choose and train the crew, buy parts and assemble the rocket, and pick the launch site and date. Then you fly the mission: departure, lunar orbit and return, solving minigames and events.\n\n" +
-            "<b>The team</b>\n" +
-            "[Team name and the 5 members]",
+            "<b>The team: Gran Equipo</b>\n" +
+            "Mateo Zaragoza, Mar Fr\u00edas, Cristina Mendoza, Fer Gautr\u00edn and Elena Fierros",
             32);
         info.alignment = TextAlignmentOptions.TopLeft;
         Stretch(info.rectTransform);

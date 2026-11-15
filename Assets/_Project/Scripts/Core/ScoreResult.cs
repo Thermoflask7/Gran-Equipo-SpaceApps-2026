@@ -4,8 +4,8 @@ using System.Collections.Generic;
 public class ScoreResult
 {
     // Planning (45)
-    public float deliveryPoints;    // 7: SLS capacity margin
-    public float craftDvPoints;     // 7: Orion delta-v margin
+    public float deliveryPoints;    // 7: launcher capacity margin
+    public float craftDvPoints;     // 7: spacecraft delta-v margin
     public float powerPoints;       // 3: power generation margin
     public float batteryPoints;     // 3: battery autonomy without sunlight
     public float consumablePoints;  // 4: water, oxygen and food reserves

@@ -10,9 +10,9 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
 /// <summary>
-/// Arma la estación PC del escritorio en 01_Planeacion:
-/// collider, zoom de cámara, malla curva del monitor (RenderTexture + filtro CRT),
-/// Canvas SpaceOS y EventSystem con Input System.
+/// Builds the desk PC station in 01_Planeacion:
+/// collider, camera zoom, curved monitor mesh (RenderTexture + CRT filter),
+/// SpaceOS Canvas and EventSystem with the Input System.
 /// Menu: SpaceApps / Build desk PC.
 /// </summary>
 public static class PcDeskBuilder
@@ -117,7 +117,7 @@ public static class PcDeskBuilder
             if (!station.TryGetScreenSurface(cam, out _, out _, out _, out _))
                 Debug.LogWarning("[PcDeskBuilder] Could not compute the screen surface; using the default SpaceOsScreen placement.");
 
-            // Conserva la pose que el usuario haya ajustado a mano en PC_Screen.
+            // Keeps the pose the user set by hand on PC_Screen.
             Transform oldScreen = FindChild(pc.transform, "PC_Screen");
             bool keepPose = oldScreen != null;
             Vector3 keptPos = keepPose ? oldScreen.localPosition : Vector3.zero;
@@ -165,7 +165,7 @@ public static class PcDeskBuilder
         float halfFov = cam.fieldOfView * 0.5f * Mathf.Deg2Rad;
         float tan = Mathf.Tan(halfFov);
         float distance = tan > 0.0001f ? (screenHeight * 0.5f * heightFill) / tan : 0f;
-        Debug.Log("[PcDeskBuilder] Alto de pantalla " + screenHeight.ToString("F3") + " m, distancia " + distance.ToString("F3") + " m. Pose " + zoomPos + " / " + zoomRot.eulerAngles + ".");
+        Debug.Log("[PcDeskBuilder] Screen height " + screenHeight.ToString("F3") + " m, distance " + distance.ToString("F3") + " m. Pose " + zoomPos + " / " + zoomRot.eulerAngles + ".");
     }
 
     static int FindScreenSubmesh(Renderer renderer)
@@ -210,7 +210,7 @@ public static class PcDeskBuilder
         EditorUtility.SetDirty(box);
     }
 
-    /// <summary>AABB local que encierra las 8 esquinas de cada renderer.bounds.</summary>
+    /// <summary>Local AABB that encloses the 8 corners of each renderer.bounds.</summary>
     static bool TryEncapsulateRenderers(Transform root, out Vector3 center, out Vector3 size)
     {
         center = Vector3.zero;

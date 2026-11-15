@@ -185,7 +185,7 @@ public static class MissionFailureTests
         DestinationData mission = AssetDatabase.LoadAssetAtPath<DestinationData>(MissionPath);
         if (mission == null)
         {
-            Check("Catalog for scoring tests (run SpaceApps -> Import Artemis catalog)", false);
+            Check("Catalog for scoring tests (run SpaceApps -> Import mission catalog)", false);
             return;
         }
         GameObject go = new GameObject("Test GameManager");

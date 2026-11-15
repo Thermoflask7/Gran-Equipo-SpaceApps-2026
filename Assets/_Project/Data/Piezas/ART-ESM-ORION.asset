@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ART-ESM-ORION
   m_EditorClassIdentifier: Assembly-CSharp::PartData
   catalogId: ART-ESM-ORION
-  partName: "Orion European service module \u2014 reference"
+  partName: Service module
   type: 7
   description: Integrated propulsion, solar electrical supply, cooling and crew consumable support.
   icon: {fileID: 0}

@@ -383,7 +383,7 @@ public class ResultsScreen : MonoBehaviour
         return true;
     }
 
-    // Educational explanation of an in-flight failure (gameplay rules, not real NASA certification limits)
+    // Educational explanation of an in-flight failure (gameplay rules, not real certification limits)
     public static string FailureLesson(string code)
     {
         switch (code)

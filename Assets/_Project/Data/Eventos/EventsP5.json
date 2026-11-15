@@ -19,7 +19,7 @@
       "minigameRole": "None",
       "lesson": "Preventive rehearsals use resources but reduce uncertainty.",
       "sourceClass": "FICTIONAL_GAME_DESIGN",
-      "probabilityInterpretation": "Base probability per event roll, not a historical NASA event rate."
+      "probabilityInterpretation": "Base probability per event roll, not a historical event rate."
     },
     {
       "id": "EV-PL-02",
@@ -32,9 +32,9 @@
       "phase": "Planning",
       "weatherSensitive": false,
       "minigameRole": "None",
-      "lesson": "The fictional budget can change during play; NASA does not use these credits.",
+      "lesson": "The fictional budget can change during play; real missions do not use these credits.",
       "sourceClass": "FICTIONAL_GAME_DESIGN",
-      "probabilityInterpretation": "Base probability per event roll, not a historical NASA event rate."
+      "probabilityInterpretation": "Base probability per event roll, not a historical event rate."
     },
     {
       "id": "EV-PL-03",
@@ -49,7 +49,7 @@
       "minigameRole": "Engineering",
       "lesson": "Data quality requires inspections and budget margins.",
       "sourceClass": "FICTIONAL_GAME_DESIGN",
-      "probabilityInterpretation": "Base probability per event roll, not a historical NASA event rate."
+      "probabilityInterpretation": "Base probability per event roll, not a historical event rate."
     },
     {
       "id": "EV-PL-04",
@@ -64,7 +64,7 @@
       "minigameRole": "Engineering",
       "lesson": "Checking assumptions before launch improves mission readiness.",
       "sourceClass": "FICTIONAL_GAME_DESIGN",
-      "probabilityInterpretation": "Base probability per event roll, not a historical NASA event rate."
+      "probabilityInterpretation": "Base probability per event roll, not a historical event rate."
     },
     {
       "id": "EV-DE-01",
@@ -77,9 +77,9 @@
       "phase": "Departure",
       "weatherSensitive": true,
       "minigameRole": "Piloting",
-      "lesson": "Weather is continuously monitored; simulated risk scores are not NASA launch criteria.",
+      "lesson": "Weather is continuously monitored; simulated risk scores are not real launch criteria.",
       "sourceClass": "FICTIONAL_GAME_DESIGN",
-      "probabilityInterpretation": "Base probability per event roll, not a historical NASA event rate."
+      "probabilityInterpretation": "Base probability per event roll, not a historical event rate."
     },
     {
       "id": "EV-DE-02",
@@ -94,7 +94,7 @@
       "minigameRole": "Engineering",
       "lesson": "Distinguishing a sensor anomaly from a vehicle malfunction is an engineering skill.",
       "sourceClass": "FICTIONAL_GAME_DESIGN",
-      "probabilityInterpretation": "Base probability per event roll, not a historical NASA event rate."
+      "probabilityInterpretation": "Base probability per event roll, not a historical event rate."
     },
     {
       "id": "EV-DE-03",
@@ -109,7 +109,7 @@
       "minigameRole": "Piloting",
       "lesson": "Independent checks reduce the risk of rushed decisions.",
       "sourceClass": "FICTIONAL_GAME_DESIGN",
-      "probabilityInterpretation": "Base probability per event roll, not a historical NASA event rate."
+      "probabilityInterpretation": "Base probability per event roll, not a historical event rate."
     },
     {
       "id": "EV-DE-04",
@@ -124,7 +124,7 @@
       "minigameRole": "Engineering",
       "lesson": "Procedures must be safely adaptable when conditions change.",
       "sourceClass": "FICTIONAL_GAME_DESIGN",
-      "probabilityInterpretation": "Base probability per event roll, not a historical NASA event rate."
+      "probabilityInterpretation": "Base probability per event roll, not a historical event rate."
     },
     {
       "id": "EV-LU-01",
@@ -139,7 +139,7 @@
       "minigameRole": "Research",
       "lesson": "Scientific opportunities depend on mission geometry.",
       "sourceClass": "FICTIONAL_GAME_DESIGN",
-      "probabilityInterpretation": "Base probability per event roll, not a historical NASA event rate."
+      "probabilityInterpretation": "Base probability per event roll, not a historical event rate."
     },
     {
       "id": "EV-LU-02",
@@ -154,7 +154,7 @@
       "minigameRole": "Research",
       "lesson": "Data quality matters as much as data volume.",
       "sourceClass": "FICTIONAL_GAME_DESIGN",
-      "probabilityInterpretation": "Base probability per event roll, not a historical NASA event rate."
+      "probabilityInterpretation": "Base probability per event roll, not a historical event rate."
     },
     {
       "id": "EV-LU-03",
@@ -169,7 +169,7 @@
       "minigameRole": "Research",
       "lesson": "Useful science requires collecting data and sending it back to Earth.",
       "sourceClass": "FICTIONAL_GAME_DESIGN",
-      "probabilityInterpretation": "Base probability per event roll, not a historical NASA event rate."
+      "probabilityInterpretation": "Base probability per event roll, not a historical event rate."
     },
     {
       "id": "EV-LU-04",
@@ -184,7 +184,7 @@
       "minigameRole": "Engineering",
       "lesson": "Calibration helps prevent the interpretation of unreliable measurements.",
       "sourceClass": "FICTIONAL_GAME_DESIGN",
-      "probabilityInterpretation": "Base probability per event roll, not a historical NASA event rate."
+      "probabilityInterpretation": "Base probability per event roll, not a historical event rate."
     },
     {
       "id": "EV-RE-01",
@@ -199,7 +199,7 @@
       "minigameRole": "Piloting",
       "lesson": "A safe return depends on independent checks and continuous monitoring.",
       "sourceClass": "FICTIONAL_GAME_DESIGN",
-      "probabilityInterpretation": "Base probability per event roll, not a historical NASA event rate."
+      "probabilityInterpretation": "Base probability per event roll, not a historical event rate."
     },
     {
       "id": "EV-RE-02",
@@ -214,7 +214,7 @@
       "minigameRole": "Engineering",
       "lesson": "Checking sensors helps distinguish an unusual reading from a larger issue.",
       "sourceClass": "FICTIONAL_GAME_DESIGN",
-      "probabilityInterpretation": "Base probability per event roll, not a historical NASA event rate."
+      "probabilityInterpretation": "Base probability per event roll, not a historical event rate."
     },
     {
       "id": "EV-RE-03",
@@ -229,7 +229,7 @@
       "minigameRole": "None",
       "lesson": "Reliable communication supports informed decisions during return.",
       "sourceClass": "FICTIONAL_GAME_DESIGN",
-      "probabilityInterpretation": "Base probability per event roll, not a historical NASA event rate."
+      "probabilityInterpretation": "Base probability per event roll, not a historical event rate."
     },
     {
       "id": "EV-RE-04",
@@ -244,7 +244,7 @@
       "minigameRole": "Research",
       "lesson": "Data integrity matters more than presentation speed.",
       "sourceClass": "FICTIONAL_GAME_DESIGN",
-      "probabilityInterpretation": "Base probability per event roll, not a historical NASA event rate."
+      "probabilityInterpretation": "Base probability per event roll, not a historical event rate."
     }
   ]
 }

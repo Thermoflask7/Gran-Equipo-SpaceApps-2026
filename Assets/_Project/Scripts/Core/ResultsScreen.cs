@@ -24,6 +24,13 @@ public class ResultsScreen : MonoBehaviour
     public float bodySize = 28f;
     public Color headerColor = new Color(0.13f, 0.19f, 0.34f, 0.95f);
 
+    // Task 37: local leaderboard (single player, arcade style)
+    ScoreResult lastResult;
+    bool canSaveScore;          // the game finished (success or failure)
+    bool scoreSaved;            // saved (or did not make the top 10): once per game
+    int savedRank = -1;         // 0-based rank of this game in the top 10 (-1 = none)
+    GameObject leaderboardButton;
+
     void Start()
     {
         Show();
@@ -39,6 +46,9 @@ public class ResultsScreen : MonoBehaviour
         }
 
         ScoreResult r = MissionScoring.SaveFinalScore();
+        lastResult = r;
+        canSaveScore = r.problem == "" && (r.status == "SUCCESS" || r.status == "FAILURE");
+        AddLeaderboardButton();
         if (title != null) title.text = TitleFor(r);
         if (score != null) score.text = r.total.ToString("0") + " / 100";
         if (content != null) BuildSections(r, gm);
@@ -106,6 +116,43 @@ public class ResultsScreen : MonoBehaviour
         }
     }
 
+    // ---------- Leaderboard (task 37) ----------
+
+    // "Leaderboard" button next to "Back to menu": asks the player's name (arcade style), saves this game's
+    // score once and shows the top 10. It is a runtime copy of the menu button, so the scene is not changed.
+    void AddLeaderboardButton()
+    {
+        if (leaderboardButton != null) return;
+        NextSceneButton menu = FindAnyObjectByType<NextSceneButton>();
+        Button button;
+        if (menu != null)
+        {
+            GameObject copy = Instantiate(menu.gameObject, menu.transform.parent);
+            copy.name = "LeaderboardButton";
+            Destroy(copy.GetComponent<NextSceneButton>());
+            button = copy.GetComponent<Button>();
+            button.onClick.RemoveAllListeners(); // drops the copied "go to menu" listener
+            RectTransform rt = (RectTransform)copy.transform;
+            RectTransform source = (RectTransform)menu.transform;
+            rt.anchoredPosition = source.anchoredPosition - new Vector2(source.rect.width + 30f, 0f);
+            TMP_Text label = copy.GetComponentInChildren<TMP_Text>();
+            if (label != null) label.text = "Leaderboard";
+        }
+        else button = LeaderboardDialog.CreateCornerButton();
+        leaderboardButton = button.gameObject;
+        button.onClick.AddListener(OpenLeaderboard);
+    }
+
+    void OpenLeaderboard()
+    {
+        LeaderboardEntry pending = null;
+        if (canSaveScore && !scoreSaved) pending = Leaderboard.EntryFrom("", lastResult, GameManager.Instance);
+        LeaderboardDialog.Open(pending, savedRank, rank =>
+        {
+            scoreSaved = true; // once per game
+            savedRank = rank;
+        });
+    }
     TMP_Text AddText(string text, float size, Transform parent)
     {
         GameObject go = new GameObject("Text", typeof(RectTransform), typeof(TextMeshProUGUI));

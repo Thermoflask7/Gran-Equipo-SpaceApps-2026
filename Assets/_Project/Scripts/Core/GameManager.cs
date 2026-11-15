@@ -218,9 +218,10 @@ public class GameManager : MonoBehaviour
 
     // ---------- Scenes ----------
 
+    // Goes through the loading screen (SceneTransition): fade, "Loading mission ...", fade out.
     public void GoToScene(string sceneName)
     {
-        SceneManager.LoadScene(sceneName);
+        SceneTransition.Load(sceneName);
     }
 
     // Moves to the next scene in the loop. After Results it resets and goes back to the Menu.
@@ -232,9 +233,9 @@ public class GameManager : MonoBehaviour
         if (index < 0 || index >= Scenes.Order.Length - 1)
         {
             ResetGame();
-            SceneManager.LoadScene(Scenes.Menu);
+            GoToScene(Scenes.Menu);
             return;
         }
-        SceneManager.LoadScene(Scenes.Order[index + 1]);
+        GoToScene(Scenes.Order[index + 1]);
     }
 }

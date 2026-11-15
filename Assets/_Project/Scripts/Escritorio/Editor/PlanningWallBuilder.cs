@@ -253,7 +253,7 @@ public static class PlanningWallBuilder
 
     static Transform FindNamed(string name)
     {
-        var transforms = Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        var transforms = Object.FindObjectsByType<Transform>(FindObjectsInactive.Include);
         for (int i = 0; i < transforms.Length; i++)
         {
             if (transforms[i] != null && transforms[i].name == name)

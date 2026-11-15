@@ -18,7 +18,7 @@ Valid statuses: `pending`, `in progress`, `in PR`, `done`.
 | 5 | Folder: astronaut profiles + training | P3 | unassigned | none | — | pending |
 | 6 | Globe + calendar (site, weather, wind) | P3 | unassigned | none | — | pending |
 | 7 | Computer: app desktop, settings and shut down | P2 | unassigned | none | — | pending |
-| 8 | Computer: SpaceMart app (buy parts) | P2 | unassigned | none | — | pending |
+| 8 | Computer: SpaceMart app (buy parts) | P2 | Elena | Claude | `ia/claude/spacemart` | in progress |
 | 9 | Rocket model: assembly with purchased parts | P2 | unassigned | none | — | pending |
 | 10 | `02_Lanzamiento`: split screen (2D mission control + 3D rocket) | P4 | Mateo | Grok | `feat/mateo/lanzamiento` | in progress |
 | 11 | Flight phases: departure, lunar orbit, return | P4 | unassigned | none | — | pending |

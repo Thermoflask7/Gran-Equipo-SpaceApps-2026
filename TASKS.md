@@ -54,3 +54,4 @@ Valid statuses: `pending`, `in progress`, `in PR`, `done`.
 | 40 | (Manual, if time allows) SpaceOS Shut down button returns to the main menu (`00_Menu`) after a confirmation warning | P2 | team (manual) | none | — | pending |
 | 41 | (Manual, if time allows) Make the game more fun | All | team (manual) | none | — | pending |
 | 42 | (Manual, if time allows) Tune the game mechanics and economy, and refine the gameplay loop | All | team (manual) | none | — | pending |
+| 43 | (If time allows) Mission select as a folder: a closed "MISSION FILES" folder opens, the mission sheets fan out (tab colored by difficulty), a clicked sheet comes to the front as a dossier (name, difficulty, description, stat tiles, "COMING SOON" stamp on locked ones, Start mission on Selene). Reuses `MissionSelect` data; replaces the cards panel only if it looks good in time | P1 | Elena | Claude | Idea from the team; cards version (task 26) stays as fallback | pending |

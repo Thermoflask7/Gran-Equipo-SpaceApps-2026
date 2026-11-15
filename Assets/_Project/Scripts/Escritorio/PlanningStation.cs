@@ -1,0 +1,290 @@
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
+using UnityEngine.UI;
+
+/// <summary>
+/// Planning wall station (task 6, map + zoom). Click the calendar or the globe
+/// to zoom the camera to a framing of the world map and the calendar.
+/// Escape or the Back button returns to the desk. The launch-site and calendar
+/// panels are not wired yet.
+/// </summary>
+public class PlanningStation : MonoBehaviour
+{
+    public const string RootName = "PlanningStation";
+    public const string MapName = "WorldMap";
+    public const string ZoomTargetName = "PlanningZoomTarget";
+    public const string BackCanvasName = "PlanningBackCanvas";
+    public const string CalendarName = "Calendar";
+    public const string CalendarLegacyName = "tinker";
+    public const string GlobeName = "Globe";
+
+    [Header("Scene objects")]
+    [SerializeField] Transform calendar;
+    [SerializeField] Transform globe;
+    [SerializeField] Transform map;
+    [SerializeField] Transform zoomTarget;
+    [SerializeField] Canvas backCanvas;
+    [SerializeField] Button backButton;
+
+    [Header("Map placement")]
+    [Tooltip("Width of the WorldMap quad in meters. Height is width / Map Aspect.")]
+    [SerializeField] float mapWidth = 1.1f;
+    [Tooltip("Width divided by height. The source texture is about 2:1.")]
+    [SerializeField] float mapAspect = 2f;
+    [Tooltip("Gap in meters between the calendar's left edge and the map's right edge, from the viewer's point of view.")]
+    [SerializeField] float mapGap = 0.12f;
+    [Tooltip("Vertical nudge in meters (positive raises the map).")]
+    [SerializeField] float mapHeightOffset = 0.05f;
+    [Tooltip("How far the map sits off the wall toward the camera, in meters.")]
+    [SerializeField] float mapWallOffset = 0.01f;
+
+    [Header("Zoom")]
+    [Tooltip("1 = the map and calendar fill the view. Higher leaves a margin.")]
+    [SerializeField, Range(0.7f, 1.8f)] float zoomFill = 1.15f;
+    [SerializeField] float maxClickDistance = 50f;
+
+    public bool IsOpen { get; private set; }
+    public Transform ZoomTarget => zoomTarget;
+    public Transform Map => map;
+    public Transform Calendar => calendar;
+    public Transform Globe => globe;
+
+    public float MapWidth { get { return mapWidth; } set { mapWidth = Mathf.Max(0.1f, value); } }
+    public float MapAspect { get { return mapAspect; } set { mapAspect = Mathf.Max(0.1f, value); } }
+    public float MapGap { get { return mapGap; } set { mapGap = value; } }
+    public float MapHeightOffset { get { return mapHeightOffset; } set { mapHeightOffset = value; } }
+    public float MapWallOffset { get { return mapWallOffset; } set { mapWallOffset = value; } }
+    public float ZoomFill { get { return zoomFill; } set { zoomFill = value; } }
+
+    DeskCamera subscribed;
+
+    void OnEnable()
+    {
+        Subscribe();
+        BindBackButton();
+        HideBack();
+    }
+
+    void OnDisable()
+    {
+        if (subscribed != null) subscribed.ReturnStarted -= HandleReturnStarted;
+        subscribed = null;
+        if (backButton != null) backButton.onClick.RemoveListener(Close);
+        HideBack();
+    }
+
+    void Subscribe()
+    {
+        var dc = DeskCamera.Instance;
+        if (dc == null || dc == subscribed) return;
+        if (subscribed != null) subscribed.ReturnStarted -= HandleReturnStarted;
+        dc.ReturnStarted += HandleReturnStarted;
+        subscribed = dc;
+    }
+
+    void BindBackButton()
+    {
+        if (backButton == null) return;
+        backButton.onClick.RemoveListener(Close);
+        backButton.onClick.AddListener(Close);
+    }
+
+    void Update()
+    {
+        if (IsOpen) return;
+        var mouse = Mouse.current;
+        if (mouse == null || !mouse.leftButton.wasPressedThisFrame) return;
+
+        var dc = DeskCamera.Instance;
+        // Same gate as PcStation: only one station can zoom at a time.
+        if (dc == null || dc.IsFocused || dc.IsMoving) return;
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
+
+        var cam = dc.GetComponent<Camera>();
+        Ray ray = cam.ScreenPointToRay(mouse.position.ReadValue());
+        if (!Physics.Raycast(ray, out RaycastHit hit, maxClickDistance)) return;
+        if (IsPlanningHit(hit.collider.transform))
+            Open();
+    }
+
+    bool IsPlanningHit(Transform hit)
+    {
+        if (hit == null) return false;
+        if (calendar != null && (hit == calendar || hit.IsChildOf(calendar))) return true;
+        if (globe != null && (hit == globe || hit.IsChildOf(globe))) return true;
+        return false;
+    }
+
+    /// <summary>Zoom the camera to the map and calendar wall.</summary>
+    public void Open()
+    {
+        var dc = DeskCamera.Instance;
+        if (dc == null || IsOpen) return;
+        Subscribe();
+        EnsureZoomTarget(dc.GetComponent<Camera>());
+        PlaceZoomTarget(dc.GetComponent<Camera>());
+        IsOpen = true;
+        dc.FocusOn(zoomTarget, () =>
+        {
+            if (!IsOpen) return;
+            ShowBack();
+        });
+    }
+
+    /// <summary>Return to the desk (Back button or a code call). Escape is handled by DeskCamera.</summary>
+    public void Close()
+    {
+        if (!IsOpen) return;
+        var dc = DeskCamera.Instance;
+        if (dc != null && dc.IsFocused) dc.ReturnToDesk();
+        else HandleReturnStarted();
+    }
+
+    void HandleReturnStarted()
+    {
+        if (!IsOpen) return;
+        IsOpen = false;
+        HideBack();
+    }
+
+    void ShowBack()
+    {
+        if (backCanvas != null) backCanvas.gameObject.SetActive(true);
+    }
+
+    void HideBack()
+    {
+        if (backCanvas != null) backCanvas.gameObject.SetActive(false);
+    }
+
+    public void SetCalendar(Transform value) => calendar = value;
+    public void SetGlobe(Transform value) => globe = value;
+    public void SetMap(Transform value) => map = value;
+    public void SetZoomTarget(Transform target) => zoomTarget = target;
+    public void SetBack(Canvas canvas, Button button)
+    {
+        if (backButton != null) backButton.onClick.RemoveListener(Close);
+        backCanvas = canvas;
+        backButton = button;
+        BindBackButton();
+    }
+
+    /// <summary>Place the WorldMap quad to the left of the calendar, on the wall, keeping the aspect.</summary>
+    public void ApplyMapPlacement()
+    {
+        if (map == null || calendar == null) return;
+
+        Bounds cal = Encapsulate(calendar);
+        if (cal.size.sqrMagnitude < 1e-8f)
+            cal = new Bounds(calendar.position, new Vector3(0.46f, 0.42f, 0.08f));
+
+        Vector3 normal = WallNormal();
+        float width = Mathf.Max(0.1f, mapWidth);
+        float aspect = Mathf.Max(0.1f, mapAspect);
+        float height = width / aspect;
+
+        // Viewer's left when looking at the wall is opposite to wallRight.
+        Vector3 wallRight = Vector3.Cross(Vector3.up, normal);
+        if (wallRight.sqrMagnitude < 1e-6f) wallRight = Vector3.right;
+        wallRight.Normalize();
+
+        Vector3 calLeft = cal.center - wallRight * cal.extents.x;
+        Vector3 center = calLeft - wallRight * (mapGap + width * 0.5f);
+        center += Vector3.up * mapHeightOffset;
+        // Keep the map on the wall plane, then push it toward the camera.
+        Vector3 wallPoint = cal.center;
+        center -= normal * Vector3.Dot(center - wallPoint, normal);
+        center += normal * mapWallOffset;
+
+        map.SetPositionAndRotation(center, Quaternion.LookRotation(normal, Vector3.up));
+        map.localScale = new Vector3(width, height, 1f);
+    }
+
+    /// <summary>Place the zoom target so the map and the calendar fill the camera view.</summary>
+    public void PlaceZoomTarget(Camera cam)
+    {
+        if (zoomTarget == null || cam == null) return;
+        if (!TryComputeZoomPose(cam, out Vector3 pos, out Quaternion rot)) return;
+        zoomTarget.SetPositionAndRotation(pos, rot);
+    }
+
+    public bool TryComputeZoomPose(Camera cam, out Vector3 position, out Quaternion rotation)
+    {
+        position = default;
+        rotation = Quaternion.identity;
+        if (cam == null) return false;
+
+        Bounds frame = default;
+        bool has = false;
+        if (map != null)
+        {
+            frame = Encapsulate(map);
+            has = frame.size.sqrMagnitude > 1e-8f;
+        }
+        if (calendar != null)
+        {
+            Bounds cal = Encapsulate(calendar);
+            if (has) frame.Encapsulate(cal);
+            else { frame = cal; has = frame.size.sqrMagnitude > 1e-8f; }
+        }
+        if (!has) return false;
+
+        Vector3 normal = WallNormal();
+        if (Vector3.Dot(normal, cam.transform.position - frame.center) < 0f) normal = -normal;
+
+        float halfFovV = cam.fieldOfView * 0.5f * Mathf.Deg2Rad;
+        float halfFovH = Mathf.Atan(Mathf.Tan(halfFovV) * cam.aspect);
+        float fill = Mathf.Max(0.5f, zoomFill);
+        float distH = (frame.size.y * 0.5f * fill) / Mathf.Tan(halfFovV);
+        float distW = (frame.size.x * 0.5f * fill) / Mathf.Tan(halfFovH);
+        float distance = Mathf.Max(distH, distW, 0.3f);
+
+        position = frame.center + normal * distance;
+        rotation = Quaternion.LookRotation(-normal, Vector3.up);
+        return true;
+    }
+
+    void EnsureZoomTarget(Camera cam)
+    {
+        if (zoomTarget != null) return;
+        var go = new GameObject(ZoomTargetName);
+        go.transform.SetParent(transform, false);
+        zoomTarget = go.transform;
+        PlaceZoomTarget(cam);
+    }
+
+    Vector3 WallNormal()
+    {
+        var dc = DeskCamera.Instance;
+        Transform cam = dc != null ? dc.transform : (Camera.main != null ? Camera.main.transform : null);
+        Vector3 from = calendar != null ? calendar.position : (map != null ? map.position : transform.position);
+        if (cam != null)
+        {
+            Vector3 toCam = cam.position - from;
+            toCam.y = 0f;
+            if (toCam.sqrMagnitude > 1e-6f) return toCam.normalized;
+        }
+        return Vector3.back;
+    }
+
+    static Bounds Encapsulate(Transform root)
+    {
+        var renderers = root.GetComponentsInChildren<Renderer>();
+        if (renderers.Length == 0) return new Bounds(root.position, Vector3.zero);
+        Bounds b = renderers[0].bounds;
+        for (int i = 1; i < renderers.Length; i++) b.Encapsulate(renderers[i].bounds);
+        return b;
+    }
+
+#if UNITY_EDITOR
+    void OnValidate()
+    {
+        if (Application.isPlaying) return;
+        if (map != null && calendar != null) ApplyMapPlacement();
+        var dc = DeskCamera.Instance;
+        Camera cam = dc != null ? dc.GetComponent<Camera>() : Camera.main;
+        if (cam != null && zoomTarget != null) PlaceZoomTarget(cam);
+    }
+#endif
+}

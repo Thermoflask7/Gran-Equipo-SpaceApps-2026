@@ -15,14 +15,29 @@ public class MaintenanceSettings : ScriptableObject
     [Tooltip("Wear per second of each repair bar (each system picks a random value between min and max)")]
     public float minDrain = 0.02f;
     public float maxDrain = 0.04f;
-    [Tooltip("Chance per second of a sudden failure (spread across the systems)")]
+    [Tooltip("Chance per second of a sudden failure (spread across the systems), for an engineer with skill 0.5")]
     public float failureChance = 0.2f;
+    [Tooltip("Failure chance multiplier for an engineer with skill 0 (worst). Skill 0.5 always gives x1")]
+    public float failureMultiplierNoSkill = 1.5f;
+    [Tooltip("Failure chance multiplier for an engineer with skill 1 (best)")]
+    public float failureMultiplierFullSkill = 0.5f;
     [Tooltip("How much a bar drops on a sudden failure")]
     public float failureDamage = 0.2f;
     [Tooltip("How much a bar rises per second while its panel is OK")]
     public float panelRefill = 0.06f;
     [Tooltip("How much a bar rises with the simple Repair button (only systems without a panel)")]
     public float repairAmount = 0.25f;
+
+    // Failure chance per second for an engineer skill (0 to 1): a better engineer keeps the systems from dropping.
+    // Skill 0 -> failureChance x failureMultiplierNoSkill, 0.5 -> x1, 1 -> x failureMultiplierFullSkill.
+    public float FailureChanceFor(float skill)
+    {
+        skill = Mathf.Clamp01(skill);
+        float multiplier = skill < 0.5f
+            ? Mathf.Lerp(failureMultiplierNoSkill, 1f, skill * 2f)
+            : Mathf.Lerp(1f, failureMultiplierFullSkill, (skill - 0.5f) * 2f);
+        return Mathf.Max(0f, failureChance * multiplier);
+    }
 
     [Header("Energy (fuses)")]
     [Tooltip("How often a fuse burns out, in seconds (random between min and max)")]

@@ -179,6 +179,7 @@ public class MaintenanceMinigame : MonoBehaviour
 
         MaintenanceSettings s = Settings;
         float dt = Time.deltaTime;
+        float failureChance = s.FailureChanceFor(skill); // a better engineer: fewer sudden failures
         float average = 0f;
         for (int i = 0; i < health.Length; i++)
         {
@@ -186,7 +187,7 @@ public class MaintenanceMinigame : MonoBehaviour
                 health[i] += s.panelRefill * dt; // panel OK: fills slowly
             else
                 health[i] -= drain[i] * dt;
-            if (UnityEngine.Random.value < s.failureChance * dt / health.Length)
+            if (UnityEngine.Random.value < failureChance * dt / health.Length)
                 health[i] -= s.failureDamage; // sudden failure in a random system
             health[i] = Mathf.Clamp01(health[i]);
             average += health[i];

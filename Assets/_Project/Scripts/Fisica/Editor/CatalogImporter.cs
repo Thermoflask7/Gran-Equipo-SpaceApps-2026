@@ -158,6 +158,7 @@ public static class CatalogImporter
         mission.name = "MisionArtemis"; // same name as the asset so they can be compared
 
         mission.missionName = "Selene";
+        mission.tagline = "Orbit the Moon with 3 astronauts"; // same card line as MainMenuBuilder, so the check does not warn
         mission.destinationName = "Crewed lunar orbit"; // no real agency or program names in the game
         mission.description = "Take 3 astronauts to an orbit around the Moon, collect scientific data and bring them back home safely.";
         mission.requiredDeltaV = 1060f; // 940 nominal (40 correction + 450 capture + 450 departure) + 120 reserve

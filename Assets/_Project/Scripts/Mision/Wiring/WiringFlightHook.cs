@@ -4,10 +4,13 @@ using UnityEngine;
 // Put it on the ALWAYS ACTIVE Lanzamiento object of 02_Lanzamiento, next to FlightPhases and MaintenanceFlightHook
 // (SpaceApps > Wiring minigame > Connect to launch scene does it). The WiringMinigame instance can be inactive.
 //
-// 1. Wiring fault: at settings.faultAtProgress (70 %) of a phase, if NO minigame opened in that phase, a "wiring fault"
-//    happens and asks for an Engineering minigame with severity Minor (it only costs points, it never aborts).
-//    Today Departure always has piloting and Lunar orbit research, so it mostly happens in Return, and in any phase
-//    whose planned minigame was skipped.
+// 1. Wiring fault (task 46 flight plan): at settings.faultAtProgress (70 %) of a phase a "wiring fault" happens and asks
+//    for an Engineering minigame with severity Minor (it only costs points, it never aborts):
+//      - in guaranteedPhase (Return), whenever the engineer has not played yet in it: the engineer's guaranteed moment
+//        (if a bad event already opened maintenance in Return, that was the engineer's turn and there is no wiring);
+//      - in any other phase, only if NO minigame opened in it (faultWhenNoMinigame, Cristina's "like a fault" idea);
+//      - never when the phase already reached FlightPhases.maxMinigamesPerPhase.
+//    ShouldFault() holds this rule.
 // 2. Engineering dispatcher: FlightPhases has one handler per role, so this hook takes the Engineering role in Start
 //    (after MaintenanceFlightHook registered in Awake) and opens:
 //      - wiring for its own fault, and for the events in settings.wiringEvents (EV-DE-02 "Unstable telemetry signal");
@@ -27,14 +30,15 @@ public class WiringFlightHook : MonoBehaviour
     public LaunchScreen screen;
     [Tooltip("Empty = the MaintenanceFlightHook in the scene. Opens maintenance for the other Engineering events")]
     public MaintenanceFlightHook maintenance;
-    [Tooltip("Turn off to keep only the event-driven wiring (no fault when a phase has no minigame)")]
+    [Tooltip("Phase where the engineer always gets the wiring minigame (unless maintenance already happened there)")]
+    public EventPhase guaranteedPhase = EventPhase.Return;
+    [Tooltip("In the other phases, a wiring fault happens when no minigame opened in them")]
     public bool faultWhenNoMinigame = true;
 
     bool ready;
     bool open;            // wiring is the open minigame
     bool faultPending;    // our fault was requested and has not opened yet
     bool faultThisPhase;  // the fault was already requested in this phase
-    bool minigameThisPhase;
     int roundsPlayed;
 
     WiringSettings S
@@ -65,14 +69,12 @@ public class WiringFlightHook : MonoBehaviour
     {
         if (!ready) return;
         screen.PhaseStarted += OnPhaseStarted;
-        phases.MinigameRequested += OnMinigameOpened;
     }
 
     void OnDisable()
     {
         if (!ready) return;
         screen.PhaseStarted -= OnPhaseStarted;
-        phases.MinigameRequested -= OnMinigameOpened;
     }
 
     // Start runs after every Awake, so this replaces the handler MaintenanceFlightHook registered
@@ -89,26 +91,34 @@ public class WiringFlightHook : MonoBehaviour
 
     void OnPhaseStarted(EventPhase phase)
     {
-        minigameThisPhase = false;
         faultThisPhase = false;
         faultPending = false;
     }
 
-    void OnMinigameOpened(TrainingFocus role)
-    {
-        minigameThisPhase = true;
-    }
-
     void Update()
     {
-        if (!ready || !faultWhenNoMinigame || faultThisPhase || minigameThisPhase) return;
+        if (!ready || faultThisPhase) return;
         if (screen.Finished || phases.Terminated || phases.CurrentMinigame != TrainingFocus.None) return;
         if (screen.PhaseProgress < S.faultAtProgress) return;
 
-        faultThisPhase = true;
+        faultThisPhase = true; // decided once per phase
+        if (!ShouldFault(screen.CurrentPhase, guaranteedPhase, faultWhenNoMinigame,
+                phases.PlayedThisPhase(TrainingFocus.Engineering), phases.MinigamesThisPhase, phases.maxMinigamesPerPhase))
+            return;
+
         faultPending = true;
         screen.Log("Problem: wiring fault! Some cables came loose. The engineer must reconnect the systems.");
         phases.RequestMinigame(TrainingFocus.Engineering, EventSeverity.Minor, FaultSource);
+    }
+
+    // Task 46 rule: does a wiring fault happen at 70 % of this phase?
+    public static bool ShouldFault(EventPhase phase, EventPhase guaranteedPhase, bool faultWhenNoMinigame,
+                                   bool engineerPlayed, int minigamesThisPhase, int maxPerPhase)
+    {
+        if (engineerPlayed) return false;                                     // one minigame per crew role per phase
+        if (maxPerPhase > 0 && minigamesThisPhase >= maxPerPhase) return false; // phase is full
+        if (phase == guaranteedPhase) return true;                            // the engineer's guaranteed moment
+        return faultWhenNoMinigame && minigamesThisPhase == 0;                // a quiet phase gets a fault
     }
 
     // FlightPhases asks for an Engineering minigame

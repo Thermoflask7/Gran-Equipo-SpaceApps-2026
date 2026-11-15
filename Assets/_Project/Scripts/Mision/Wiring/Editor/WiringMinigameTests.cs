@@ -129,6 +129,16 @@ public static class WiringMinigameTests
 
     static void Hook()
     {
+        // Task 46 flight plan: when does the wiring fault happen? (phase, guaranteed phase, fault when empty, engineer played, opened, max)
+        EventPhase R = EventPhase.Return, D = EventPhase.Departure;
+        Check("Return: guaranteed wiring for the engineer", WiringFlightHook.ShouldFault(R, R, true, false, 0, 2));
+        Check("Return after a research incident: wiring still comes (2nd minigame)", WiringFlightHook.ShouldFault(R, R, true, false, 1, 2));
+        Check("Return after maintenance: no wiring (engineer already played)", !WiringFlightHook.ShouldFault(R, R, true, true, 1, 2));
+        Check("Return already full: no wiring", !WiringFlightHook.ShouldFault(R, R, true, false, 2, 2));
+        Check("Departure with piloting played: no wiring", !WiringFlightHook.ShouldFault(D, R, true, false, 1, 2));
+        Check("Departure with no minigame at all: wiring fault", WiringFlightHook.ShouldFault(D, R, true, false, 0, 2));
+        Check("Departure with no minigame, option off: no fault", !WiringFlightHook.ShouldFault(D, R, false, false, 0, 2));
+
         WiringSettings s = WiringSettings.Default;
         EventData e = ScriptableObject.CreateInstance<EventData>();
         e.name = "EV-DE-02";

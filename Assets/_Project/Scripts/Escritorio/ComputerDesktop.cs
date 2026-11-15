@@ -84,6 +84,8 @@ public class ComputerDesktop : MonoBehaviour
     void Start()
     {
         if (!iconsBuilt) RebuildIcons(); // los iconos se ven desde el escritorio aunque no se puedan clicar
+        if (GetComponent<SpaceMart>() == null)
+            gameObject.AddComponent<SpaceMart>();
         if (GetComponent<SpaceMartApp>() == null)
             gameObject.AddComponent<SpaceMartApp>();
         if (GetComponent<AjustesApp>() == null)

@@ -3,13 +3,13 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-// SpaceMart app (task 8): online shop on the desk computer to buy and sell parts.
+// SpaceMart (task 8): purchase logic for the desk-computer shop.
 // It lists the Artemis catalog (Data/Piezas/ART-*.asset), spends credits through GameManager
 // and shows what the bought parts would give with RocketPhysics: mass, Orion delta-v, power,
 // consumables and science. Assembling the rocket (gm.rocketParts) is the job of the rocket model (task 9).
-// The prefab is created with the menu SpaceApps > SpaceMart > Create prefab.
-// The computer desktop (task 7) opens it with SetActive(true); the X button calls Close().
-// The tabs on top filter the list by category (SetFilter), so the catalog is easier to read.
+// The in-monitor front-end is SpaceMartApp (SpaceOS window). This component keeps the buy/sell API.
+// Its own uGUI (row template, list, prefab from SpaceApps > SpaceMart > Create prefab) is optional
+// and is only built when listContent and rowTemplate are assigned (standalone prefab / tests).
 public class SpaceMart : MonoBehaviour
 {
     [Header("Data")]
@@ -39,19 +39,44 @@ public class SpaceMart : MonoBehaviour
 
     List<SpaceMartItem> rows = new List<SpaceMartItem>();
 
+    void Awake()
+    {
+        EnsureCatalog();
+    }
+
+    // Fill the catalog from GameData when the inspector list is empty (SpaceOS front-end).
+    public void EnsureCatalog()
+    {
+        if (catalog == null) catalog = new List<PartData>();
+        GameData data = GameData.Instance;
+        if (catalog.Count == 0 && data != null && data.parts != null)
+        {
+            for (int i = 0; i < data.parts.Count; i++)
+            {
+                if (data.parts[i] != null) catalog.Add(data.parts[i]);
+            }
+        }
+        if (mission == null && data != null) mission = data.mission;
+    }
+
     void Start()
     {
+        EnsureCatalog();
         GameManager gm = GameManager.Instance;
         if (gm.mission == null) gm.mission = mission; // so the scene can be tested on its own
 
         catalog.Sort(CompareParts);
-        foreach (PartData part in catalog)
+        // Standalone prefab only: the SpaceOS window does not assign a row template.
+        if (rowTemplate != null && listContent != null)
         {
-            if (part == null) continue;
-            SpaceMartItem row = Instantiate(rowTemplate, listContent);
-            row.gameObject.SetActive(true);
-            row.Setup(this, part);
-            rows.Add(row);
+            foreach (PartData part in catalog)
+            {
+                if (part == null) continue;
+                SpaceMartItem row = Instantiate(rowTemplate, listContent);
+                row.gameObject.SetActive(true);
+                row.Setup(this, part);
+                rows.Add(row);
+            }
         }
         if (feedbackText != null) feedbackText.text = "";
         Refresh();

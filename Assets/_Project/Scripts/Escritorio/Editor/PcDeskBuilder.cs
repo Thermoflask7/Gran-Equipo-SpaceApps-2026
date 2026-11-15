@@ -481,8 +481,6 @@ public static class PcDeskBuilder
             SetLayerRecursively(t.GetChild(i).gameObject, layer);
     }
 
-    const string SpaceMartCatalogPath = "Assets/_Project/Data/Tienda/SpaceOsShopCatalog.asset";
-
     static void EnsureAjustes(ComputerDesktop desktop)
     {
         if (desktop == null) return;
@@ -493,25 +491,10 @@ public static class PcDeskBuilder
     static void EnsureSpaceMart(ComputerDesktop desktop)
     {
         if (desktop == null) return;
-        var app = desktop.GetComponent<SpaceMartApp>();
-        if (app == null)
-            app = Undo.AddComponent<SpaceMartApp>(desktop.gameObject);
-        var catalog = AssetDatabase.LoadAssetAtPath<SpaceOsShopCatalog>(SpaceMartCatalogPath);
-        if (catalog == null)
-        {
-            Debug.LogWarning("[PcDeskBuilder] Could not find " + SpaceMartCatalogPath + ".");
-            return;
-        }
-        var so = new SerializedObject(app);
-        var prop = so.FindProperty("catalog");
-        if (prop == null)
-        {
-            Debug.LogError("[PcDeskBuilder] Falta el campo serializado 'catalog' en SpaceMartApp.");
-            return;
-        }
-        prop.objectReferenceValue = catalog;
-        so.ApplyModifiedProperties();
-        EditorUtility.SetDirty(app);
+        if (desktop.GetComponent<SpaceMart>() == null)
+            Undo.AddComponent<SpaceMart>(desktop.gameObject);
+        if (desktop.GetComponent<SpaceMartApp>() == null)
+            Undo.AddComponent<SpaceMartApp>(desktop.gameObject);
     }
 
     static void AssignDesktop(ComputerDesktop desktop, DesktopRefs refs)

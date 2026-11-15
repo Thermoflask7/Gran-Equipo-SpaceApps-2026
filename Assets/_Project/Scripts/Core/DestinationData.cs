@@ -17,13 +17,13 @@ public class DestinationData : ScriptableObject
     public float tliExtraMass = 682f; // kg: mass at translunar injection (26,536) minus mass after it (25,854)
 
     [Header("Crew and consumables")]
-    public int crewCount = 4;
+    public int crewCount = 3;
     public float waterPerPersonDay = 2.5f;  // kg
     public float oxygenPerPersonDay = 0.84f;
     public float foodPerPersonDay = 0.75f;
-    public float baseWaterKg = 135f;        // already included in Orion's mass
-    public float baseOxygenKg = 47f;
-    public float baseFoodKg = 44f;
+    public float baseWaterKg = 101.25f;        // already included in Orion's mass
+    public float baseOxygenKg = 35.25f;
+    public float baseFoodKg = 33f;
 
     [Header("Science")]
     public float minSciencePoints = 40f;

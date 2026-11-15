@@ -3,7 +3,7 @@
   "datasetType": "astronaut_candidates",
   "sourceClass": "FICTIONAL_GAME_DESIGN",
   "target": "AstronautData",
-  "gameCrewRequirement": 4,
+  "gameCrewRequirement": 3,
   "rolesCurrentlyImplemented": 3,
   "sourceRepoCommit": "e290427ba958770bfacb43f2f49d1e005f89866c",
   "astronauts": [

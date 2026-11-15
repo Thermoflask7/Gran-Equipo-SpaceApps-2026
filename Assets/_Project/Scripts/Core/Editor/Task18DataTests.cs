@@ -62,7 +62,7 @@ public static class Task18DataTests
 
         // Existing contract: catalog and mission data must remain unchanged.
         DestinationData mission = AssetDatabase.LoadAssetAtPath<DestinationData>("Assets/_Project/Data/Destinos/MisionArtemis.asset");
-        Check("V13 mission: four crew members, 12 days", mission != null && mission.crewCount == 4 && mission.missionDays == 12);
+        Check("Mission: crew of 3, 12 days", mission != null && mission.crewCount == 3 && mission.missionDays == 12);
         Check("V13 Orion delta-v requirement", mission != null && Mathf.Abs(mission.requiredDeltaV - 1060f) < 0.01f);
 
         // Runtime list (Resources/GameData.asset), filled by the import.

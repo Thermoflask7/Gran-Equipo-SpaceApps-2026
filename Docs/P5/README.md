@@ -121,7 +121,9 @@ Full table in [DELTA_V_BY_DESTINATION.md](DELTA_V_BY_DESTINATION.md):
 - LLO: 900 + 900 m/s.
 - **1,060 m/s = 900 NASA reference + 40 for corrections + 120 reserve (assumptions).** It is not an official NASA requirement.
 
-## 5. Crew (inconsistency, no code changed)
+## 5. Crew (resolved: crew of 3)
+
+> **Update (2026-11-14, claude_c for Cristina): the team decided on a crew of 3** (pilot, engineer, scientist), matching `GameManager`. `mission.crewCount = 3`. To keep the balance exactly as in V13, the baseline consumables (135/47/44 → 101.25/35.25/33 kg) and the water/oxygen/food reserve modules (40/12/30 → 30/9/22.5 kg) were scaled by 3/4, so every consumable margin is 3/4 of the old one and the balance tables above do not change (78 viable at 12 days, 5 at 15; checked with `balance.py`). Orion keeps `crewCapacity = 4` (real capacity; 3 fit). The text below is the original analysis.
 
 The mission, Orion and the consumables use **4 astronauts** (`mission.crewCount = 4`, `crewCapacity = 4`). But `GameManager` only has a pilot, an engineer and a scientist, and `IsCrewReady()` checks three. **The crew size was not changed.** It is a decision for P3 and P1 (D5). Options:
 
@@ -150,6 +152,6 @@ Either way, the UI must not show 3 people while consumables are calculated for 4
 | D2 | Are repeated parts allowed in SpaceMart? | 1 per part (applied) / allow and rebalance SCI-RAD | 1 per part: it is what the catalog and the enumeration assume. P2 must reflect it in SpaceMart |
 | D3 | Power never limits | Accept it and remove or reduce its 6 scoring points / longer period without sunlight, with a source (orbits near the Earth and Moon can have shadows lasting several hours) / lower the ESM battery in the model | Document it in the pitch; if a challenge is wanted, use a sourced period without sunlight, not a made-up number |
 | D4 | Real ESM masses (8.6 t of propellant) | Keep the V13 model (7,800 kg) / use the real figure and raise `requiredDeltaV` or the mass | Keep it and present it as a model; changing it forces rebalancing everything |
-| D5 | Fourth crew member | Assignable / fixed and explained in the UI | Fixed and explained: simpler given the hackathon time (P3/P1) |
+| D5 | Fourth crew member | Assignable / fixed and explained in the UI | **Decided: crew of 3**, no fourth member (see section 5) |
 | D6 | Minimum science to win and mandatory minigames (pending from the scoring audit) | See `MissionScoring.MinExperimentFraction` | Still pending |
 | D7 | Secondary sources | Replace Wikipedia and Plant Services with official sheets (Lockheed Martin, ESA) before the pitch | Yes, if there is time |

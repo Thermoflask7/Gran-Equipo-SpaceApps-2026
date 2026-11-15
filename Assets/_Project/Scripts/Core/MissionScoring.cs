@@ -2,11 +2,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // Final score from 0 to 100 (task 16): Cristina's V16 system (Drive: CRISTINA/PUNTUACION)
-// adapted to the Artemis physics (the SLS is a complete service, no stages are assembled).
+// adapted to the lunar physics (the launcher is a complete service, no stages are assembled).
 //
 //   Total = Planning (0-45) + Mission (0-55)
 //   Planning: engineering 24 + budget 7 + training 8 + weather 6,     +/- 3 from events
-//     Engineering: SLS capacity 7 + Orion delta-v 7 + generation 3 + batteries 3 + consumables 4
+//     Engineering: launcher capacity 7 + spacecraft delta-v 7 + generation 3 + batteries 3 + consumables 4
 //   Mission:  flight stages 24 + minigames 21 + science 10,           +/- 3 from events
 //
 // There are two scores: the diagnostic one (total, for learning, shown even if the mission fails)
@@ -76,15 +76,15 @@ public static class MissionScoring
         return r;
     }
 
-    // Fills in the inputs with the state of GameManager and RocketPhysics (Artemis catalog).
+    // Fills in the inputs with the state of GameManager and RocketPhysics (lunar catalog).
     public static ScoreInputs InputsFromGame(GameManager gm)
     {
         ScoreInputs i = new ScoreInputs();
         List<PartData> parts = gm.rocketParts;
         DestinationData mission = gm.mission;
-        PartData sls = RocketPhysics.LaunchService(parts);
+        PartData launcherPart = RocketPhysics.LaunchService(parts);
 
-        i.deliveryCapacity = sls != null ? sls.payloadCapacity : 1f; // no SLS: 0 points (and the rocket is not valid)
+        i.deliveryCapacity = launcherPart != null ? launcherPart.payloadCapacity : 1f; // no launcher: 0 points (and the rocket is not valid)
         i.tliMass = RocketPhysics.TliMass(parts, mission);
         i.craftDvAvailable = RocketPhysics.SpacecraftDeltaV(parts);
         i.craftDvRequired = mission.requiredDeltaV;
@@ -153,9 +153,9 @@ public static class MissionScoring
         }
 
         // Engineering (24). Points grow with the margin and reach the maximum with some extra margin.
-        // SLS (7): full with 5% of its capacity free
+        // launcher (7): full with 5% of its capacity free
         r.deliveryPoints = 7f * Mathf.Clamp01((i.deliveryCapacity - i.tliMass) / (0.05f * i.deliveryCapacity));
-        // Orion (7): full with 8% extra delta-v
+        // spacecraft (7): full with 8% extra delta-v
         r.craftDvPoints = 7f * Mathf.Clamp01((i.craftDvAvailable - i.craftDvRequired) / (0.08f * i.craftDvRequired));
         // Generation (3): full if 25% of the draw is left over
         r.powerPoints = 3f * Mathf.Clamp01(i.powerNetW / (0.25f * Mathf.Max(i.loadW, 1f)));

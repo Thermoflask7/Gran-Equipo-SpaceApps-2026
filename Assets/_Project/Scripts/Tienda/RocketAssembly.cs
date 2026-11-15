@@ -5,10 +5,10 @@ using System.Collections.Generic;
 // (gm.rocketParts) and back. After every change gm.rocketValid is recalculated with RocketPhysics.
 // The rocket model prefab (P2) only calls these methods and redraws itself.
 // Rules: only bought parts can be mounted, one unit of each part (RocketPhysics.MaxCopiesPerPart),
-// and only one SLS: mounting a second launcher swaps the one on the rocket.
+// and only one launcher: mounting a second launcher swaps the one on the rocket.
 public static class RocketAssembly
 {
-    // Parts every rocket needs: one SLS and the whole Orion
+    // Parts every rocket needs: one launcher and the whole spacecraft
     public static readonly PartType[] RequiredTypes =
     {
         PartType.LaunchService, PartType.Capsule, PartType.ServiceModule, PartType.AbortSystem
@@ -44,7 +44,7 @@ public static class RocketAssembly
         return list;
     }
 
-    // Required part types still missing on the rocket (empty = SLS and Orion complete)
+    // Required part types still missing on the rocket (empty = launcher and spacecraft complete)
     public static List<PartType> MissingRequired(GameManager gm)
     {
         List<PartType> missing = new List<PartType>();
@@ -66,7 +66,7 @@ public static class RocketAssembly
 
     // ---------- Changes (each one recalculates gm.rocketValid) ----------
 
-    // Puts a bought part on the rocket. A second SLS replaces the one already mounted.
+    // Puts a bought part on the rocket. A second launcher replaces the one already mounted.
     public static bool Mount(GameManager gm, PartData part)
     {
         if (!CanMount(gm, part)) return false;
@@ -89,7 +89,7 @@ public static class RocketAssembly
     }
 
     // Mounts every bought part that fits (for an "Assemble all" button). Returns how many were added.
-    // With several SLS bought, only the first one is mounted.
+    // With several launchers bought, only the first one is mounted.
     public static int MountAll(GameManager gm)
     {
         int added = 0;

@@ -4,30 +4,30 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// Estacion "PC" del escritorio. Va en la raiz de computer_old_2 (necesita un collider
-/// en ella o en sus hijos). Clic -> la camara se acerca hasta que la pantalla del monitor
-/// ocupa todo el alto -> se muestra el ComputerDesktop. Volver / Escape -> regresa.
+/// Desk station "PC". Goes on the root of computer_old_2 (it needs a collider
+/// on it or its children). Click -> the camera moves in until the monitor screen
+/// fills the whole height -> the ComputerDesktop is shown. Back / Escape -> returns.
 /// </summary>
 public class PcStation : MonoBehaviour
 {
-    [Tooltip("Pose de la camara al hacer zoom. El builder la crea (PC_ZoomTarget) y se puede mover a mano.")]
+    [Tooltip("Camera pose when zoomed in. The builder creates it (PC_ZoomTarget) and it can be moved by hand.")]
     [SerializeField] Transform zoomTarget;
 
-    [Tooltip("Renderer del monitor y submesh de la pantalla (material 'screen').")]
+    [Tooltip("Monitor renderer and screen submesh (material 'screen').")]
     [SerializeField] Renderer screenRenderer;
     [SerializeField] int screenSubmesh = 1;
 
-    [Tooltip("1 = la pantalla ocupa exactamente el alto. Menor = mas cerca (recorta), mayor = deja margen.")]
+    [Tooltip("1 = the screen fills exactly the height. Lower = closer (crops), higher = leaves a margin.")]
     [SerializeField, Range(0.5f, 1.5f)] float heightFill = 1f;
 
     [SerializeField] ComputerDesktop desktop;
     [SerializeField] float maxClickDistance = 50f;
 
-    [Header("Eventos")]
+    [Header("Events")]
     public UnityEvent onOpened;
     public UnityEvent onClosed;
 
-    /// <summary>Separacion (m) entre el frente de la pantalla y el Canvas, para evitar z-fighting.</summary>
+    /// <summary>Gap (m) between the screen front and the Canvas, to avoid z-fighting.</summary>
     public const float ScreenCanvasOffset = 0.003f;
 
     public bool IsOpen { get; private set; }
@@ -68,7 +68,7 @@ public class PcStation : MonoBehaviour
             Open();
     }
 
-    /// <summary>Hace zoom a la PC y muestra el escritorio de apps.</summary>
+    /// <summary>Zooms to the PC and shows the app desktop.</summary>
     public void Open()
     {
         var dc = DeskCamera.Instance;
@@ -84,7 +84,7 @@ public class PcStation : MonoBehaviour
         });
     }
 
-    /// <summary>Oculta el escritorio y regresa la camara (lo usan Volver y la app Apagar).</summary>
+    /// <summary>Hides the desktop and returns the camera (used by Back and the Shut down app).</summary>
     public void Close()
     {
         if (!IsOpen) return;
@@ -110,7 +110,7 @@ public class PcStation : MonoBehaviour
         PlaceZoomTarget(cam);
     }
 
-    /// <summary>Coloca zoomTarget para que la pantalla llene el alto (lo usa el builder del editor).</summary>
+    /// <summary>Places zoomTarget so the screen fills the height (used by the editor builder).</summary>
     public void PlaceZoomTarget(Camera cam)
     {
         if (zoomTarget == null || cam == null) return;
@@ -123,8 +123,8 @@ public class PcStation : MonoBehaviour
     public void SetDesktop(ComputerDesktop value) => desktop = value;
 
     /// <summary>
-    /// Calcula la pose de camara frente al centro de la pantalla, a la distancia en la que
-    /// su alto llena el FOV vertical. screenHeight sale en metros (para depurar).
+    /// Computes the camera pose in front of the screen center, at the distance where
+    /// its height fills the vertical FOV. screenHeight is in meters (for debugging).
     /// </summary>
     public bool TryComputeZoomPose(Camera cam, out Vector3 position, out Quaternion rotation, out float screenHeight)
     {
@@ -135,7 +135,7 @@ public class PcStation : MonoBehaviour
         float depth = 0f;
         if (!TryGetScreenFrame(out center, out normal, out up, out screenHeight, out _, out depth))
         {
-            // Respaldo: bounds de todos los renderers de la PC, mirando desde la camara.
+            // Fallback: bounds of all the PC renderers, looking from the camera.
             var rs = GetComponentsInChildren<Renderer>();
             if (rs.Length == 0) return false;
             Bounds b = rs[0].bounds;
@@ -148,9 +148,9 @@ public class PcStation : MonoBehaviour
             normal.Normalize();
         }
 
-        // Que la normal apunte hacia donde esta la camara.
+        // Make the normal point toward the camera.
         if (Vector3.Dot(normal, cam.transform.position - center) < 0f) normal = -normal;
-        // Encuadra el frente de la pantalla (donde va el Canvas de SpaceOS), no el centro del mesh.
+        // Frames the screen front (where the SpaceOS Canvas goes), not the mesh center.
         center += normal * (depth * 0.5f + ScreenCanvasOffset);
 
         float halfFov = cam.fieldOfView * 0.5f * Mathf.Deg2Rad;
@@ -161,9 +161,9 @@ public class PcStation : MonoBehaviour
     }
 
     /// <summary>
-    /// Superficie de la pantalla del monitor en mundo: centro del frente (ya adelantado la mitad
-    /// del grosor del submesh), normal hacia afuera (del lado de la camara), arriba, y tamano en metros.
-    /// La usa el builder para montar el Canvas World Space de SpaceOS sobre la pantalla.
+    /// Monitor screen surface in world space: front center (already moved forward half
+    /// the submesh thickness), outward normal (camera side), up, and size in meters.
+    /// The builder uses it to mount the SpaceOS World Space Canvas on the screen.
     /// </summary>
     public bool TryGetScreenSurface(Camera cam, out Vector3 frontCenter, out Vector3 outward, out Vector3 up, out Vector2 size)
     {
@@ -183,13 +183,13 @@ public class PcStation : MonoBehaviour
         var mf = screenRenderer.GetComponent<MeshFilter>();
         if (mf == null || mf.sharedMesh == null || screenSubmesh < 0 || screenSubmesh >= mf.sharedMesh.subMeshCount) return false;
 
-        Bounds lb = mf.sharedMesh.GetSubMesh(screenSubmesh).bounds; // espacio local del mesh
+        Bounds lb = mf.sharedMesh.GetSubMesh(screenSubmesh).bounds; // mesh local space
         Transform t = screenRenderer.transform;
         Vector3[] axes = { t.right, t.up, t.forward };
         Vector3 s = t.lossyScale;
         float[] size = { Mathf.Abs(lb.size.x * s.x), Mathf.Abs(lb.size.y * s.y), Mathf.Abs(lb.size.z * s.z) };
 
-        // Eje mas delgado = normal de la pantalla; de los otros dos, el mas vertical = alto.
+        // Thinnest axis = screen normal; of the other two, the most vertical = height.
         int thin = 0;
         for (int i = 1; i < 3; i++) if (size[i] < size[thin]) thin = i;
         int a = (thin + 1) % 3, b2 = (thin + 2) % 3;

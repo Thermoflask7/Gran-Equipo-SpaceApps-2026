@@ -1,13 +1,13 @@
 using UnityEngine;
 
 // New types always go at the end so the numbers saved in the assets do not change.
-// Cristina's catalog (V8.3): LaunchService = SLS Block 1 or 1B (you choose one; it already includes its stages);
+// Cristina's catalog (V8.3): LaunchService = standard launcher or 1B (you choose one; it already includes its stages);
 // Module = optional spacecraft modules (life support, reserves, navigation, shielding).
-// FuelTank and Engine are no longer used in the Artemis mission (the launcher is a complete service).
+// FuelTank and Engine are no longer used in the lunar mission (the launcher is a complete service).
 public enum PartType { Capsule, Engine, FuelTank, SolarPanel, Battery, Antenna, Instrument, ServiceModule, AbortSystem, LaunchService, Module }
 
 // A part bought in the shop. The real values come from Cristina's catalog
-// (menu SpaceApps -> Import Artemis catalog).
+// (menu SpaceApps -> Import mission catalog).
 [CreateAssetMenu(menuName = "SpaceApps/Part", fileName = "NewPart")]
 public class PartData : ScriptableObject
 {
@@ -29,7 +29,7 @@ public class PartData : ScriptableObject
     public float thrust; // kN
 
     [Header("Launcher")]
-    public float payloadCapacity; // kg the SLS carries to translunar injection (LaunchService only)
+    public float payloadCapacity; // kg the launcher carries to translunar injection (LaunchService only)
 
     [Header("Power")]
     public float power;     // W it GENERATES (service module solar arrays)

@@ -2,10 +2,10 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-// Balance tests (P5) with the real parts of the Artemis catalog.
+// Balance tests (P5) with the real parts of the lunar catalog.
 // Menu: SpaceApps -> Balance tests. Writes each test to the console with OK or FAIL.
 //
-// Goes through every combination: 1 launcher (Block 1 or 1B) + Orion (capsule, service module,
+// Goes through every combination: 1 launcher (Block 1 or 1B) + spacecraft (capsule, service module,
 // abort tower) + up to one unit of each of the 11 optional modules = 2 x 2^11 = 4,096.
 // For each one it separately checks budget, mass, delta-v, consumables, power, battery,
 // science and communications, and compares with P5's enumeration (Docs/P5/balance.py).
@@ -194,7 +194,7 @@ public static class BalanceTests
         return AssetDatabase.LoadAssetAtPath<PartData>(PartsFolder + id + ".asset");
     }
 
-    // Orion (capsule, service module, abort tower) after the launcher + the requested parts
+    // spacecraft (capsule, service module, abort tower) after the launcher + the requested parts
     static List<PartData> Parts(string launcher, params string[] ids)
     {
         List<PartData> list = new List<PartData> { Part(launcher), Part("ART-CM-ORION"), Part("ART-ESM-ORION"), Part("ART-LAS-ORION") };

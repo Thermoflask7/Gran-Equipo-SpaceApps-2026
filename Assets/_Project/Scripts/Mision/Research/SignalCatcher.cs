@@ -65,7 +65,7 @@ public class SignalCatcher : MonoBehaviour
         ResearchUI.Circle(area, "Moon", moonSize, new Vector2(0f, -Half.y - moonSize * 0.5f + Half.y * 0.45f), new Color(0.55f, 0.55f, 0.58f), circle);
 
         pivot = new Vector2(0f, -Half.y + Half.y * 0.45f + 20f);
-        ResearchUI.Box(area, "Orion", new Vector2(70f, 50f), pivot + new Vector2(0f, -20f), new Color(0.85f, 0.85f, 0.88f));
+        ResearchUI.Box(area, "Spacecraft", new Vector2(70f, 50f), pivot + new Vector2(0f, -20f), new Color(0.85f, 0.85f, 0.88f));
         dish = ResearchUI.Box(area, "Antenna", new Vector2(10f, 10f), pivot, new Color(0f, 0f, 0f, 0f));
         // A straight bar as wide as the beam cone at Earth's usual distance (the hit test uses the angle)
         RectTransform beamRt = ResearchUI.Box(dish, "Beam", new Vector2(2f * Half.y * 1.2f * Mathf.Tan(settings.beamHalfAngle * Mathf.Deg2Rad), 1400f),

@@ -6,13 +6,13 @@ using UnityEngine.Events;
 using UnityEngine.UI;
 
 /// <summary>
-/// Escritorio "SpaceOS" que SIEMPRE se ve en la pantalla del monitor. El Canvas se renderiza
-/// a una RenderTexture (PC_UICamera) y se muestra en la malla curva PC_Screen (filtro CRT).
-/// Solo es interactivo mientras la camara esta enfocada en la PC (Show/Hide activan y
-/// desactivan los clics, no lo ocultan).
-/// Los iconos de las apps se generan en runtime dentro de <see cref="appGrid"/>.
-/// Para conectar una app: ComputerDesktop.Instance.RegisterApp("spacemart", "SpaceMart", color, AbrirTienda)
-/// o GetApp("spacemart").AddListener(AbrirTienda).
+/// "SpaceOS" desktop that is ALWAYS visible on the monitor screen. The Canvas is rendered
+/// to a RenderTexture (PC_UICamera) and shown on the curved mesh PC_Screen (CRT filter).
+/// It is only interactive while the camera is focused on the PC (Show/Hide enable and
+/// disable clicks, they do not hide it).
+/// The app icons are generated at runtime inside <see cref="appGrid"/>.
+/// To connect an app: ComputerDesktop.Instance.RegisterApp("spacemart", "SpaceMart", color, OpenShop)
+/// or GetApp("spacemart").AddListener(OpenShop).
 /// </summary>
 public class ComputerDesktop : MonoBehaviour
 {
@@ -31,7 +31,7 @@ public class ComputerDesktop : MonoBehaviour
         }
     }
 
-    [Header("Referencias (las arma SpaceApps > Armar PC del escritorio)")]
+    [Header("References (set by SpaceApps > Build desk PC)")]
     [SerializeField] GameObject root;
     [SerializeField] RectTransform appGrid;
     [SerializeField] Button backButton;
@@ -51,7 +51,7 @@ public class ComputerDesktop : MonoBehaviour
         new ComputerApp(AppApagar, "Shut down", new Color(0.85f, 0.2f, 0.2f)),
     };
 
-    [Header("Eventos")]
+    [Header("Events")]
     public UnityEvent onShown;
     public UnityEvent onHidden;
 
@@ -75,7 +75,7 @@ public class ComputerDesktop : MonoBehaviour
         raycaster = GetComponent<GraphicRaycaster>();
         var canvas = GetComponent<Canvas>();
         if (canvas != null && canvas.renderMode == RenderMode.WorldSpace && canvas.worldCamera == null)
-            canvas.worldCamera = Camera.main; // camara de eventos del canvas en mundo
+            canvas.worldCamera = Camera.main; // event camera of the world canvas
         if (root != null) root.SetActive(true);
         CloseComingSoon();
         SetInteractive(false);
@@ -83,7 +83,7 @@ public class ComputerDesktop : MonoBehaviour
 
     void Start()
     {
-        if (!iconsBuilt) RebuildIcons(); // los iconos se ven desde el escritorio aunque no se puedan clicar
+        if (!iconsBuilt) RebuildIcons(); // the icons are visible from the desk even if they cannot be clicked
         if (GetComponent<SpaceMart>() == null)
             gameObject.AddComponent<SpaceMart>();
         if (GetComponent<SpaceMartApp>() == null)
@@ -102,7 +102,7 @@ public class ComputerDesktop : MonoBehaviour
         if (clockText != null && IsVisible && IsPoweredOn) clockText.text = "SpaceOS   " + DateTime.Now.ToString("HH:mm");
     }
 
-    /// <summary>La camara llego a la PC: enciende la pantalla si estaba apagada y habilita los clics.</summary>
+    /// <summary>The camera reached the PC: turns the screen on if it was off and enables clicks.</summary>
     public void Show(PcStation from)
     {
         owner = from;
@@ -113,7 +113,7 @@ public class ComputerDesktop : MonoBehaviour
         onShown?.Invoke();
     }
 
-    /// <summary>La camara se va: la pantalla sigue visible pero ya no recibe clics.</summary>
+    /// <summary>The camera leaves: the screen stays visible but no longer gets clicks.</summary>
     public void Hide()
     {
         CloseComingSoon();
@@ -121,7 +121,7 @@ public class ComputerDesktop : MonoBehaviour
         onHidden?.Invoke();
     }
 
-    /// <summary>Activa/desactiva los clics sobre la pantalla (CanvasGroup + GraphicRaycaster).</summary>
+    /// <summary>Enables/disables clicks on the screen (CanvasGroup + GraphicRaycaster).</summary>
     public void SetInteractive(bool value)
     {
         IsInteractive = value;
@@ -129,13 +129,13 @@ public class ComputerDesktop : MonoBehaviour
         if (raycaster != null) raycaster.enabled = value;
     }
 
-    /// <summary>Enciende o apaga (negro) la pantalla del monitor.</summary>
+    /// <summary>Turns the monitor screen on or off (black).</summary>
     public void SetPower(bool on)
     {
         if (screenOff != null) screenOff.SetActive(!on);
     }
 
-    /// <summary>Boton Volver: cierra la PC y regresa la camara al escritorio.</summary>
+    /// <summary>Back button: closes the PC and returns the camera to the desk.</summary>
     public void Back()
     {
         if (owner != null) owner.Close();
@@ -144,7 +144,7 @@ public class ComputerDesktop : MonoBehaviour
 
     public ComputerApp GetApp(string id) => apps.Find(a => a.id == id);
 
-    /// <summary>Registra (o completa) una app. Si ya existe, solo agrega el listener y la activa.</summary>
+    /// <summary>Registers (or completes) an app. If it exists, it only adds the listener and enables it.</summary>
     public ComputerApp RegisterApp(string id, string label, Color color, UnityAction onOpen)
     {
         var app = GetApp(id);
@@ -152,7 +152,7 @@ public class ComputerDesktop : MonoBehaviour
         {
             app = new ComputerApp(id, label, color);
             int apagar = apps.FindIndex(a => a.id == AppApagar);
-            if (apagar >= 0) apps.Insert(apagar, app); else apps.Add(app); // Apagar siempre al final
+            if (apagar >= 0) apps.Insert(apagar, app); else apps.Add(app); // Shut down always last
         }
         else
         {

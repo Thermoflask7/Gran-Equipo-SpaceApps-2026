@@ -33,7 +33,7 @@ public static class GameDataBuilder
         EditorUtility.SetDirty(data);
         AssetDatabase.SaveAssets();
 
-        if (data.mission == null) Debug.LogWarning("GameData: mission not found at " + MissionPath + ". Run SpaceApps -> Import Artemis catalog.");
+        if (data.mission == null) Debug.LogWarning("GameData: mission not found at " + MissionPath + ". Run SpaceApps -> Import mission catalog.");
         Debug.Log("GameData: " + data.parts.Count + " parts, " + data.astronauts.Count + " astronauts, "
             + data.events.Count + " events, " + data.sites.Count + " site(s).");
         return data;

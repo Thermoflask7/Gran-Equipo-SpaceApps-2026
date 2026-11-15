@@ -1,6 +1,6 @@
 using UnityEngine;
 
-// The mission (for now: Artemis-style crewed lunar orbit, Cristina's mission V13).
+// The mission (for now: crewed lunar orbit, Cristina's mission V13).
 // Defines what the spacecraft needs in order to launch.
 [CreateAssetMenu(menuName = "SpaceApps/Mission", fileName = "NewMission")]
 public class DestinationData : ScriptableObject
@@ -9,9 +9,9 @@ public class DestinationData : ScriptableObject
     public string tagline;         // one short line under the name on the mission card
     public string destinationName;
     [TextArea] public string description;
-    public float launchDeltaV;   // no longer used: the SLS is a complete service (kept so assets do not break)
+    public float launchDeltaV;   // no longer used: the launcher is a complete service (kept so assets do not break)
     public float requiredDeltaV; // m/s the spacecraft must provide after translunar injection: lunar orbit arrival + return + reserve
-    public float maxMass;        // no longer used (the limit is the capacity of the chosen SLS)
+    public float maxMass;        // no longer used (the limit is the capacity of the chosen launcher)
     public int missionDays;
     public bool locked; // true = shown as "coming soon"
     public int difficulty = 2; // 1 = easy, 2 = medium, 3 = hard (mission select cards)
@@ -24,7 +24,7 @@ public class DestinationData : ScriptableObject
     public float waterPerPersonDay = 2.5f;  // kg
     public float oxygenPerPersonDay = 0.84f;
     public float foodPerPersonDay = 0.75f;
-    public float baseWaterKg = 101.25f;        // already included in Orion's mass
+    public float baseWaterKg = 101.25f;        // already included in the spacecraft's mass
     public float baseOxygenKg = 35.25f;
     public float baseFoodKg = 33f;
 

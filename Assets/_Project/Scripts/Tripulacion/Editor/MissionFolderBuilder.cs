@@ -191,7 +191,7 @@ public static class MissionFolderBuilder
         // Data
         folder.mission = AssetDatabase.LoadAssetAtPath<DestinationData>(MissionPath);
         if (folder.mission == null)
-            Debug.LogWarning("Mission folder: mission not found at " + MissionPath + ". Run SpaceApps > Import Artemis catalog.");
+            Debug.LogWarning("Mission folder: mission not found at " + MissionPath + ". Run SpaceApps > Import mission catalog.");
 
         PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
         Object.DestroyImmediate(root);

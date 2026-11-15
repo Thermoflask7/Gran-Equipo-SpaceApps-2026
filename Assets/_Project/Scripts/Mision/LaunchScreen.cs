@@ -84,7 +84,7 @@ public class LaunchScreen : MonoBehaviour
     public static bool SkipAllowed { get { return Application.isEditor || Debug.isDebugBuild; } }
 
     public EventPhase CurrentPhase { get; private set; } = EventPhase.Departure;
-    public float PhaseProgress { get; private set; } // 0 a 1 dentro de la fase actual
+    public float PhaseProgress { get; private set; } // 0 to 1 inside the current phase
     public FlightStage CurrentStage { get; private set; } = FlightStage.Liftoff;
     public bool Finished { get; private set; }
 
@@ -260,7 +260,7 @@ public class LaunchScreen : MonoBehaviour
         return FlightStage.Transit;
     }
 
-    // 0 a 1 dentro de la vista actual (en Transit, dentro del tramo de viaje de la fase actual)
+    // 0 to 1 inside the current view (in Transit, inside the travel leg of the current phase)
     public float StageProgress
     {
         get
@@ -272,7 +272,7 @@ public class LaunchScreen : MonoBehaviour
         }
     }
 
-    // Avance del cohete en la ruta general de la fase actual
+    // Rocket progress along the overview route in the current phase
     float TransitT()
     {
         float t = PhaseProgress;
@@ -281,7 +281,7 @@ public class LaunchScreen : MonoBehaviour
         return t;
     }
 
-    // Regresa true si cambio la vista
+    // Returns true if the view changed
     bool UpdateStage()
     {
         FlightStage stage = Finished ? FlightStage.Landing : StageFor(CurrentPhase, PhaseProgress);
@@ -301,7 +301,7 @@ public class LaunchScreen : MonoBehaviour
         return "Route: Earth - Moon - Earth";
     }
 
-    // Fundido a negro alrededor del cambio de vista (sin estado: depende solo del tiempo que falta o paso)
+    // Fade to black around the view change (stateless: depends only on the time left or passed)
     void UpdateFade()
     {
         if (viewFade == null) return;
@@ -336,8 +336,8 @@ public class LaunchScreen : MonoBehaviour
         if (target == null || site == null) return;
 
         float k = StageProgress;
-        // Despegue: empieza cerca del suelo y termina arriba mirando hacia abajo (se ve la curva de la Tierra).
-        // Aterrizaje: al reves.
+        // Liftoff: starts near the ground and ends high up looking down (the curve of the Earth shows).
+        // Landing: the other way around.
         Vector3 offset = up
             ? Vector3.Lerp(new Vector3(10f, -4f, -30f), new Vector3(20f, 45f, -45f), k)
             : Vector3.Lerp(new Vector3(20f, 45f, -45f), new Vector3(-12f, 4f, -28f), Mathf.Clamp01(k / 0.6f));
@@ -348,7 +348,7 @@ public class LaunchScreen : MonoBehaviour
         Vector3 look = target.position + Vector3.up * (up ? 5f : 0f) - cam.position;
         if (look.sqrMagnitude > 0.001f) cam.rotation = Quaternion.LookRotation(look, Vector3.up);
 
-        // Cielo azul cerca del suelo, negro fuera de la atmosfera
+        // Blue sky near the ground, black outside the atmosphere
         float altitude = target.position.y - site.position.y;
         float space = Mathf.Clamp01(altitude / ((up ? climbHeight : reentryHeight) * 0.45f));
         Atmosphere = 1f - space;
@@ -359,7 +359,7 @@ public class LaunchScreen : MonoBehaviour
 
     Vector3 LiftoffPoint(float u)
     {
-        float s = Mathf.Clamp01((u - 0.12f) / 0.88f); // los primeros instantes: encendido en la plataforma
+        float s = Mathf.Clamp01((u - 0.12f) / 0.88f); // the first moments: ignition on the pad
         float h = climbHeight * s * s;
         float side = climbHeight * 0.25f * s * s * s;  // giro gradual (gravity turn)
         return liftoffSite.position + new Vector3(side, padHeight + h, 0f);
@@ -395,7 +395,7 @@ public class LaunchScreen : MonoBehaviour
         float side = 0f;
         if (u < 0.6f)
         {
-            // Reentrada: baja rapido y frena con la atmosfera
+            // Reentry: drops fast and brakes with the atmosphere
             float k = u / 0.6f;
             h = Mathf.Lerp(reentryHeight, 30f, 1f - (1f - k) * (1f - k));
             side = reentryHeight * 0.6f * (1f - k) * (1f - k);
@@ -407,7 +407,7 @@ public class LaunchScreen : MonoBehaviour
         }
         else
         {
-            // En el agua, flotando
+            // In the water, floating
             h = 0.5f + 0.15f * Mathf.Sin(Time.time * 2f);
         }
         return landingSite.position + new Vector3(-side, h, 0f);
@@ -422,7 +422,7 @@ public class LaunchScreen : MonoBehaviour
         Vector3 b = LandingPoint(Mathf.Min(u, 0.99f) + 0.01f);
         returnCapsule.position = LandingPoint(u);
         Vector3 dir = b - a;
-        // En la reentrada el escudo termico (abajo de la capsula) va por delante; con paracaidas, derecha
+        // In reentry the heat shield (bottom of the capsule) leads; under parachutes, upright
         returnCapsule.rotation = u < 0.6f && dir.sqrMagnitude > 0.0001f
             ? Quaternion.FromToRotation(Vector3.up, -dir.normalized)
             : Quaternion.identity;
@@ -481,8 +481,8 @@ public class LaunchScreen : MonoBehaviour
         }
     }
 
-    // Posicion en la ruta general: t va de 0 a 1 dentro de cada fase.
-    // Salida: curva de la Tierra a la orbita lunar. Orbita: 1.5 vueltas a la Luna. Retorno: curva de regreso.
+    // Position on the overview route: t goes from 0 to 1 inside each phase.
+    // Departure: curve from Earth to lunar orbit. Orbit: 1.5 laps around the Moon. Return: curve back.
     public Vector3 PathPoint(EventPhase phase, float t)
     {
         Vector3 e = earth.position;
@@ -514,7 +514,7 @@ public class LaunchScreen : MonoBehaviour
         return u * u * u * p0 + 3f * u * u * t * p1 + 3f * u * t * t * p2 + t * t * t * p3;
     }
 
-    // ---------- Pantalla grande ----------
+    // ---------- Big screen ----------
 
     void UpdateHud()
     {
@@ -576,8 +576,8 @@ public class LaunchScreen : MonoBehaviour
         return Mathf.Max(0f, d / span * EarthMoonKm);
     }
 
-    // Valores de prueba con forma realista (orbita baja ~7.8 km/s, inyeccion translunar ~10.9 km/s,
-    // reentrada ~11 km/s, paracaidas unos metros por segundo)
+    // Test values with a realistic shape (low orbit ~7.8 km/s, translunar injection ~10.9 km/s,
+    // reentry ~11 km/s, parachutes a few meters per second)
     float FakeVelocity()
     {
         if (Finished) return 0f;

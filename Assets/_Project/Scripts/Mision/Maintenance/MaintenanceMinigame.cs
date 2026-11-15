@@ -254,7 +254,7 @@ public class MaintenanceMinigame : MonoBehaviour
         return "Healthy systems: " + Mathf.RoundToInt(RawResult * 100) + "%"
             + "  ×  skill of " + engineer + ": " + Mathf.RoundToInt(skill * 100) + "%"
             + "  =  " + Mathf.RoundToInt(FinalResult * 100) + "%\n"
-            + "On a ship like Orion, power, life support, communications and propulsion depend on each other: "
+            + "On a crewed spacecraft, power, life support, communications and propulsion depend on each other: "
             + "a failure nobody handles can force the mission to abort.";
     }
 

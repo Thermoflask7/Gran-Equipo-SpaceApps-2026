@@ -6,9 +6,9 @@ using UnityEngine;
 // Everything is static: RocketPhysics.SpacecraftDeltaV(parts), etc.
 //
 // How the rocket is built (the order of the parts no longer matters):
-//   - You choose ONE launcher (LaunchService): SLS Block 1 (carries 27,000 kg to translunar injection)
-//     or SLS Block 1B (38,000 kg). The launcher already includes its stages: no tanks or engines are assembled.
-//   - The spacecraft: Orion capsule + service module + launch abort tower (mandatory)
+//   - You choose ONE launcher (LaunchService): standard launcher (carries 27,000 kg to translunar injection)
+//     or upgraded launcher (38,000 kg). The launcher already includes its stages: no tanks or engines are assembled.
+//   - The spacecraft: crew capsule + service module + launch abort tower (mandatory)
 //     + optional modules (science, antenna, reserves, batteries...).
 //
 // What is checked:
@@ -79,7 +79,7 @@ public static class RocketPhysics
 
     // ---------- 1. Launcher and mass ----------
 
-    // The chosen SLS (null if there is none).
+    // The chosen launcher (null if there is none).
     public static PartData LaunchService(List<PartData> parts)
     {
         return FirstOfType(parts, PartType.LaunchService);
@@ -115,9 +115,9 @@ public static class RocketPhysics
     // Launcher capacity minus the mass at translunar injection (kg). Negative = does not fit. AM-07.
     public static float DeliveryMargin(List<PartData> parts, DestinationData mission)
     {
-        PartData sls = LaunchService(parts);
-        if (sls == null) return 0f;
-        return sls.payloadCapacity - TliMass(parts, mission);
+        PartData launcherPart = LaunchService(parts);
+        if (launcherPart == null) return 0f;
+        return launcherPart.payloadCapacity - TliMass(parts, mission);
     }
 
     // ---------- 2. Spacecraft delta-v ----------
@@ -249,9 +249,9 @@ public static class RocketPhysics
         if (repeated != "") return "You can only take one unit of \"" + repeated + "\".";
 
         int launchers = CountType(parts, PartType.LaunchService);
-        if (launchers == 0) return "Choose a launcher: SLS Block 1 or SLS Block 1B.";
+        if (launchers == 0) return "Choose a launcher: the standard or the upgraded heavy launcher.";
         if (launchers > 1) return "You can only use one launcher.";
-        if (CountType(parts, PartType.Capsule) != 1) return "The spacecraft needs an Orion capsule.";
+        if (CountType(parts, PartType.Capsule) != 1) return "The spacecraft needs a crew capsule.";
         if (CountType(parts, PartType.ServiceModule) != 1) return "The spacecraft needs exactly one service module.";
         if (CountType(parts, PartType.AbortSystem) != 1) return "The launch abort tower that protects the crew is missing.";
 

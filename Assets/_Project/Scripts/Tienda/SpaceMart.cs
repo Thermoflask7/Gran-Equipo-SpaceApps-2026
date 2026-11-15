@@ -4,8 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 // SpaceMart (task 8): purchase logic for the desk-computer shop.
-// It lists the Artemis catalog (Data/Piezas/ART-*.asset), spends credits through GameManager
-// and shows what the bought parts would give with RocketPhysics: mass, Orion delta-v, power,
+// It lists the lunar catalog (Data/Piezas/ART-*.asset), spends credits through GameManager
+// and shows what the bought parts would give with RocketPhysics: mass, spacecraft delta-v, power,
 // consumables and science. Assembling the rocket (gm.rocketParts) is the job of the rocket model (task 9).
 // The in-monitor front-end is SpaceMartApp (SpaceOS window). This component keeps the buy/sell API.
 // Its own uGUI (row template, list, prefab from SpaceApps > SpaceMart > Create prefab) is optional
@@ -27,7 +27,7 @@ public class SpaceMart : MonoBehaviour
     public List<Image> filterTabs = new List<Image>();
 
     // Tab names. "All" shows everything; the rest match FilterOf(type).
-    public static readonly string[] Filters = { "All", "Launcher", "Orion", "Science", "Crew & modules", "Power" };
+    public static readonly string[] Filters = { "All", "Launcher", "Spacecraft", "Science", "Crew & modules", "Power" };
 
     static readonly Color TabColor = new Color(0.2f, 0.24f, 0.3f, 1f);
     static readonly Color TabSelectedColor = new Color(1f, 0.6f, 0f, 1f);
@@ -104,7 +104,7 @@ public class SpaceMart : MonoBehaviour
     public static string FilterOf(PartType type)
     {
         if (type == PartType.LaunchService) return "Launcher";
-        if (type == PartType.Capsule || type == PartType.ServiceModule || type == PartType.AbortSystem) return "Orion";
+        if (type == PartType.Capsule || type == PartType.ServiceModule || type == PartType.AbortSystem) return "Spacecraft";
         if (type == PartType.Instrument || type == PartType.Antenna) return "Science";
         if (type == PartType.SolarPanel || type == PartType.Battery) return "Power";
         return "Crew & modules"; // Module and anything else
@@ -117,13 +117,13 @@ public class SpaceMart : MonoBehaviour
         return GameManager.Instance.boughtParts.Contains(part);
     }
 
-    // The SLS you already bought (null if none)
+    // The launcher you already bought (null if none)
     public PartData OwnedLauncher()
     {
         return RocketPhysics.LaunchService(GameManager.Instance.boughtParts);
     }
 
-    // Credits needed to buy it. Buying an SLS swaps the one you have, which is refunded.
+    // Credits needed to buy it. Buying a launcher swaps the one you have, which is refunded.
     public float CostOf(PartData part)
     {
         float cost = part.price;
@@ -208,17 +208,17 @@ public class SpaceMart : MonoBehaviour
         string s = "<b>Your cart</b>\n";
         s += parts.Count + " parts, " + Credits(RocketPhysics.TotalPrice(parts)) + " spent\n\n";
 
-        PartData sls = RocketPhysics.LaunchService(parts);
-        if (sls == null)
-            s += Line("Launcher", "none (choose an SLS)", false);
+        PartData launcherPart = RocketPhysics.LaunchService(parts);
+        if (launcherPart == null)
+            s += Line("Launcher", "none (choose a launcher)", false);
         else if (mission != null)
-            s += Line("Mass to the Moon", Kg(RocketPhysics.TliMass(parts, mission)) + " of " + Kg(sls.payloadCapacity),
+            s += Line("Mass to the Moon", Kg(RocketPhysics.TliMass(parts, mission)) + " of " + Kg(launcherPart.payloadCapacity),
                 RocketPhysics.DeliveryMargin(parts, mission) >= 0f);
 
         if (mission != null)
         {
             float dv = RocketPhysics.SpacecraftDeltaV(parts);
-            s += Line("Orion delta-v", dv.ToString("N0") + " of " + mission.requiredDeltaV.ToString("N0") + " m/s",
+            s += Line("Spacecraft delta-v", dv.ToString("N0") + " of " + mission.requiredDeltaV.ToString("N0") + " m/s",
                 dv >= mission.requiredDeltaV);
         }
 
@@ -284,7 +284,7 @@ public class SpaceMart : MonoBehaviour
     public static string CategoryName(PartType type)
     {
         if (type == PartType.LaunchService) return "Launcher (choose one)";
-        if (type == PartType.Capsule || type == PartType.ServiceModule || type == PartType.AbortSystem) return "Orion (required)";
+        if (type == PartType.Capsule || type == PartType.ServiceModule || type == PartType.AbortSystem) return "Spacecraft (required)";
         if (type == PartType.Module) return "Module";
         if (type == PartType.SolarPanel) return "Solar panel";
         if (type == PartType.Battery) return "Battery";
@@ -315,7 +315,7 @@ public class SpaceMart : MonoBehaviour
         return string.Join(", ", facts);
     }
 
-    // Launcher first, then Orion, then the optional parts; cheaper first inside each group
+    // Launcher first, then spacecraft, then the optional parts; cheaper first inside each group
     static int CompareParts(PartData a, PartData b)
     {
         if (a == null || b == null) return 0;

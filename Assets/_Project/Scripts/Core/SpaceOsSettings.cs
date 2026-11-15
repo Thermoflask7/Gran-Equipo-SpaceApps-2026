@@ -80,7 +80,7 @@ public static class SpaceOsSettings
         Changed?.Invoke();
     }
 
-    /// <summary>Aplica los valores actuales al audio, calidad, pantalla, CRT y sensibilidad.</summary>
+    /// <summary>Applies the current values to audio, quality, screen, CRT and sensitivity.</summary>
     public static void Apply()
     {
         if (!loaded) Load();

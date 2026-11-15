@@ -3,8 +3,8 @@ using UnityEngine;
 using UnityEngine.Events;
 
 /// <summary>
-/// Una "app" del escritorio de la PC. Las tareas 7 (SpaceMart), 8 y 21 (tech tree)
-/// se conectan con ComputerDesktop.RegisterApp(id, ...) o agregando listeners a onOpen.
+/// An "app" on the PC desktop. Tasks 7 (SpaceMart), 8 and 21 (tech tree)
+/// connect with ComputerDesktop.RegisterApp(id, ...) or by adding listeners to onOpen.
 /// If an app has no listeners, the "Coming soon" panel is shown.
 /// </summary>
 [Serializable]
@@ -29,7 +29,7 @@ public class ComputerApp
         this.interactable = interactable;
     }
 
-    /// <summary>Agrega un listener desde codigo (cuenta para saber si la app ya esta implementada).</summary>
+    /// <summary>Adds a listener from code (counted to know if the app is implemented).</summary>
     public void AddListener(UnityAction action)
     {
         if (action == null) return;

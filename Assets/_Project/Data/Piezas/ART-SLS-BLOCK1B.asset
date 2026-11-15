@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: ART-SLS-BLOCK1B
   m_EditorClassIdentifier: Assembly-CSharp::PartData
   catalogId: ART-SLS-BLOCK1B
-  partName: "SLS Block 1B launch service \u2014 future-architecture reference"
+  partName: Heavy launcher, upgraded (bigger upper stage)
   type: 9
-  description: Optional educational alternative with higher delivered mass and higher fictional cost; not the Artemis II hardware.
+  description: Optional educational alternative with higher delivered mass and higher fictional cost; not real flight hardware.
   icon: {fileID: 0}
   price: 1780
   dryMass: 0

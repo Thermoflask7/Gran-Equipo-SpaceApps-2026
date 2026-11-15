@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-// Score tests (task 16) with the Artemis physics and the real catalog parts
+// Score tests (task 16) with the lunar physics and the real catalog parts
 // (Data/Piezas, mission Data/Destinos/MisionArtemis). The expected values were calculated separately
 // with the same formulas and the data in CatalogoArtemis.json.
 // Menu: SpaceApps -> Scoring tests. Writes each test to the console with OK or FAIL.
@@ -58,7 +58,7 @@ public static class MissionScoringTests
         // Scenario 1 of mission V13: Block 1, antenna, 2 instruments, 12 days
         FillGame(gm, Mission(12), Block1Observation());
         ScoreResult r = MissionScoring.EvaluateGame(gm);
-        Near("Block 1 observation: SLS capacity (340 kg free)", r.deliveryPoints, 7f * 340f / 1350f);
+        Near("Block 1 observation: launcher capacity (340 kg free)", r.deliveryPoints, 7f * 340f / 1350f);
         Near("Block 1 observation: engineering", r.engineering, 14.606290f);
         Near("Block 1 observation: planning", r.planning, 33.753349f);
         Near("Block 1 observation: mission", r.mission, 50.155f);
@@ -68,7 +68,7 @@ public static class MissionScoringTests
         // Scenario 2: Block 1B with heavy science (5 credits left)
         FillGame(gm, Mission(12), Parts("ART-SLS-BLOCK1B", "ART-COMMS-DS", "ART-SCI-HEAVY"));
         r = MissionScoring.EvaluateGame(gm);
-        Near("Block 1B heavy science: SLS capacity (full)", r.deliveryPoints, 7f);
+        Near("Block 1B heavy science: launcher capacity (full)", r.deliveryPoints, 7f);
         Near("Block 1B heavy science: engineering", r.engineering, 17.620192f);
         Near("Block 1B heavy science: total", r.total, 80.677152f);
         Success("Block 1B heavy science", r);
@@ -309,7 +309,7 @@ public static class MissionScoringTests
         return Parts("ART-SLS-BLOCK1", "ART-COMMS-DS", "ART-SCI-LUNAR", "ART-SCI-RAD");
     }
 
-    // Orion (capsule, service module, abort tower) + the requested parts
+    // spacecraft (capsule, service module, abort tower) + the requested parts
     static List<PartData> Parts(params string[] ids)
     {
         List<PartData> list = new List<PartData> { Part("ART-CM-ORION"), Part("ART-ESM-ORION"), Part("ART-LAS-ORION") };

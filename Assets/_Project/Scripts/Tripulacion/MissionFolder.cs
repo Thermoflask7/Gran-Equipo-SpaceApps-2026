@@ -184,7 +184,7 @@ public class MissionFolder : MonoBehaviour
     public static string BuildBriefingHeader(GameManager gm)
     {
         DestinationData m = gm.mission;
-        if (m == null) return "No mission loaded. Run SpaceApps > Import Artemis catalog.";
+        if (m == null) return "No mission loaded. Run SpaceApps > Import mission catalog.";
         return "<size=130%><b>" + m.destinationName + "</b></size>\n" + m.description;
     }
 
@@ -203,7 +203,7 @@ public class MissionFolder : MonoBehaviour
     public static string BuildBriefing(GameManager gm)
     {
         DestinationData m = gm.mission;
-        if (m == null) return "No mission loaded. Run SpaceApps > Import Artemis catalog.";
+        if (m == null) return "No mission loaded. Run SpaceApps > Import mission catalog.";
 
         string text = "<size=130%><b>" + m.destinationName + "</b></size>\n";
         text += m.description + "\n\n";

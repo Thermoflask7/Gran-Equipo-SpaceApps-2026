@@ -49,7 +49,7 @@ public class PilotingSettings : ScriptableObject
     [Tooltip("Score for a near miss: up to half a window outside it")]
     [Range(0f, 1f)] public float nearMissScore = 0.25f;
 
-    [Header("Command sequences (real Artemis milestones)")]
+    [Header("Command sequences (real lunar mission milestones)")]
     public PilotingStep[] departureSteps =
     {
         new PilotingStep { stepName = "Throttle down for Max Q",
@@ -61,13 +61,13 @@ public class PilotingSettings : ScriptableObject
         new PilotingStep { stepName = "Core stage separation",
             description = "The empty core stage is released so the upper stage does not carry its dead weight." },
         new PilotingStep { stepName = "Translunar injection burn",
-            description = "The upper stage fires to raise Orion's speed to about 10 km/s and send it toward the Moon." },
+            description = "The upper stage fires to raise the spacecraft's speed to about 10 km/s and send it toward the Moon." },
     };
 
     public PilotingStep[] lunarOrbitSteps =
     {
         new PilotingStep { stepName = "Lunar orbit insertion",
-            description = "Orion's service module fires against the direction of travel so the Moon's gravity can capture it." },
+            description = "The service module fires against the direction of travel so the Moon's gravity can capture it." },
         new PilotingStep { stepName = "Orbit trim burn",
             description = "A short burn fixes small errors so the orbit stays stable and safe." },
         new PilotingStep { stepName = "Trans-Earth injection",
@@ -79,11 +79,11 @@ public class PilotingSettings : ScriptableObject
         new PilotingStep { stepName = "Service module separation",
             description = "Before reentry the crew module releases the service module, which burns up in the atmosphere." },
         new PilotingStep { stepName = "Entry interface",
-            description = "Orion hits the atmosphere at about 11 km/s. The heat shield faces forward and reaches about 2,800 °C." },
+            description = "The capsule hits the atmosphere at about 11 km/s. The heat shield faces forward and reaches about 2,800 °C." },
         new PilotingStep { stepName = "Drogue parachutes",
             description = "At about 7.6 km altitude, two drogue parachutes stabilize and slow the capsule." },
         new PilotingStep { stepName = "Main parachutes",
-            description = "At about 2.9 km, three main parachutes slow Orion to about 27 km/h for splashdown in the ocean." },
+            description = "At about 2.9 km, three main parachutes slow the capsule to about 27 km/h for splashdown in the ocean." },
     };
 
     // The sequence for a flight phase

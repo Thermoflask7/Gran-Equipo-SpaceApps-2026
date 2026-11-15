@@ -106,7 +106,7 @@ public static class RocketModelBuilder
 
         model.mission = AssetDatabase.LoadAssetAtPath<DestinationData>(MissionPath);
         if (model.mission == null)
-            Debug.LogWarning("Rocket model: mission not found at " + MissionPath + ". Run SpaceApps > Import Artemis catalog.");
+            Debug.LogWarning("Rocket model: mission not found at " + MissionPath + ". Run SpaceApps > Import mission catalog.");
 
         PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
         Object.DestroyImmediate(root);

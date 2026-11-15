@@ -39,7 +39,7 @@ public class ComputerDesktop : MonoBehaviour
     [SerializeField] TMP_Text comingSoonText;
     [SerializeField] Button comingSoonCloseButton;
     [SerializeField] TMP_Text clockText;
-    [Tooltip("Imagen negra encima de todo: pantalla apagada (app Apagar).")]
+    [Tooltip("Black image on top of everything: screen turned off.")]
     [SerializeField] GameObject screenOff;
 
     [Header("Apps")]
@@ -170,7 +170,7 @@ public class ComputerDesktop : MonoBehaviour
         var app = GetApp(id);
         if (app == null || !app.interactable) return;
         CloseComingSoon();
-        if (app.id == AppApagar && !app.HasHandlers) { SetPower(false); Back(); return; }
+        if (app.id == AppApagar && !app.HasHandlers) { QuitToMenuDialog.Open(); return; } // asks before leaving to the main menu
         if (app.HasHandlers) app.onOpen.Invoke();
         else ShowComingSoon(app.label + "\n\n" + app.comingSoonMessage);
     }

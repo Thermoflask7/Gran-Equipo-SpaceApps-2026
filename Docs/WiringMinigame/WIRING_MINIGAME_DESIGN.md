@@ -24,7 +24,7 @@ total. Instruction: **"Connect each color to its twin. Cables can't cross!"**
 ## 2. Role and moment (Cristina's decision: "it appears when there is no minigame, like a fault")
 
 - **Role: `Engineering`.** It is a repair, so it uses the engineer's skill.
-- **When (task 45 flight plan):** wiring is **the engineer's guaranteed moment in Return**, at 70 % of the phase. The flight plan
+- **When (task 46 flight plan):** wiring is **the engineer's guaranteed moment in Return**, at 70 % of the phase. The flight plan
   is Departure = piloting, Lunar orbit = research, Return = wiring. If a bad event already opened maintenance in Return, that was
   the engineer's turn and there is no wiring. In any other phase where no minigame opened (for example a skipped planned one), a
   wiring fault also happens. Limits: one minigame per crew role per phase, at most 2 per phase.

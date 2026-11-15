@@ -129,7 +129,7 @@ public static class WiringMinigameTests
 
     static void Hook()
     {
-        // Task 45 flight plan: when does the wiring fault happen? (phase, guaranteed phase, fault when empty, engineer played, opened, max)
+        // Task 46 flight plan: when does the wiring fault happen? (phase, guaranteed phase, fault when empty, engineer played, opened, max)
         EventPhase R = EventPhase.Return, D = EventPhase.Departure;
         Check("Return: guaranteed wiring for the engineer", WiringFlightHook.ShouldFault(R, R, true, false, 0, 2));
         Check("Return after a research incident: wiring still comes (2nd minigame)", WiringFlightHook.ShouldFault(R, R, true, false, 1, 2));

@@ -4,7 +4,7 @@ using UnityEngine;
 // Put it on the ALWAYS ACTIVE Lanzamiento object of 02_Lanzamiento, next to FlightPhases and MaintenanceFlightHook
 // (SpaceApps > Wiring minigame > Connect to launch scene does it). The WiringMinigame instance can be inactive.
 //
-// 1. Wiring fault (task 45 flight plan): at settings.faultAtProgress (70 %) of a phase a "wiring fault" happens and asks
+// 1. Wiring fault (task 46 flight plan): at settings.faultAtProgress (70 %) of a phase a "wiring fault" happens and asks
 //    for an Engineering minigame with severity Minor (it only costs points, it never aborts):
 //      - in guaranteedPhase (Return), whenever the engineer has not played yet in it: the engineer's guaranteed moment
 //        (if a bad event already opened maintenance in Return, that was the engineer's turn and there is no wiring);
@@ -111,7 +111,7 @@ public class WiringFlightHook : MonoBehaviour
         phases.RequestMinigame(TrainingFocus.Engineering, EventSeverity.Minor, FaultSource);
     }
 
-    // Task 45 rule: does a wiring fault happen at 70 % of this phase?
+    // Task 46 rule: does a wiring fault happen at 70 % of this phase?
     public static bool ShouldFault(EventPhase phase, EventPhase guaranteedPhase, bool faultWhenNoMinigame,
                                    bool engineerPlayed, int minigamesThisPhase, int maxPerPhase)
     {

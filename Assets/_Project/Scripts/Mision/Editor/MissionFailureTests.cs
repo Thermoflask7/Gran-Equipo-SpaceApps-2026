@@ -389,7 +389,7 @@ public static class MissionFailureTests
             Check("Invalid spacecraft aborts at departure, training cannot compensate",
                 gm.flight.failureCode == MissionFailureRules.DepartureFailure && gm.flight.aborted && screen.Finished);
 
-            // ---------- Task 45: flight plan limits ----------
+            // ---------- Task 46: flight plan limits ----------
 
             // P1. A bad piloting event after the planned piloting does not open piloting again
             gm.ResetGame();

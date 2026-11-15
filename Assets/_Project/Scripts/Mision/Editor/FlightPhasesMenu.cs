@@ -10,10 +10,11 @@ public static class FlightPhasesMenu
     [MenuItem("SpaceApps/Flight phases/Add to open scene")]
     public static void AddToOpenScene()
     {
-        LaunchScreen screen = Object.FindAnyObjectByType<LaunchScreen>();
+        LaunchScreen screen = Object.FindAnyObjectByType<LaunchScreen>(FindObjectsInactive.Include);
         if (screen == null)
         {
-            Debug.LogError("Flight phases: open 02_Lanzamiento (or build it with SpaceApps -> Armar escena de lanzamiento) first.");
+            Debug.LogError("Flight phases: the open scene has no LaunchScreen. Open Assets/_Project/Scenes/02_Lanzamiento "
+                + "(or build it with SpaceApps -> Armar escena de lanzamiento) and stop Play mode first.");
             return;
         }
         FlightPhases phases = screen.GetComponent<FlightPhases>();
@@ -22,6 +23,12 @@ public static class FlightPhasesMenu
         EditorUtility.SetDirty(phases);
         Selection.activeObject = phases;
         Debug.Log("Flight phases: FlightPhases is on '" + screen.gameObject.name + "'. Save the scene.");
+    }
+
+    [MenuItem("SpaceApps/Flight phases/Add to open scene", true)]
+    static bool AddToOpenSceneValid()
+    {
+        return !Application.isPlaying; // changes made in Play mode are lost
     }
 
     [MenuItem("SpaceApps/Flight phases/Test: finish minigame")]

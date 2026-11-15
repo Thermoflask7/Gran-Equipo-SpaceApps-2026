@@ -25,6 +25,8 @@ public class MissionFolder : MonoBehaviour
     public TMP_Text updatesText;
     public TMP_Text detailsText;                    // optional: rocket, power, supplies and science lines
     public TMP_Text[] factValues = new TMP_Text[4]; // optional tiles: duration, crew, budget, delta-v
+    public Image[] checklistNotes = new Image[4];   // optional sticky notes, one per launch task
+    public TMP_Text[] checklistNoteTexts = new TMP_Text[4];
 
     [Header("Data")]
     public DestinationData mission; // only used if GameManager has no mission
@@ -58,7 +60,7 @@ public class MissionFolder : MonoBehaviour
     void Update()
     {
         GameManager gm = GameManager.Instance;
-        if (checklistText != null) checklistText.text = ChecklistOnPaper(gm);
+        RefreshChecklist(gm);
 
         // Only rebuild the texts when something changed
         if (gm.eventsHappened.Count != shownEvents || gm.money != shownMoney) Refresh();
@@ -130,7 +132,35 @@ public class MissionFolder : MonoBehaviour
         for (int i = 0; i < factValues.Length && tiles; i++)
             if (factValues[i] != null) factValues[i].text = FactValue(gm, i);
         if (updatesText != null) updatesText.text = BuildUpdates(gm.eventsHappened);
-        if (checklistText != null) checklistText.text = ChecklistOnPaper(gm);
+        RefreshChecklist(gm);
+    }
+
+    static readonly Color NoteTodo = new Color(1f, 0.94f, 0.6f, 1f);
+    static readonly Color NoteDone = new Color(0.78f, 0.92f, 0.72f, 1f);
+
+    // Sticky notes if the prefab has them, otherwise the text list
+    void RefreshChecklist(GameManager gm)
+    {
+        bool hasNotes = checklistNotes.Length >= 4 && checklistNotes[0] != null;
+        if (!hasNotes)
+        {
+            if (checklistText != null) checklistText.text = ChecklistOnPaper(gm);
+            return;
+        }
+
+        string[] lines = LaunchChecklist.BuildText(gm).Split('\n');
+        int n = 0;
+        foreach (string line in lines)
+        {
+            if (line.Trim() == "" || n >= checklistNotes.Length) continue;
+            bool done = line.Contains("[done]");
+            int tagEnd = line.IndexOf("</color>");
+            string task = tagEnd >= 0 ? line.Substring(tagEnd + 8).Trim() : line.Trim();
+            if (checklistNotes[n] != null) checklistNotes[n].color = done ? NoteDone : NoteTodo;
+            if (n < checklistNoteTexts.Length && checklistNoteTexts[n] != null)
+                checklistNoteTexts[n].text = done ? "<s>" + task + "</s>\n<b><color=" + GoodColor + ">DONE</color></b>" : task;
+            n++;
+        }
     }
 
     // The launch checklist with darker colors, readable on the paper

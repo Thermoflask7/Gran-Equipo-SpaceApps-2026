@@ -120,27 +120,38 @@ public static class MissionFolderBuilder
 
         TextMeshProUGUI details = CreateText(page1.transform, "Details", "", 20, InkColor);
         details.alignment = TextAlignmentOptions.TopLeft;
-        Stretch(details.rectTransform, new Vector2(0, 0.37f), new Vector2(0.55f, 0.58f), Vector2.zero, Vector2.zero);
+        Stretch(details.rectTransform, new Vector2(0, 0.40f), new Vector2(0.55f, 0.585f), Vector2.zero, Vector2.zero);
         FitSize(details, 12, 20);
         folder.detailsText = details;
 
-        GameObject checklistBox = CreateCard(page1.transform, "ChecklistBox", CardColor);
-        Stretch((RectTransform)checklistBox.transform, Vector2.zero, new Vector2(0.55f, 0.34f), Vector2.zero, Vector2.zero);
-        GameObject checklistStrip = NewUI("Strip", checklistBox.transform, typeof(Image));
-        Stretch((RectTransform)checklistStrip.transform, Vector2.zero, new Vector2(0, 1), Vector2.zero, new Vector2(8, 0));
-        checklistStrip.GetComponent<Image>().color = AccentColor;
+        // Checklist as sticky notes (yellow = to do, green = done), 2 x 2
+        TextMeshProUGUI checklistHeading = CreateHeading(page1.transform, "ChecklistHeading", "Checklist");
+        Stretch(checklistHeading.rectTransform, new Vector2(0, 0.38f), new Vector2(0.55f, 0.38f), new Vector2(0, -50), Vector2.zero);
 
-        TextMeshProUGUI checklistHeading = CreateText(checklistBox.transform, "ChecklistHeading", "BEFORE LAUNCH", 22, HeadingColor);
-        checklistHeading.fontStyle = FontStyles.Bold;
-        checklistHeading.characterSpacing = 4;
-        checklistHeading.alignment = TextAlignmentOptions.TopLeft;
-        Stretch(checklistHeading.rectTransform, new Vector2(0, 1), Vector2.one, new Vector2(24, -42), new Vector2(-18, -10));
+        GameObject notes = NewUI("ChecklistNotes", page1.transform);
+        Stretch((RectTransform)notes.transform, Vector2.zero, new Vector2(0.55f, 0.38f), Vector2.zero, new Vector2(0, -58));
+        float[] angles = { -2f, 1.5f, 1f, -1.5f };
+        for (int i = 0; i < 4; i++)
+        {
+            int col = i % 2;
+            float rowTop = 1f - (i / 2) * 0.5f;
+            GameObject note = CreateCard(notes.transform, "Note " + (i + 1), NoteColor);
+            Stretch((RectTransform)note.transform, new Vector2(col * 0.5f, rowTop - 0.5f), new Vector2((col + 1) * 0.5f, rowTop), new Vector2(8, 8), new Vector2(-8, -8));
+            note.transform.localRotation = Quaternion.Euler(0, 0, angles[i]);
 
-        TextMeshProUGUI checklist = CreateText(checklistBox.transform, "Checklist", "", 22, InkColor);
-        checklist.alignment = TextAlignmentOptions.TopLeft;
-        Stretch(checklist.rectTransform, Vector2.zero, Vector2.one, new Vector2(24, 10), new Vector2(-18, -48));
-        FitSize(checklist, 12, 22);
-        folder.checklistText = checklist;
+            GameObject tape = NewUI("Tape", note.transform, typeof(Image));
+            Place((RectTransform)tape.transform, new Vector2(0.5f, 1), new Vector2(0, 8), new Vector2(70, 18));
+            tape.transform.localRotation = Quaternion.Euler(0, 0, -3);
+            tape.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.55f);
+            tape.GetComponent<Image>().raycastTarget = false;
+
+            TextMeshProUGUI noteText = CreateText(note.transform, "Text", "", 18, InkColor);
+            noteText.alignment = TextAlignmentOptions.MidlineLeft;
+            Stretch(noteText.rectTransform, Vector2.zero, Vector2.one, new Vector2(12, 6), new Vector2(-12, -12));
+            FitSize(noteText, 10, 18);
+            folder.checklistNotes[i] = note.GetComponent<Image>();
+            folder.checklistNoteTexts[i] = noteText;
+        }
 
         // Right column: mission updates (random events), in a scroll list
         TextMeshProUGUI updatesHeading = CreateHeading(page1.transform, "UpdatesHeading", "Mission updates");
@@ -399,7 +410,7 @@ public static class MissionFolderBuilder
         Stretch(crewHeading.rectTransform, new Vector2(0.66f, 1), Vector2.one, new Vector2(0, -50), Vector2.zero);
 
         GameObject pointsBox = NewUI("TrainingPoints", page.transform, typeof(Image));
-        Stretch((RectTransform)pointsBox.transform, new Vector2(0.66f, 1), Vector2.one, new Vector2(0, -102), new Vector2(0, -60));
+        Stretch((RectTransform)pointsBox.transform, new Vector2(0.66f, 1), Vector2.one, new Vector2(0, -100), new Vector2(0, -62));
         pointsBox.GetComponent<Image>().color = new Color(HeadingColor.r, HeadingColor.g, HeadingColor.b, 0.1f);
         TextMeshProUGUI pointsText = CreateText(pointsBox.transform, "Text", "TRAINING POINTS", 18, HeadingColor);
         pointsText.characterSpacing = 2;
@@ -419,9 +430,9 @@ public static class MissionFolderBuilder
         crew.trainingPips = new Image[36];
         for (int slot = 0; slot < 3; slot++)
         {
-            float top = 0.885f - slot * 0.245f;
+            float top = 0.855f - slot * 0.237f;
             GameObject card = CreateCard(page.transform, CrewPage.RoleNames[slot] + " slot", CardColor);
-            Stretch((RectTransform)card.transform, new Vector2(0.66f, top - 0.235f), new Vector2(1, top), Vector2.zero, Vector2.zero);
+            Stretch((RectTransform)card.transform, new Vector2(0.66f, top - 0.226f), new Vector2(1, top), Vector2.zero, Vector2.zero);
 
             GameObject band = NewUI("Band", card.transform, typeof(Image));
             Stretch((RectTransform)band.transform, new Vector2(0, 0.78f), Vector2.one, Vector2.zero, Vector2.zero);
@@ -439,8 +450,9 @@ public static class MissionFolderBuilder
             remove.GetComponentInChildren<TextMeshProUGUI>().fontSize = 20;
             crew.removeButtons[slot] = remove;
 
-            TextMeshProUGUI slotName = CreateText(card.transform, "Astronaut", "", 24, InkColor);
+            TextMeshProUGUI slotName = CreateText(card.transform, "Astronaut", "", 22, InkColor);
             slotName.alignment = TextAlignmentOptions.MidlineLeft;
+            FitSize(slotName, 12, 22);
             Stretch(slotName.rectTransform, new Vector2(0, 0.56f), new Vector2(1, 0.78f), new Vector2(12, 0), new Vector2(-12, 0));
             crew.slotNames[slot] = slotName;
 
@@ -492,7 +504,7 @@ public static class MissionFolderBuilder
 
         // Sticky note with the tip
         GameObject note = CreateCard(page.transform, "TipNote", NoteColor);
-        Stretch((RectTransform)note.transform, new Vector2(0.66f, 0), new Vector2(1, 0.145f), new Vector2(4, 0), new Vector2(-4, 0));
+        Stretch((RectTransform)note.transform, new Vector2(0.66f, 0), new Vector2(1, 0.14f), new Vector2(4, 0), new Vector2(-4, 0));
         note.transform.localRotation = Quaternion.Euler(0, 0, -1);
         TextMeshProUGUI tip = CreateText(note.transform, "Tip", "", 18, InkColor);
         tip.alignment = TextAlignmentOptions.MidlineLeft;

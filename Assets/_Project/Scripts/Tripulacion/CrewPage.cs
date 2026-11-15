@@ -120,7 +120,7 @@ public class CrewPage : MonoBehaviour
     // The slot and training texts now have two parts, so they shrink to fit the prefab boxes
     static void FitText(TMP_Text text, float maxSize)
     {
-        if (text == null) return;
+        if (text == null || text.enableAutoSizing) return; // the new prefab already sets its own sizes
         text.enableAutoSizing = true;
         text.fontSizeMin = 12f;
         text.fontSizeMax = maxSize;
@@ -314,7 +314,7 @@ public class CrewPage : MonoBehaviour
     string SlotLabel(GameManager gm, int slot)
     {
         AstronautData crew = GetCrew(gm, slot);
-        if (crew == null) return "<i>empty: pick a candidate and assign them</i>";
+        if (crew == null) return "<i><size=80%>empty: pick a candidate and assign them</size></i>";
         string text = "<b>" + crew.astronautName + "</b>";
         if (crew.trait != CrewTrait.None) text += "  <size=70%>(" + CrewTraining.TraitName(crew.trait) + ")</size>";
         bool newLook = slot < readinessFills.Length && readinessFills[slot] != null;

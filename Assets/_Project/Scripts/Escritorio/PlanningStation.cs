@@ -184,8 +184,8 @@ public class PlanningStation : MonoBehaviour
         float aspect = Mathf.Max(0.1f, mapAspect);
         float height = width / aspect;
 
-        // Viewer's left when looking at the wall is opposite to wallRight.
-        Vector3 wallRight = Vector3.Cross(Vector3.up, normal);
+        // Viewer's right when looking at the wall (normal points toward the camera).
+        Vector3 wallRight = Vector3.Cross(normal, Vector3.up);
         if (wallRight.sqrMagnitude < 1e-6f) wallRight = Vector3.right;
         wallRight.Normalize();
 

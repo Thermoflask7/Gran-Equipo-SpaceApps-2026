@@ -17,4 +17,7 @@ public class EventData : ScriptableObject
     public bool weatherSensitive; // if true, the weather on the chosen day changes its probability
     public TrainingFocus minigameRole = TrainingFocus.None; // minigame it triggers (None = none)
     [TextArea] public string lesson; // educational explanation for Results (optional)
+
+    [Tooltip("Task 31. Auto (default) = Serious if it is bad and has a minigame role, otherwise Minor. Never Critical unless set here.")]
+    public EventSeverity severity = EventSeverity.Auto;
 }

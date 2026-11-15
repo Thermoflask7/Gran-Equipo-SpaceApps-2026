@@ -27,6 +27,7 @@ public class ResultsScreen : MonoBehaviour
     static string TitleFor(ScoreResult r)
     {
         if (r.status == "SUCCESS") return "Mission accomplished!";
+        if (r.status == "FAILURE" && r.aborted) return "Mission aborted";
         if (r.status == "FAILURE") return "Mission failed";
         if (r.status == "PENDING") return "Mission in progress";
         return "Invalid result";
@@ -44,14 +45,22 @@ public class ResultsScreen : MonoBehaviour
         // Two separate scores: the diagnostic one (for learning) and the official one (only if the mission is won)
         sb.AppendLine("Learning score: " + r.total.ToString("0.0") + " / 100");
         if (r.status == "SUCCESS") sb.AppendLine("Official score: " + r.competitive.ToString("0.0") + " / 100");
-        else if (r.status == "FAILURE") sb.AppendLine("Official score: 0 (the mission failed)");
+        else if (r.status == "FAILURE") sb.AppendLine("Official score: 0 (the mission " + (r.aborted ? "was aborted" : "failed") + ")");
         else sb.AppendLine("Official score: pending (the flight has not finished)");
         sb.AppendLine();
 
         if (r.status == "FAILURE")
         {
+            // Task 31: flight failure (what happened in flight) is shown apart from incomplete objectives
             sb.AppendLine("<b>What went wrong</b>");
-            foreach (string gate in r.failedGates) sb.AppendLine("- " + GateText(gate));
+            if (!string.IsNullOrEmpty(r.failureReason)) sb.AppendLine(r.failureReason);
+            else if (OnlyScienceFailed(r)) sb.AppendLine("The spacecraft returned safely, but the scientific objectives were incomplete.");
+            foreach (string gate in r.failedGates)
+            {
+                // With an in-flight failure, the missing milestones are a consequence, already explained above
+                if (!string.IsNullOrEmpty(r.failureReason) && (gate == "DEPARTURE" || gate == "LUNAR_ORBIT" || gate == "RETURN")) continue;
+                sb.AppendLine("- " + GateText(gate));
+            }
             sb.AppendLine();
         }
 
@@ -92,6 +101,7 @@ public class ResultsScreen : MonoBehaviour
             sb.AppendLine("- You launched in bad weather. Wind and storms increase the risk during departure.");
         if (r.sciencePoints < 7f)
             sb.AppendLine("- Buying instruments is not enough: you have to run the experiments and send the data to Earth.");
+        if (gm != null && gm.flight.HasFailed) sb.AppendLine("- " + FailureLesson(gm.flight.failureCode));
         if (gm != null)
         {
             foreach (EventData e in gm.eventsHappened)
@@ -126,7 +136,37 @@ public class ResultsScreen : MonoBehaviour
             case "RETURN": return "The crew did not return safely.";
             case "SCIENCE": return "The science goal was not met.";
             case "NO_DOWNLINK": return "The science data was not sent to Earth.";
+            case "MISSION_ABORT": return "The mission was aborted before its objectives were completed.";
+            case "DEPARTURE_FAILURE": return "The departure failed: the spacecraft could not continue to the Moon.";
+            case "LUNAR_ORBIT_FAILURE": return "A critical problem in lunar orbit ended the mission early.";
+            case "RETURN_FAILURE": return "The safe-return requirement was not satisfied.";
         }
         return gate;
+    }
+
+    // True if the only failed gates are the science objectives (the flight itself went well)
+    static bool OnlyScienceFailed(ScoreResult r)
+    {
+        if (r.failedGates.Count == 0) return false;
+        foreach (string gate in r.failedGates)
+        {
+            if (gate != "SCIENCE" && gate != "NO_DOWNLINK") return false;
+        }
+        return true;
+    }
+
+    // Educational explanation of an in-flight failure (gameplay rules, not real NASA certification limits)
+    public static string FailureLesson(string code)
+    {
+        switch (code)
+        {
+            case "DEPARTURE_FAILURE":
+                return "Departure is the most demanding part of the flight. A valid spacecraft and a pilot trained in piloting make a safe ascent much more likely; real missions abort rather than continue with a dangerous trajectory.";
+            case "LUNAR_ORBIT_FAILURE":
+                return "Far from Earth the crew must fix problems on its own. A skilled, trained engineer and spare power and consumables give the crew time to recover; when systems cannot be restored, the safest choice is to end the mission and come home.";
+            case "RETURN_FAILURE":
+                return "Coming home needs precise flying and working systems until splashdown. Planning margins (delta-v, power, consumables) and a trained crew protect the return.";
+        }
+        return "Every phase depends on the one before: planning, training and in-flight decisions all add up.";
     }
 }

@@ -6,9 +6,10 @@ using UnityEngine.Events;
 using UnityEngine.UI;
 
 /// <summary>
-/// Escritorio "SpaceOS" que SIEMPRE se ve en la pantalla del monitor (Canvas World Space
-/// PC_Desktop montado sobre la pantalla de computer_old_2). Solo es interactivo mientras la
-/// camara esta enfocada en la PC (Show/Hide activan y desactivan los clics, no lo ocultan).
+/// Escritorio "SpaceOS" que SIEMPRE se ve en la pantalla del monitor. El Canvas se renderiza
+/// a una RenderTexture (PC_UICamera) y se muestra en la malla curva PC_Screen (filtro CRT).
+/// Solo es interactivo mientras la camara esta enfocada en la PC (Show/Hide activan y
+/// desactivan los clics, no lo ocultan).
 /// Los iconos de las apps se generan en runtime dentro de <see cref="appGrid"/>.
 /// Para conectar una app: ComputerDesktop.Instance.RegisterApp("spacemart", "SpaceMart", color, AbrirTienda)
 /// o GetApp("spacemart").AddListener(AbrirTienda).

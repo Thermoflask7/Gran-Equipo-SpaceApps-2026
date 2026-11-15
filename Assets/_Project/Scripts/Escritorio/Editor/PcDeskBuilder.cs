@@ -6,10 +6,13 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
 using TMPro;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 /// <summary>
 /// Arma la estación PC del escritorio en 01_Planeacion:
-/// collider, zoom de cámara, Canvas SpaceOS y EventSystem con Input System.
+/// collider, zoom de cámara, malla curva del monitor (RenderTexture + filtro CRT),
+/// Canvas SpaceOS y EventSystem con Input System.
 /// Menú: SpaceApps / Armar PC del escritorio.
 /// </summary>
 public static class PcDeskBuilder
@@ -111,24 +114,26 @@ public static class PcDeskBuilder
             station.PlaceZoomTarget(cam);
             LogZoom(station, cam);
 
-            if (!station.TryGetScreenSurface(cam, out Vector3 frontCenter, out Vector3 outward, out Vector3 up, out Vector2 size))
-            {
-                EditorUtility.DisplayDialog("Armar PC del escritorio", "No se pudo calcular la superficie de la pantalla del monitor.", "OK");
-                return;
-            }
+            if (!station.TryGetScreenSurface(cam, out _, out _, out _, out _))
+                Debug.LogWarning("[PcDeskBuilder] No se pudo calcular la superficie de la pantalla; se usa la colocacion por defecto de SpaceOsScreen.");
 
             DestroyAllNamed(scene, "PC_Desktop");
-            ComputerDesktop desktop = CreateDesktop(cam, pc, frontCenter, outward, up, size, out DesktopRefs refs);
+            DestroyAllNamed(scene, "PC_Screen");
+            DestroyAllNamed(scene, "PC_UICamera");
+
+            SpaceOsScreen spaceOs = CreateCurvedScreen(pc, cam, monitorRenderer, submesh, out ComputerDesktop desktop, out DesktopRefs refs);
             AssignDesktop(desktop, refs);
             station.SetDesktop(desktop);
+            if (spaceOs != null) spaceOs.Refresh();
             EditorUtility.SetDirty(station);
+            EditorUtility.SetDirty(spaceOs);
 
             EnsureEventSystem();
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
             Selection.activeGameObject = pc;
-            Debug.Log("[PcDeskBuilder] Listo. SpaceOS montado en la pantalla del monitor (World Space). size " + size + " frontCenter " + frontCenter + ".");
+            Debug.Log("[PcDeskBuilder] Listo. SpaceOS en malla curva (RenderTexture + CRT). Ajusta curvatura y offset en PC_Screen.");
         }
         finally
         {
@@ -247,31 +252,128 @@ public static class PcDeskBuilder
         return null;
     }
 
-    static ComputerDesktop CreateDesktop(Camera cam, GameObject pc, Vector3 frontCenter, Vector3 outward, Vector3 up, Vector2 size, out DesktopRefs refs)
+    const string CrtMatPath = "Assets/_Project/Art/Materiales/Escritorio/SpaceOS_CRT.mat";
+    const string PlainMatPath = "Assets/_Project/Art/Materiales/Escritorio/SpaceOS_Screen_Plain.mat";
+
+    static SpaceOsScreen CreateCurvedScreen(GameObject pc, Camera worldCam, Renderer monitorRenderer, int submesh, out ComputerDesktop desktop, out DesktopRefs refs)
+    {
+        Material crtMat = AssetDatabase.LoadAssetAtPath<Material>(CrtMatPath);
+        Material plainMat = AssetDatabase.LoadAssetAtPath<Material>(PlainMatPath);
+        if (crtMat == null)
+            Debug.LogWarning("[PcDeskBuilder] No se encontro " + CrtMatPath + ".");
+        if (plainMat == null)
+            Debug.LogWarning("[PcDeskBuilder] No se encontro " + PlainMatPath + ".");
+
+        var screenGo = new GameObject("PC_Screen");
+        Undo.RegisterCreatedObjectUndo(screenGo, "Create PC_Screen");
+        Undo.SetTransformParent(screenGo.transform, pc.transform, "Parent PC_Screen");
+
+        Undo.AddComponent<MeshFilter>(screenGo);
+        var meshRenderer = Undo.AddComponent<MeshRenderer>(screenGo);
+        meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
+        meshRenderer.receiveShadows = false;
+        Undo.AddComponent<MeshCollider>(screenGo);
+        var curved = Undo.AddComponent<CurvedScreenMesh>(screenGo);
+        curved.Rebuild();
+
+        var spaceOs = Undo.AddComponent<SpaceOsScreen>(screenGo);
+        spaceOs.SetMaterialTemplates(crtMat, plainMat);
+        spaceOs.SetScreenRenderer(meshRenderer);
+        spaceOs.SetPlacement(SpaceOsScreen.DefaultLocalPosition, SpaceOsScreen.DefaultLocalEuler, Vector3.zero);
+
+        HideOriginalScreen(monitorRenderer, submesh, plainMat);
+
+        int uiLayer = LayerMask.NameToLayer("UI");
+        if (uiLayer < 0) uiLayer = 5;
+
+        var uiCamGo = new GameObject("PC_UICamera");
+        Undo.RegisterCreatedObjectUndo(uiCamGo, "Create PC_UICamera");
+        uiCamGo.tag = "Untagged";
+        uiCamGo.layer = uiLayer;
+        uiCamGo.transform.position = new Vector3(0f, -1000f, 0f);
+        uiCamGo.transform.rotation = Quaternion.identity;
+        var uiCam = Undo.AddComponent<Camera>(uiCamGo);
+        SetupUICamera(uiCam, uiLayer);
+        spaceOs.SetUICamera(uiCam);
+
+        var meshCollider = screenGo.GetComponent<MeshCollider>();
+        desktop = CreateDesktop(uiCam, uiLayer, out refs);
+        spaceOs.SetDesktop(desktop);
+
+        var raycaster = desktop.GetComponent<SpaceOsGraphicRaycaster>();
+        if (raycaster != null)
+        {
+            raycaster.SetScreenCollider(meshCollider);
+            raycaster.SetWorldCamera(worldCam);
+            raycaster.SetDesktop(desktop);
+            raycaster.SetScreen(spaceOs);
+        }
+
+        spaceOs.Refresh();
+        return spaceOs;
+    }
+
+    static void SetupUICamera(Camera cam, int uiLayer)
+    {
+        cam.orthographic = true;
+        cam.orthographicSize = 1f;
+        cam.nearClipPlane = 0.01f;
+        cam.farClipPlane = 10f;
+        cam.clearFlags = CameraClearFlags.SolidColor;
+        cam.backgroundColor = Color.black;
+        cam.cullingMask = 1 << uiLayer;
+        cam.depth = -100f;
+        cam.useOcclusionCulling = false;
+        cam.allowHDR = false;
+        cam.allowMSAA = false;
+        cam.enabled = true;
+        var listener = cam.GetComponent<AudioListener>();
+        if (listener != null)
+            Undo.DestroyObjectImmediate(listener);
+        var urp = cam.GetUniversalAdditionalCameraData();
+        urp.renderType = CameraRenderType.Base;
+        urp.renderPostProcessing = false;
+        urp.antialiasing = AntialiasingMode.None;
+    }
+
+    static void HideOriginalScreen(Renderer renderer, int submesh, Material unlit)
+    {
+        if (renderer == null) return;
+        var mats = renderer.sharedMaterials;
+        if (submesh < 0 || submesh >= mats.Length) return;
+        Shader shader = unlit != null ? unlit.shader : Shader.Find("Universal Render Pipeline/Unlit");
+        if (shader == null) return;
+        var black = new Material(shader) { name = "ScreenHidden" };
+        black.SetColor("_BaseColor", Color.black);
+        black.SetColor("_Color", Color.black);
+        black.SetTexture("_BaseMap", null);
+        black.SetTexture("_MainTex", null);
+        mats[submesh] = black;
+        renderer.sharedMaterials = mats;
+        EditorUtility.SetDirty(renderer);
+    }
+
+    static ComputerDesktop CreateDesktop(Camera uiCam, int uiLayer, out DesktopRefs refs)
     {
         var canvasGo = new GameObject("PC_Desktop", typeof(RectTransform));
         Undo.RegisterCreatedObjectUndo(canvasGo, "Create PC_Desktop");
-        Undo.SetTransformParent(canvasGo.transform, pc.transform, "Parent PC_Desktop");
-
+        canvasGo.layer = uiLayer;
 
         var canvas = Undo.AddComponent<Canvas>(canvasGo);
-        canvas.renderMode = RenderMode.WorldSpace;
-        canvas.worldCamera = cam;
+        canvas.renderMode = RenderMode.ScreenSpaceCamera;
+        canvas.worldCamera = uiCam;
+        canvas.planeDistance = 1f;
+        canvas.pixelPerfect = false;
         canvas.sortingOrder = 0;
 
-        // La pose va DESPUES de pasar a WorldSpace: en Overlay el Canvas controla su RectTransform.
-        var canvasRt = (RectTransform)canvasGo.transform;
-        canvasRt.pivot = new Vector2(0.5f, 0.5f);
-        canvasRt.sizeDelta = new Vector2(1080f * size.x / size.y, 1080f);
-        canvasRt.position = frontCenter + outward * PcStation.ScreenCanvasOffset;
-        canvasRt.rotation = Quaternion.LookRotation(-outward, up);
-        canvasRt.localScale = Vector3.one * (size.y / 1080f) / Mathf.Max(0.0001f, pc.transform.lossyScale.y);
-
         var scaler = Undo.AddComponent<CanvasScaler>(canvasGo);
-        scaler.dynamicPixelsPerUnit = 10f;
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1084f, 1080f);
+        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+        scaler.matchWidthOrHeight = 1f;
         scaler.referencePixelsPerUnit = 100f;
 
-        Undo.AddComponent<GraphicRaycaster>(canvasGo);
+        Undo.AddComponent<SpaceOsGraphicRaycaster>(canvasGo);
         Undo.AddComponent<CanvasGroup>(canvasGo);
         var desktop = Undo.AddComponent<ComputerDesktop>(canvasGo);
         canvasGo.SetActive(true);
@@ -353,7 +455,16 @@ public static class PcDeskBuilder
             clockText = clock,
             screenOff = apagada.gameObject
         };
+        SetLayerRecursively(canvasGo, uiLayer);
         return desktop;
+    }
+
+    static void SetLayerRecursively(GameObject go, int layer)
+    {
+        go.layer = layer;
+        Transform t = go.transform;
+        for (int i = 0; i < t.childCount; i++)
+            SetLayerRecursively(t.GetChild(i).gameObject, layer);
     }
 
     static void AssignDesktop(ComputerDesktop desktop, DesktopRefs refs)

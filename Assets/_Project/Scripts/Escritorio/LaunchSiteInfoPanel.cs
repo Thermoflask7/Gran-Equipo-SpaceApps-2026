@@ -5,7 +5,8 @@ using UnityEngine.UI;
 /// <summary>
 /// World-space info window above the calendar on the planning wall (task 6).
 /// Same look as the SpaceOS apps (SpaceMart window): dark blue window, title bar with an
-/// orange accent line and a scrollable text area. Shows the selected launch site's info.
+/// orange accent line, a location line, 3 fact tiles (latitude, free speed from Earth's spin,
+/// launch direction) and a scrollable text area. Shows the selected launch site's info.
 /// Built at runtime by PlanningStation; fades together with the world map.
 /// </summary>
 public class LaunchSiteInfoPanel : MonoBehaviour
@@ -16,6 +17,8 @@ public class LaunchSiteInfoPanel : MonoBehaviour
     static readonly Color TitleColor = new Color(0.08f, 0.10f, 0.20f, 1f);
     static readonly Color AccentColor = new Color(0.95f, 0.55f, 0.15f, 1f);
     static readonly Color BodyText = new Color(0.86f, 0.88f, 0.93f, 1f);
+    static readonly Color TileColor = new Color(1f, 1f, 1f, 0.07f);
+    static readonly Color LabelColor = new Color(0.60f, 0.70f, 0.90f, 1f);
 
     const float CanvasWidth = 640f;
     const float CanvasHeight = 440f;
@@ -24,7 +27,13 @@ public class LaunchSiteInfoPanel : MonoBehaviour
     CanvasGroup group;
     TextMeshProUGUI titleText;
     TextMeshProUGUI bodyText;
+    TextMeshProUGUI regionText;
+    GameObject tiles;
+    readonly TextMeshProUGUI[] tileValues = new TextMeshProUGUI[3];
+    RectTransform scrollArea;
     ScrollRect scroll;
+
+    static readonly string[] TileLabels = { "LATITUDE", "FREE SPEED FROM EARTH'S SPIN", "LAUNCHES TOWARD" };
 
     /// <summary>Create the panel above the calendar, on the wall plane of the map.</summary>
     public static LaunchSiteInfoPanel Create(Transform parent, Transform map, Bounds calendarBounds,
@@ -92,9 +101,58 @@ public class LaunchSiteInfoPanel : MonoBehaviour
         titleText.textWrappingMode = TextWrappingModes.NoWrap;
         titleText.overflowMode = TextOverflowModes.Truncate;
 
+        // Location line under the title
+        regionText = CreateText("Region", window, "", 17f, TextAlignmentOptions.MidlineLeft);
+        regionText.color = LabelColor;
+        regionText.rectTransform.anchorMin = new Vector2(0f, 1f);
+        regionText.rectTransform.anchorMax = new Vector2(1f, 1f);
+        regionText.rectTransform.offsetMin = new Vector2(16f, -88f);
+        regionText.rectTransform.offsetMax = new Vector2(-16f, -58f);
+
+        // 3 fact tiles
+        var tilesRt = CreateRect("Tiles", window);
+        tilesRt.anchorMin = new Vector2(0f, 1f);
+        tilesRt.anchorMax = new Vector2(1f, 1f);
+        tilesRt.offsetMin = new Vector2(12f, -170f);
+        tilesRt.offsetMax = new Vector2(-12f, -92f);
+        tiles = tilesRt.gameObject;
+        for (int i = 0; i < 3; i++)
+        {
+            var tile = CreateImage("Tile" + (i + 1), tilesRt, TileColor);
+            tile.anchorMin = new Vector2(i / 3f, 0f);
+            tile.anchorMax = new Vector2((i + 1) / 3f, 1f);
+            tile.offsetMin = new Vector2(4f, 0f);
+            tile.offsetMax = new Vector2(-4f, 0f);
+            var strip = CreateImage("Strip", tile, AccentColor);
+            strip.anchorMin = new Vector2(0f, 1f);
+            strip.anchorMax = Vector2.one;
+            strip.offsetMin = new Vector2(0f, -3f);
+            strip.offsetMax = Vector2.zero;
+
+            var label = CreateText("Label", tile, TileLabels[i], 12f, TextAlignmentOptions.TopLeft);
+            label.color = LabelColor;
+            label.characterSpacing = 2f;
+            label.enableAutoSizing = true;
+            label.fontSizeMin = 8f;
+            label.fontSizeMax = 12f;
+            label.rectTransform.offsetMin = new Vector2(8f, 0f);
+            label.rectTransform.offsetMax = new Vector2(-6f, -8f);
+
+            var value = CreateText("Value", tile, "", 24f, TextAlignmentOptions.BottomLeft);
+            value.fontStyle = FontStyles.Bold;
+            value.enableAutoSizing = true;
+            value.fontSizeMin = 12f;
+            value.fontSizeMax = 24f;
+            value.textWrappingMode = TextWrappingModes.NoWrap;
+            value.rectTransform.offsetMin = new Vector2(8f, 6f);
+            value.rectTransform.offsetMax = new Vector2(-6f, -26f);
+            tileValues[i] = value;
+        }
+
         // Scroll area with a slim scrollbar on the right.
         var area = CreateRect("Scroll", window);
         Stretch(area, 12f, 12f, 12f, 64f);
+        scrollArea = area;
 
         var viewport = CreateImage("Viewport", area, new Color(0f, 0f, 0f, 0.15f));
         Stretch(viewport, 0f, 0f, 14f, 0f);
@@ -150,14 +208,25 @@ public class LaunchSiteInfoPanel : MonoBehaviour
     /// <summary>Show a site's info, or a hint when nothing is selected.</summary>
     public void ShowSite(LaunchSiteSelector.Site site)
     {
-        if (site == null)
+        bool hasSite = site != null;
+        tiles.SetActive(hasSite);
+        regionText.gameObject.SetActive(hasSite);
+        scrollArea.offsetMax = new Vector2(-12f, hasSite ? -180f : -64f);
+        if (!hasSite)
         {
             titleText.text = "Launch site";
-            bodyText.text = "Select a launch site on the map to read about it.";
+            bodyText.text = "<size=130%><b>Click a pin on the map</b></size> to compare the launch sites.\n\n" +
+                "<color=#F28C26><b>TIP</b></color>\nThe closer a site is to the equator, the more speed Earth's rotation gives " +
+                "a rocket that launches east. Free speed means less fuel!";
         }
         else
         {
             titleText.text = site.displayName;
+            regionText.text = LaunchSiteSelector.Region(site.id);
+            bool east = LaunchSiteSelector.LaunchesEast(site.id);
+            tileValues[0].text = Mathf.Abs(site.latitude).ToString("0.0") + "\u00b0 " + (site.latitude >= 0f ? "N" : "S");
+            tileValues[1].text = east ? LaunchSiteSelector.SpinBoost(site.latitude).ToString("0") + " m/s" : "0 m/s";
+            tileValues[2].text = east ? "East (ocean)" : "South (polar)";
             bodyText.text = site.InfoText;
         }
         Canvas.ForceUpdateCanvases();

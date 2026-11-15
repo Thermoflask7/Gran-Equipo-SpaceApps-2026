@@ -1,15 +1,28 @@
+using System.Collections.Generic;
 using System.Text;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
-// 03_Resultados screen (task 16): calculates the final V16 score only once,
-// stores it in GameManager and shows the breakdown with an explanation of each decision.
+// 03_Resultados screen (tasks 16, 25, 35): calculates the final V16 score only once,
+// stores it in GameManager and shows it in collapsible sections inside a scroll view:
+// what went wrong (one entry per failed gate), planning, mission and lessons.
 // Menu: SpaceApps -> Results screen -> Add to open scene.
 public class ResultsScreen : MonoBehaviour
 {
-    public TMP_Text title;   // "Mission accomplished", "Mission failed"...
-    public TMP_Text score;   // the big number
-    public TMP_Text report;  // breakdown and lessons
+    public TMP_Text title;          // "Mission accomplished", "Mission failed"...
+    public TMP_Text score;          // the big number
+    public RectTransform content;   // content of the scroll view: the sections are created here
+    public TMP_Text report;         // old single-text layout (only used if content is empty)
+
+    // Scene played on its own (no rocket, never launched): fill a sample game so the screen can be tested
+    public bool useTestValues = true;
+    public bool failingTestValues = false; // true = sample with several failed gates (task 35)
+
+    // Look of the sections
+    public float headerSize = 34f;
+    public float bodySize = 28f;
+    public Color headerColor = new Color(0.13f, 0.19f, 0.34f, 0.95f);
 
     void Start()
     {
@@ -18,10 +31,18 @@ public class ResultsScreen : MonoBehaviour
 
     public void Show()
     {
+        GameManager gm = GameManager.Instance;
+        if (useTestValues && !gm.flight.launched && gm.rocketParts.Count == 0)
+        {
+            ResultsSample.Fill(gm, !failingTestValues);
+            Debug.Log("ResultsScreen: no game was played, showing test values.");
+        }
+
         ScoreResult r = MissionScoring.SaveFinalScore();
         if (title != null) title.text = TitleFor(r);
         if (score != null) score.text = r.total.ToString("0") + " / 100";
-        if (report != null) report.text = BuildReport(r, GameManager.Instance);
+        if (content != null) BuildSections(r, gm);
+        else if (report != null) report.text = BuildReport(r, gm);
     }
 
     static string TitleFor(ScoreResult r)
@@ -31,6 +52,158 @@ public class ResultsScreen : MonoBehaviour
         if (r.status == "FAILURE") return "Mission failed";
         if (r.status == "PENDING") return "Mission in progress";
         return "Invalid result";
+    }
+
+    // ---------- Collapsible sections ----------
+
+    void BuildSections(ScoreResult r, GameManager gm)
+    {
+        for (int i = content.childCount - 1; i >= 0; i--) Destroy(content.GetChild(i).gameObject);
+        if (r.problem != "")
+        {
+            AddText("The score could not be calculated: " + r.problem, bodySize, content);
+            return;
+        }
+
+        string official;
+        if (r.status == "SUCCESS") official = r.competitive.ToString("0.0") + " / 100";
+        else if (r.status == "FAILURE") official = "0 (the mission " + (r.aborted ? "was aborted" : "failed") + ")";
+        else official = "pending (the flight has not finished)";
+        TMP_Text summary = AddText("Learning score: <b>" + r.total.ToString("0.0") + " / 100</b>      Official score: <b>" + official + "</b>", bodySize, content);
+        summary.alignment = TextAlignmentOptions.Center;
+
+        if (r.status == "FAILURE")
+        {
+            AddText("<b>What went wrong</b>", headerSize, content).margin = new Vector4(0, 16, 0, 0);
+            if (!string.IsNullOrEmpty(r.failureReason)) AddText(r.failureReason, bodySize, content);
+            else if (OnlyScienceFailed(r)) AddText("The spacecraft returned safely, but the scientific objectives were incomplete.", bodySize, content);
+            foreach (string gate in r.failedGates)
+            {
+                // With an in-flight failure, the missing milestones are a consequence, already explained above
+                if (!string.IsNullOrEmpty(r.failureReason) && (gate == "DEPARTURE" || gate == "LUNAR_ORBIT" || gate == "RETURN")) continue;
+                string gateTitle, numbers, lesson, fix;
+                GateAdvice.Describe(gate, gm, out gateTitle, out numbers, out lesson, out fix);
+                string body = "";
+                if (lesson != "") body = GateAdvice.LessonLine(lesson);
+                if (fix != "") body += (body == "" ? "" : "\n") + GateAdvice.FixLine(fix);
+                AddFoldout(GateAdvice.Header(gateTitle, numbers), body, true);
+            }
+        }
+
+        AddText("<b>Score breakdown</b>", headerSize, content).margin = new Vector4(0, 16, 0, 0);
+        AddFoldout("Planning   <color=#8FB8FF>" + r.planning.ToString("0.0") + " / 45</color>", PlanningText(r), false);
+        AddFoldout("Mission   <color=#8FB8FF>" + r.mission.ToString("0.0") + " / 55</color>", MissionText(r), false);
+
+        List<string> lessons = Lessons(r, gm);
+        if (lessons.Count > 0) AddFoldout("What you learned", "- " + string.Join("\n- ", lessons), false);
+
+        // Start at the top of the list
+        ScrollRect scroll = content.GetComponentInParent<ScrollRect>();
+        if (scroll != null)
+        {
+            Canvas.ForceUpdateCanvases();
+            scroll.verticalNormalizedPosition = 1f;
+        }
+    }
+
+    TMP_Text AddText(string text, float size, Transform parent)
+    {
+        GameObject go = new GameObject("Text", typeof(RectTransform), typeof(TextMeshProUGUI));
+        go.transform.SetParent(parent, false);
+        TextMeshProUGUI t = go.GetComponent<TextMeshProUGUI>();
+        t.text = text;
+        t.fontSize = size;
+        t.color = Color.white;
+        t.alignment = TextAlignmentOptions.TopLeft;
+        t.textWrappingMode = TextWrappingModes.Normal;
+        t.raycastTarget = false;
+        return t;
+    }
+
+    // A header bar that opens and closes its body when clicked
+    void AddFoldout(string header, string body, bool open)
+    {
+        GameObject section = new GameObject("Section", typeof(RectTransform), typeof(VerticalLayoutGroup));
+        section.transform.SetParent(content, false);
+        VerticalLayoutGroup layout = section.GetComponent<VerticalLayoutGroup>();
+        layout.childControlWidth = true;
+        layout.childControlHeight = true;
+        layout.childForceExpandWidth = true;
+        layout.childForceExpandHeight = false;
+
+        GameObject headerGo = new GameObject("Header", typeof(RectTransform), typeof(Image), typeof(Button), typeof(HorizontalLayoutGroup));
+        headerGo.transform.SetParent(section.transform, false);
+        Image headerImage = headerGo.GetComponent<Image>();
+        headerImage.color = headerColor;
+        HorizontalLayoutGroup row = headerGo.GetComponent<HorizontalLayoutGroup>();
+        row.padding = new RectOffset(24, 24, 14, 14);
+        row.childControlWidth = true;
+        row.childControlHeight = true;
+        row.childForceExpandWidth = true;
+        row.childForceExpandHeight = false;
+        TMP_Text headerText = AddText("", headerSize, headerGo.transform);
+        headerText.fontStyle = FontStyles.Bold;
+
+        TMP_Text bodyText = AddText(body, bodySize, section.transform);
+        bodyText.margin = new Vector4(48, 10, 24, 14);
+        bodyText.lineSpacing = 12f;
+        bodyText.gameObject.SetActive(open && body != "");
+        SetHeader(headerText, header, open, body != "");
+
+        Button button = headerGo.GetComponent<Button>();
+        button.targetGraphic = headerImage;
+        ColorBlock colors = button.colors;
+        colors.normalColor = new Color(0.85f, 0.85f, 0.85f);
+        colors.highlightedColor = Color.white;
+        colors.pressedColor = new Color(0.7f, 0.7f, 0.7f);
+        colors.selectedColor = colors.normalColor;
+        button.colors = colors;
+        if (body == "") return; // nothing to open
+        button.onClick.AddListener(() =>
+        {
+            bool nowOpen = !bodyText.gameObject.activeSelf;
+            bodyText.gameObject.SetActive(nowOpen);
+            SetHeader(headerText, header, nowOpen, true);
+        });
+    }
+
+    static void SetHeader(TMP_Text text, string header, bool open, bool canOpen)
+    {
+        string mark = !canOpen ? " " : open ? "-" : "+";
+        text.text = "<color=#8FB8FF>" + mark + "</color>   " + header;
+    }
+
+    static string PlanningText(ScoreResult r)
+    {
+        StringBuilder sb = new StringBuilder();
+        Row(sb, "Spacecraft engineering", r.engineering, 24f, false);
+        Row(sb, "SLS capacity", r.deliveryPoints, 7f, true);
+        Row(sb, "Orion delta-v", r.craftDvPoints, 7f, true);
+        Row(sb, "Power generation", r.powerPoints, 3f, true);
+        Row(sb, "Batteries", r.batteryPoints, 3f, true);
+        Row(sb, "Water, oxygen and food", r.consumablePoints, 4f, true);
+        Row(sb, "Budget savings", r.budgetPoints, 7f, false);
+        Row(sb, "Crew training", r.trainingPoints, 8f, false);
+        Row(sb, "Site and date (weather)", r.weatherPoints, 6f, false);
+        if (r.planningEvents != 0f) sb.AppendLine("Events<pos=70%>" + r.planningEvents.ToString("+0;-0"));
+        return sb.ToString().TrimEnd();
+    }
+
+    static string MissionText(ScoreResult r)
+    {
+        StringBuilder sb = new StringBuilder();
+        Row(sb, "Flight stages", r.milestonePoints, 24f, false);
+        Row(sb, "Minigames", r.minigamePoints, 21f, false);
+        Row(sb, "Science", r.sciencePoints, 10f, false);
+        if (r.missionEvents != 0f) sb.AppendLine("Events<pos=70%>" + r.missionEvents.ToString("+0;-0"));
+        return sb.ToString().TrimEnd();
+    }
+
+    // "label ......... points / max", with the points lined up in a column
+    static void Row(StringBuilder sb, string label, float points, float max, bool sub)
+    {
+        string color = sub ? "<color=#9FB0C3>" : "<color=#FFFFFF>";
+        sb.AppendLine(color + (sub ? "      " : "") + label + "<pos=70%>" + points.ToString("0.0") + " / " + max.ToString("0") + "</color>");
     }
 
     public static string BuildReport(ScoreResult r, GameManager gm)
@@ -59,7 +232,7 @@ public class ResultsScreen : MonoBehaviour
             {
                 // With an in-flight failure, the missing milestones are a consequence, already explained above
                 if (!string.IsNullOrEmpty(r.failureReason) && (gate == "DEPARTURE" || gate == "LUNAR_ORBIT" || gate == "RETURN")) continue;
-                sb.AppendLine("- " + GateText(gate));
+                sb.AppendLine(GateAdvice.Explain(gate, gm)); // task 35: problem, lesson and fix
             }
             sb.AppendLine();
         }
@@ -85,33 +258,41 @@ public class ResultsScreen : MonoBehaviour
 
         sb.AppendLine();
         sb.AppendLine("<b>What you learned</b>");
+        foreach (string lesson in Lessons(r, gm)) sb.AppendLine("- " + lesson);
+
+        return sb.ToString();
+    }
+
+    // Generic lessons of the game (also used by BuildReport)
+    public static List<string> Lessons(ScoreResult r, GameManager gm)
+    {
+        List<string> list = new List<string>();
         if (r.deliveryPoints < 3.5f)
-            sb.AppendLine("- Your spacecraft was very close to the SLS mass limit. Every extra kilogram needs more fuel and a bigger rocket.");
+            list.Add("Your spacecraft was very close to the SLS mass limit. Every extra kilogram needs more fuel and a bigger rocket.");
         if (r.craftDvPoints < 3.5f)
-            sb.AppendLine("- Little spare delta-v on Orion: dv = Isp x g0 x ln(m0/mf). If the spacecraft is heavier, the same fuel goes less far.");
+            list.Add("Little spare delta-v on Orion: dv = Isp x g0 x ln(m0/mf). If the spacecraft is heavier, the same fuel goes less far.");
         if (r.powerPoints + r.batteryPoints < 3f)
-            sb.AppendLine("- Power was at the limit. Behind the Moon there is no sunlight: the batteries must cover the power draw.");
+            list.Add("Power was at the limit. Behind the Moon there is no sunlight: the batteries must cover the power draw.");
         if (r.consumablePoints < 2f)
-            sb.AppendLine("- Water, oxygen and food were very tight. Missions carry reserves in case the trip takes longer.");
+            list.Add("Water, oxygen and food were very tight. Missions carry reserves in case the trip takes longer.");
         if (r.budgetPoints < 3.5f)
-            sb.AppendLine("- You spent almost the whole budget. Real missions keep money for the unexpected.");
+            list.Add("You spent almost the whole budget. Real missions keep money for the unexpected.");
         if (r.trainingPoints < 6f)
-            sb.AppendLine("- Train each astronaut in their own role: that way they perform better in the minigames and avoid problems.");
+            list.Add("Train each astronaut in their own role: that way they perform better in the minigames and avoid problems.");
         if (r.weatherPoints < 4f)
-            sb.AppendLine("- You launched in bad weather. Wind and storms increase the risk during departure.");
+            list.Add("You launched in bad weather. Wind and storms increase the risk during departure.");
         if (r.sciencePoints < 7f)
-            sb.AppendLine("- Buying instruments is not enough: you have to run the experiments and send the data to Earth.");
-        if (gm != null && gm.flight.HasFailed) sb.AppendLine("- " + FailureLesson(gm.flight.failureCode));
+            list.Add("Buying instruments is not enough: you have to run the experiments and send the data to Earth.");
+        if (gm != null && gm.flight.HasFailed) list.Add(FailureLesson(gm.flight.failureCode));
         if (gm != null)
         {
             foreach (EventData e in gm.eventsHappened)
             {
-                if (e != null && !string.IsNullOrEmpty(e.lesson)) sb.AppendLine("- " + e.eventName + ": " + e.lesson);
+                if (e != null && !string.IsNullOrEmpty(e.lesson)) list.Add(e.eventName + ": " + e.lesson);
             }
         }
-        if (r.status == "SUCCESS" && r.total >= 90f) sb.AppendLine("- Excellent! Your decisions were very close to those of a real mission team.");
-
-        return sb.ToString();
+        if (r.status == "SUCCESS" && r.total >= 90f) list.Add("Excellent! Your decisions were very close to those of a real mission team.");
+        return list;
     }
 
     static void Line(StringBuilder sb, string label, float points, float max)

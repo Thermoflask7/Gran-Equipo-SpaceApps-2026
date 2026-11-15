@@ -18,7 +18,7 @@ Valid statuses: `pending`, `in progress`, `in PR`, `done`.
 | 5 | Folder: astronaut profiles + training | P3 | unassigned | none | — | pending |
 | 6 | Globe + calendar (site, weather, wind) | P3 | unassigned | none | — | pending |
 | 7 | Computer: app desktop, settings and shut down | P2 | unassigned | none | — | pending |
-| 8 | Computer: SpaceMart app (buy parts) | P2 | Elena | Claude | `ia/claude/spacemart` | in progress |
+| 8 | Computer: SpaceMart app (buy parts) | P2 | Elena | Claude | `ia/claude/spacemart` (done, PR #18) + `ia/claude/spacemart-filters` (category tabs) | in PR |
 | 9 | Rocket model: assembly with purchased parts | P2 | Cristina (logic only; the prefab/UI is still unassigned) | claude_c | `ia/claude_c/rocket-assembly` (logic: `RocketAssembly`) | in progress |
 | 10 | `02_Lanzamiento`: split screen (2D mission control + 3D rocket) | P4 | Mateo | Grok | `feat/mateo/lanzamiento` | in progress |
 | 11 | Flight phases: departure, lunar orbit, return | P4 | unassigned | none | — | pending |
@@ -32,5 +32,5 @@ Valid statuses: `pending`, `in progress`, `in PR`, `done`.
 | 19 | WebGL build | P1 | unassigned | none | — | pending |
 | 20 | Pitch for the judges | P1–P5 | unassigned | none | — | pending |
 | 21 | (Optional) Tech tree as a computer app | P2 | unassigned | none | — | pending |
-| 22 | Translate the repo to English: docs, UI, menus, messages and comments | All | Elena | Claude | `ia/claude/english` | in PR |
+| 22 | Translate the repo to English: docs, UI, menus, messages and comments | All | Elena | Claude | `ia/claude/english` | done |
 | 23 | Rename the Spanish folders, scenes and assets to English (after the open branches are merged) | P1 | unassigned | none | — | pending |

@@ -10,7 +10,8 @@ using UnityEngine.UI;
 // Unity menus for the SpaceMart app (task 8):
 //   SpaceApps > SpaceMart > Create prefab
 //       Creates Assets/_Project/Prefabs/SpaceMart.prefab with every part in Data/Piezas
-//       and the Artemis mission. It can be run again (for example after importing the catalog).
+//       and the Artemis mission, with category tabs on top of the list.
+//       It can be run again (for example after importing the catalog).
 //   SpaceApps > SpaceMart > Add to open scene
 //       Puts the prefab inside the Canvas of the open scene (creates a Canvas and an EventSystem if missing).
 //   SpaceApps > SpaceMart > Test: reset game
@@ -60,9 +61,26 @@ public static class SpaceMartBuilder
         closeRt.sizeDelta = new Vector2(70, 70);
         UnityEventTools.AddPersistentListener(close.onClick, shop.Close);
 
+        // Category tabs above the list (each one calls SpaceMart.SetFilter with its name)
+        GameObject tabs = NewUI("CategoryTabs", root.transform, typeof(HorizontalLayoutGroup));
+        Stretch((RectTransform)tabs.transform, new Vector2(0, 1), new Vector2(0.62f, 1), new Vector2(20, -165), new Vector2(-10, -105));
+        HorizontalLayoutGroup tabLayout = tabs.GetComponent<HorizontalLayoutGroup>();
+        tabLayout.spacing = 8;
+        tabLayout.childControlWidth = true;
+        tabLayout.childControlHeight = true;
+        tabLayout.childForceExpandWidth = true;
+        tabLayout.childForceExpandHeight = true;
+        foreach (string filter in SpaceMart.Filters)
+        {
+            Button tab = CreateButton(tabs.transform, "Tab " + filter, filter, Color.white, Color.white);
+            tab.GetComponentInChildren<TextMeshProUGUI>().fontSize = 22;
+            UnityEventTools.AddStringPersistentListener(tab.onClick, shop.SetFilter, filter);
+            shop.filterTabs.Add(tab.GetComponent<Image>()); // SpaceMart colors the selected one
+        }
+
         // Left: scroll list with the parts
         GameObject scroll = NewUI("PartList", root.transform, typeof(Image), typeof(ScrollRect));
-        Stretch((RectTransform)scroll.transform, Vector2.zero, new Vector2(0.62f, 1), new Vector2(20, 20), new Vector2(-10, -110));
+        Stretch((RectTransform)scroll.transform, Vector2.zero, new Vector2(0.62f, 1), new Vector2(20, 20), new Vector2(-10, -175));
         scroll.GetComponent<Image>().color = new Color(0, 0, 0, 0.08f);
 
         GameObject viewport = NewUI("Viewport", scroll.transform, typeof(Image), typeof(RectMask2D));

@@ -14,7 +14,7 @@ Valid statuses: `pending`, `in progress`, `in PR`, `done`.
 | 1 | `00_Menu`: title screen | P1 | Mateo | Grok | `feat/mateo/menu` | done |
 | 2 | `01_Planeacion`: base desk, camera and navigation between stations | P1 | asdidkf/Mateo | Grok | `pantalla-escritorio` | in progress |
 | 3 | Launch button + task checklist | P1 | Elena | Claude | `ia/claude/boton-lanzamiento` | done |
-| 4 | Folder: mission + updates from events | P3 | unassigned | none | — | pending |
+| 4 | Folder: mission + updates from events | P3 | Elena | Claude | `ia/claude/folder-mission` | in progress |
 | 5 | Folder: astronaut profiles + training | P3 | unassigned | none | — | pending |
 | 6 | Globe + calendar (site, weather, wind) | P3 | Mateo | Grok | `feat/mateo/globo-calendario` | in progress |
 | 7 | Computer: app desktop, settings and shut down | P2 | Mateo | Grok | `pantalla-escritorio` | in progress |

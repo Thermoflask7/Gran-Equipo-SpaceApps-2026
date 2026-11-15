@@ -375,14 +375,6 @@ public class PlanningStation : MonoBehaviour
         return b;
     }
 
-#if UNITY_EDITOR
-    void OnValidate()
-    {
-        if (Application.isPlaying) return;
-        if (map != null && calendar != null) ApplyMapPlacement();
-        var dc = DeskCamera.Instance;
-        Camera cam = dc != null ? dc.GetComponent<Camera>() : Camera.main;
-        if (cam != null && zoomTarget != null) PlaceZoomTarget(cam);
-    }
-#endif
+    // No OnValidate auto-placement: the map keeps the pose set by hand in the scene.
+    // Re-run the Build planning wall menu to place it automatically.
 }

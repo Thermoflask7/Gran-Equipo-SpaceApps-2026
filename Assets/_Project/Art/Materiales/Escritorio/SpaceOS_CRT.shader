@@ -32,7 +32,7 @@ Shader "SpaceApps/SpaceOS CRT"
             Tags { "LightMode" = "UniversalForward" }
 
             ZWrite On
-            Cull Back
+            Cull Off
             ZTest LEqual
 
             HLSLPROGRAM
@@ -152,7 +152,7 @@ Shader "SpaceApps/SpaceOS CRT"
 
             ZWrite On
             ColorMask 0
-            Cull Back
+            Cull Off
 
             HLSLPROGRAM
             #pragma vertex VertDepth

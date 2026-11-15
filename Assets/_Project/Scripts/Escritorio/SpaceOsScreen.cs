@@ -34,8 +34,11 @@ public class SpaceOsScreen : MonoBehaviour
     [SerializeField] MeshRenderer screenRenderer;
 
     RenderTexture rt;
-    Material runtimeCrt;
-    Material runtimePlain;
+    MaterialPropertyBlock block;
+#if UNITY_EDITOR
+    bool editorUpdateHooked;
+    bool renderingUi;
+#endif
 
     public Camera UICamera => uiCamera;
     public RenderTexture Texture => rt;
@@ -74,7 +77,7 @@ public class SpaceOsScreen : MonoBehaviour
     public Vector2 MeshUvToCanvasUv(Vector2 uv)
     {
         if (!crtEnabled) return uv;
-        Material mat = runtimeCrt != null ? runtimeCrt : crtMaterialTemplate;
+        Material mat = crtMaterialTemplate;
         if (mat == null || !mat.HasProperty("_BarrelDistortion")) return uv;
         float barrel = mat.GetFloat("_BarrelDistortion");
         if (Mathf.Abs(barrel) < 1e-5f) return uv;
@@ -89,6 +92,7 @@ public class SpaceOsScreen : MonoBehaviour
         ApplyPlacement();
         EnsureTexture();
         ApplyMaterial();
+        RenderUiIfEditing();
     }
 
     void OnEnable()
@@ -96,9 +100,19 @@ public class SpaceOsScreen : MonoBehaviour
         ApplyPlacement();
         EnsureTexture();
         ApplyMaterial();
+#if UNITY_EDITOR
+        HookEditorUpdate(!Application.isPlaying);
+#endif
+        RenderUiIfEditing();
     }
 
-    void OnDisable() => ReleaseResources();
+    void OnDisable()
+    {
+#if UNITY_EDITOR
+        HookEditorUpdate(false);
+#endif
+        ReleaseResources();
+    }
 
     void OnValidate()
     {
@@ -117,7 +131,42 @@ public class SpaceOsScreen : MonoBehaviour
         if (this == null || !isActiveAndEnabled) return;
         Refresh();
     }
+
+    void HookEditorUpdate(bool on)
+    {
+        if (on == editorUpdateHooked) return;
+        if (on) UnityEditor.EditorApplication.update += EditorRenderUi;
+        else UnityEditor.EditorApplication.update -= EditorRenderUi;
+        editorUpdateHooked = on;
+    }
+
+    void EditorRenderUi()
+    {
+        if (renderingUi || this == null || Application.isPlaying) return;
+        RenderUiIfEditing();
+    }
 #endif
+
+    void RenderUiIfEditing()
+    {
+        if (Application.isPlaying || uiCamera == null || rt == null) return;
+        if (!uiCamera.isActiveAndEnabled) return;
+#if UNITY_EDITOR
+        if (renderingUi) return;
+        renderingUi = true;
+        try
+        {
+            uiCamera.targetTexture = rt;
+            uiCamera.Render();
+        }
+        finally
+        {
+            renderingUi = false;
+        }
+#else
+        uiCamera.targetTexture = rt;
+#endif
+    }
 
     void EnsureTexture()
     {
@@ -150,42 +199,22 @@ public class SpaceOsScreen : MonoBehaviour
 
     void ApplyMaterial()
     {
-        EnsureRuntimeMaterials();
-        if (runtimeCrt != null)
-        {
-            runtimeCrt.SetTexture("_BaseMap", rt);
-            runtimeCrt.SetTexture("_MainTex", rt);
-        }
-        if (runtimePlain != null)
-        {
-            runtimePlain.SetTexture("_BaseMap", rt);
-            runtimePlain.SetTexture("_MainTex", rt);
-        }
+        if (screenRenderer == null) screenRenderer = GetComponent<MeshRenderer>();
+        if (screenRenderer == null) return;
 
-        Material active = crtEnabled
-            ? (runtimeCrt != null ? runtimeCrt : runtimePlain)
-            : (runtimePlain != null ? runtimePlain : runtimeCrt);
-        if (screenRenderer != null && active != null)
-            screenRenderer.sharedMaterial = active;
-    }
+        // El asset se queda asignado en la escena (no un Material DontSave que al guardar queda en None).
+        Material template = crtEnabled ? crtMaterialTemplate : plainMaterialTemplate;
+        if (template == null) template = crtMaterialTemplate != null ? crtMaterialTemplate : plainMaterialTemplate;
+        if (template != null) screenRenderer.sharedMaterial = template;
 
-    void EnsureRuntimeMaterials()
-    {
-        if (runtimeCrt == null && crtMaterialTemplate != null)
+        if (block == null) block = new MaterialPropertyBlock();
+        screenRenderer.GetPropertyBlock(block);
+        if (rt != null)
         {
-            runtimeCrt = new Material(crtMaterialTemplate) { name = "SpaceOS_CRT_Runtime", hideFlags = HideFlags.DontSave };
+            block.SetTexture("_BaseMap", rt);
+            block.SetTexture("_MainTex", rt);
         }
-        if (runtimePlain == null)
-        {
-            if (plainMaterialTemplate != null)
-                runtimePlain = new Material(plainMaterialTemplate) { name = "SpaceOS_Plain_Runtime", hideFlags = HideFlags.DontSave };
-            else
-            {
-                Shader unlit = Shader.Find("Universal Render Pipeline/Unlit");
-                if (unlit != null)
-                    runtimePlain = new Material(unlit) { name = "SpaceOS_Plain_Runtime", hideFlags = HideFlags.DontSave };
-            }
-        }
+        screenRenderer.SetPropertyBlock(block);
     }
 
     void ReleaseTextureOnly()
@@ -203,16 +232,7 @@ public class SpaceOsScreen : MonoBehaviour
 
     void ReleaseResources()
     {
+        if (screenRenderer != null) screenRenderer.SetPropertyBlock(null);
         ReleaseTextureOnly();
-        DestroyMat(ref runtimeCrt);
-        DestroyMat(ref runtimePlain);
-    }
-
-    static void DestroyMat(ref Material mat)
-    {
-        if (mat == null) return;
-        if (Application.isPlaying) Destroy(mat);
-        else DestroyImmediate(mat);
-        mat = null;
     }
 }

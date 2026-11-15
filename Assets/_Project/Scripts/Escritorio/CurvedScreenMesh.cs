@@ -16,11 +16,11 @@ public class CurvedScreenMesh : MonoBehaviour
     [SerializeField] float width = DefaultWidth;
     [SerializeField] float height = DefaultHeight;
 
-    [Tooltip("Cuanto se hunden los bordes izquierdo/derecho respecto al centro, en metros.")]
-    [SerializeField] float horizontalSagitta = 0.02f;
+    [Tooltip("Sagitta horizontal (izq-der). En el CRT va en 0: la curva es de arriba a abajo.")]
+    [SerializeField] float horizontalSagitta = 0f;
 
-    [Tooltip("Cuanto se hunden los bordes superior/inferior respecto al centro, en metros.")]
-    [SerializeField] float verticalSagitta = 0.015f;
+    [Tooltip("Sagitta vertical (arriba-abajo), en metros. El centro se abomba hacia la camara.")]
+    [SerializeField] float verticalSagitta = 0.025f;
 
     [SerializeField, Range(2, 64)] int segmentsX = 24;
     [SerializeField, Range(2, 64)] int segmentsY = 18;
@@ -32,6 +32,8 @@ public class CurvedScreenMesh : MonoBehaviour
 
     public float Width { get => width; set { width = value; Rebuild(); } }
     public float Height { get => height; set { height = value; Rebuild(); } }
+    public float HorizontalSagitta { get => horizontalSagitta; set { horizontalSagitta = Mathf.Max(0f, value); Rebuild(); } }
+    public float VerticalSagitta { get => verticalSagitta; set { verticalSagitta = Mathf.Max(0f, value); Rebuild(); } }
 
     void OnEnable() => Rebuild();
 
@@ -120,12 +122,13 @@ public class CurvedScreenMesh : MonoBehaviour
                 int i1 = i0 + 1;
                 int i2 = i0 + vx;
                 int i3 = i2 + 1;
+                // Sentido horario visto desde -Z (lado de la camara). Unity recorta las caras traseras.
                 tris[t++] = i0;
-                tris[t++] = i1;
                 tris[t++] = i2;
                 tris[t++] = i1;
+                tris[t++] = i1;
+                tris[t++] = i2;
                 tris[t++] = i3;
-                tris[t++] = i2;
             }
         }
 

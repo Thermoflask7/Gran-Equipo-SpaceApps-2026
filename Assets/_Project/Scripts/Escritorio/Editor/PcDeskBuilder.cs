@@ -274,7 +274,11 @@ public static class PcDeskBuilder
         meshRenderer.receiveShadows = false;
         Undo.AddComponent<MeshCollider>(screenGo);
         var curved = Undo.AddComponent<CurvedScreenMesh>(screenGo);
+        curved.HorizontalSagitta = 0f;
+        curved.VerticalSagitta = 0.025f;
         curved.Rebuild();
+        if (crtMat != null)
+            meshRenderer.sharedMaterial = crtMat;
 
         var spaceOs = Undo.AddComponent<SpaceOsScreen>(screenGo);
         spaceOs.SetMaterialTemplates(crtMat, plainMat);

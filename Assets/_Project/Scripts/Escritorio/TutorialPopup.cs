@@ -66,7 +66,11 @@ public class TutorialPopup : MonoBehaviour
         popup.buttonText.text = buttonLabel;
         popup.stampText.text = stampImage != null ? "" : stamp;
         popup.SetStampImage(stampImage);
-        if (!popup.panel.activeSelf) popup.Block();
+        if (!popup.panel.activeSelf)
+        {
+            popup.Block();
+            Sfx.Play(Sfx.TutorialOpen);
+        }
         popup.panel.SetActive(true);
         popup.panel.transform.SetAsLastSibling();
     }

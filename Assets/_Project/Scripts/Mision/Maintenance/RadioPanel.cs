@@ -27,12 +27,21 @@ public class RadioPanel : MonoBehaviour
     float target;   // correct frequency, 0 to 1 on the dial's scale
     float timer;
 
+    bool soundWired;
+
+    void PlayDialSound(float value)
+    {
+        if (Running) Sfx.Play(Sfx.MaintenanceScroll, 1f, 0.25f);
+    }
+
     public void Begin(MaintenanceSettings s)
     {
         settings = s;
         Running = true;
         dial.interactable = true;
-        dial.value = Random.value;
+        dial.SetValueWithoutNotify(Random.value);
+        if (!soundWired) dial.onValueChanged.AddListener(PlayDialSound);
+        soundWired = true;
         MoveTarget();
         Refresh();
     }

@@ -232,6 +232,7 @@ public class PhotoSafari : MonoBehaviour
     void Capture(Live l, bool gold)
     {
         l.done = true;
+        Sfx.Play(l.target.type == ResearchMath.TargetType.Ice ? Sfx.ZooClickIce : Sfx.RadiationClick);
         ResearchPhoto photo = new ResearchPhoto { type = l.target.type, bits = l.target.bits, gold = gold };
         photos.Add(photo);
         if (flash != null) flash.color = new Color(1f, 1f, 1f, 0.6f);

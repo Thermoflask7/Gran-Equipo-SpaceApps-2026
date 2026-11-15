@@ -138,6 +138,7 @@ public class ComputerDesktop : MonoBehaviour
     /// <summary>Boton Volver: cierra la PC y regresa la camara al escritorio.</summary>
     public void Back()
     {
+        Sfx.Play(Sfx.PcClick);
         if (owner != null) owner.Close();
         else { Hide(); DeskCamera.Instance?.ReturnToDesk(); }
     }
@@ -170,9 +171,18 @@ public class ComputerDesktop : MonoBehaviour
         var app = GetApp(id);
         if (app == null || !app.interactable) return;
         CloseComingSoon();
+        if (app.id == AppApagar) Sfx.Play(Sfx.PcShutDown);
         if (app.id == AppApagar && !app.HasHandlers) { QuitToMenuDialog.Open(); return; } // asks before leaving to the main menu
-        if (app.HasHandlers) app.onOpen.Invoke();
-        else ShowComingSoon(app.label + "\n\n" + app.comingSoonMessage);
+        if (app.HasHandlers)
+        {
+            if (app.id != AppApagar) Sfx.Play(Sfx.PcClick);
+            app.onOpen.Invoke();
+        }
+        else
+        {
+            Sfx.Play(Sfx.CantClick);
+            ShowComingSoon(app.label + "\n\n" + app.comingSoonMessage);
+        }
     }
 
     public void ShowComingSoon(string message)

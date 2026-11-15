@@ -144,6 +144,7 @@ public class SpaceMart : MonoBehaviour
         if (IsOwned(part)) return;
         if (!gm.CanAfford(CostOf(part)))
         {
+            Sfx.Play(Sfx.CantClick);
             Say("Not enough credits for " + part.partName + ".");
             return;
         }
@@ -157,6 +158,7 @@ public class SpaceMart : MonoBehaviour
         }
 
         gm.BuyPart(part);
+        Sfx.Play(Sfx.Purchase);
         UpdateRocketValid(gm);
         Say(text);
         Refresh();

@@ -26,6 +26,13 @@ public class OxygenPanel : MonoBehaviour
     MaintenanceSettings settings;
     float lastPumpValue;
 
+    bool soundWired;
+
+    void PlayPumpSound(float value)
+    {
+        if (Running) Sfx.Play(Sfx.MaintenanceScroll, 1f, 0.25f);
+    }
+
     public void Begin(MaintenanceSettings s)
     {
         settings = s;
@@ -33,8 +40,10 @@ public class OxygenPanel : MonoBehaviour
         Running = true;
         if (pump != null)
         {
-            pump.value = 0f;
+            pump.SetValueWithoutNotify(0f);
             pump.interactable = true;
+            if (!soundWired) pump.onValueChanged.AddListener(PlayPumpSound);
+            soundWired = true;
             lastPumpValue = pump.value;
         }
         Refresh();

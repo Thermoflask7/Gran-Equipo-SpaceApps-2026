@@ -104,9 +104,11 @@ public class SignalCatcher : MonoBehaviour
         return new Vector2(x, y);
     }
 
+    bool wasOnEarth; // to play the beam sound when the beam reaches Earth
+
     void Update()
     {
-        if (!Running) return;
+        if (!Running) { wasOnEarth = false; return; }
         float dt = Time.deltaTime;
         time += dt;
         if (timerLabel != null) timerLabel.text = Mathf.CeilToInt(Mathf.Max(0f, endAt - time)) + " s";
@@ -125,6 +127,8 @@ public class SignalCatcher : MonoBehaviour
         float earthAngle = Mathf.Atan2(toEarth.x, toEarth.y) * Mathf.Rad2Deg;
         bool onEarth = antenna && Mathf.Abs(ResearchMath.AngleGap(dishAngle, earthAngle)) <= settings.beamHalfAngle;
         if (beam != null) beam.color = onEarth ? new Color(0.4f, 1f, 0.5f, 0.3f) : new Color(1f, 0.9f, 0.3f, 0.18f);
+        if (onEarth && !wasOnEarth && SentBits < capturedBits) Sfx.Play(Sfx.ZooLaserRay, 1f, 0.5f);
+        wasOnEarth = onEarth;
 
         if (onEarth && SentBits < capturedBits)
         {

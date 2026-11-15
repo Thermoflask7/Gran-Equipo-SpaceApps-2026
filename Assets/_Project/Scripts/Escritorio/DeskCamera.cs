@@ -87,6 +87,7 @@ public class DeskCamera : MonoBehaviour
     public void FocusOn(Transform target, Action onArrived = null)
     {
         if (target == null) return;
+        if (CurrentTarget != target) Sfx.Play(Sfx.SelectStation);
         CurrentTarget = target;
         cam.nearClipPlane = Mathf.Min(deskNearClip, focusNearClip);
         StartMove(target.position, target.rotation, () =>

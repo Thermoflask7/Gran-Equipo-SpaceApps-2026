@@ -249,6 +249,7 @@ public class PilotingMinigame : MonoBehaviour
         float score = pressedAt < 0f ? 0f : Settings.ScoreFor(pressedAt, windowCenter, windowWidth);
         scoreSum += score;
         if (score >= 1f) perfectCount++;
+        Sfx.Play(score >= Settings.edgeScore ? Sfx.BarClickGood : Sfx.BarClickBad);
 
         if (feedbackLabel != null)
         {

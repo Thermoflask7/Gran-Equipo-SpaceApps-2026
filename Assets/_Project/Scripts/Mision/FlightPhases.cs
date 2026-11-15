@@ -261,6 +261,7 @@ public class FlightPhases : MonoBehaviour
         if (request.attempt == 0) openedThisPhase++;
         screen.paused = true;
         screen.Log(RoleName(role) + " minigame" + (request.attempt > 0 ? " (recovery attempt " + (request.attempt + 1) + ")." : "."));
+        Sfx.Play(Sfx.MinigamePopup);
         if (MinigameRequested != null) MinigameRequested(role);
         try
         {

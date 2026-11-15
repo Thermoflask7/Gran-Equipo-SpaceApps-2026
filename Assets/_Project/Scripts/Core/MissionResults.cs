@@ -13,7 +13,7 @@
 [System.Serializable]
 public class MissionResults
 {
-    public bool launched;        // the launch button was pressed with CanLaunch() true
+    public bool launched;        // the launch button was pressed (CanLaunch() or CanLaunchEarly() true)
     public float moneyAtLaunch;  // money at launch (set by LaunchButton). Savings are graded with this
     public bool flightFinished;  // the flight has ended (successfully or not). While false the result is "pending"
 

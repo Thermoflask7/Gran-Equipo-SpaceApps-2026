@@ -12,7 +12,8 @@ using UnityEngine.UI;
 //      dark base + red cap) on the desk in front of the desk camera. Move it wherever you like afterwards;
 //      running the menu again never moves it.
 //   2. Makes sure it has a collider so it can be clicked.
-//   3. Adds the launch panel if the scene has none (SpaceApps > Launch button > Add to open scene: overlay
+//   3. Adds LaunchButtonVisual (gray when locked, red pulse when ready, press animation).
+//   4. Adds the launch panel if the scene has none (SpaceApps > Launch button > Add to open scene: overlay
 //      canvas), hides it, adds a Back button to it, and adds LaunchStation to the 3D button linked to it.
 // Then save the scene. It can be run again: it reuses what is already there.
 public static class LaunchStationBuilder
@@ -32,7 +33,8 @@ public static class LaunchStationBuilder
 
         if (target.GetComponentInChildren<Collider>() == null)
         {
-            Undo.AddComponent<BoxCollider>(target);
+            BoxCollider box = Undo.AddComponent<BoxCollider>(target);
+            LaunchStation.FitBoxCollider(box); // the default 1x1x1 box is tiny on a scaled model
             Debug.Log("Launch station: added a BoxCollider to '" + target.name + "' so it can be clicked.");
         }
 
@@ -49,11 +51,25 @@ public static class LaunchStationBuilder
         }
         GameObject panel = button.transform.parent != null ? button.transform.parent.gameObject : button.gameObject;
 
+        // The panel gets its own overlay canvas (a shared canvas may be hidden by other stations)
+        Transform oldParent = panel.transform.parent;
+        if (oldParent == null || oldParent.name != LaunchStation.LaunchCanvasName)
+        {
+            bool existed = false;
+            foreach (Canvas c in Object.FindObjectsByType<Canvas>(FindObjectsInactive.Include))
+                if (c.transform.parent == null && c.name == LaunchStation.LaunchCanvasName) existed = true;
+            Canvas launchCanvas = LaunchStation.GetOrCreateLaunchCanvas();
+            if (!existed) Undo.RegisterCreatedObjectUndo(launchCanvas.gameObject, "Create launch canvas");
+            Undo.SetTransformParent(panel.transform, launchCanvas.transform, "Move launch panel");
+        }
+
         LaunchStation station = target.GetComponent<LaunchStation>();
         if (station == null) station = Undo.AddComponent<LaunchStation>(target);
         Undo.RecordObject(station, "Link launch station");
         station.panel = panel;
         EditorUtility.SetDirty(station);
+
+        if (target.GetComponent<LaunchButtonVisual>() == null) Undo.AddComponent<LaunchButtonVisual>(target);
 
         AddBackButton(panel, station);
 
@@ -112,16 +128,31 @@ public static class LaunchStationBuilder
     static Material GetMaterial(string path, Color color, float smoothness)
     {
         Material mat = AssetDatabase.LoadAssetAtPath<Material>(path);
-        if (mat != null) return mat;
+        if (mat != null)
+        {
+            EnableEmission(mat);
+            return mat;
+        }
         Shader shader = Shader.Find("Universal Render Pipeline/Lit");
         if (shader == null) shader = Shader.Find("Standard");
         mat = new Material(shader);
         mat.SetColor("_BaseColor", color);
         mat.color = color;
         mat.SetFloat("_Smoothness", smoothness);
+        EnableEmission(mat);
         AssetDatabase.CreateAsset(mat, path);
         AssetDatabase.SaveAssets();
         return mat;
+    }
+
+    // Emission on (black) so the WebGL build keeps the emissive shader variant used by the ready pulse
+    static void EnableEmission(Material mat)
+    {
+        if (mat.IsKeywordEnabled("_EMISSION")) return;
+        mat.EnableKeyword("_EMISSION");
+        mat.SetColor("_EmissionColor", Color.black);
+        mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
+        EditorUtility.SetDirty(mat);
     }
 
     // "Back" button in the top right corner of the launch panel -> LaunchStation.Close
@@ -158,6 +189,19 @@ public static class LaunchStationBuilder
             back = go.GetComponent<Button>();
         }
         if (back == null) return;
+
+        TMP_Text backLabel = back.GetComponentInChildren<TMP_Text>(true);
+        if (backLabel != null && backLabel.text != "Back to desk")
+        {
+            Undo.RecordObject(backLabel, "Rename back button");
+            backLabel.text = "Back to desk";
+        }
+        RectTransform backRect = (RectTransform)back.transform;
+        if (backRect.sizeDelta.x < 200f)
+        {
+            Undo.RecordObject(backRect, "Resize back button");
+            backRect.sizeDelta = new Vector2(220f, 56f);
+        }
 
         // Replace any old link so running the menu again does not stack listeners
         for (int i = back.onClick.GetPersistentEventCount() - 1; i >= 0; i--)

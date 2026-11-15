@@ -2966,7 +2966,8 @@ MonoBehaviour:
   panel: {fileID: 168185026}
   zoomTarget: {fileID: 0}
   zoomDistance: 0.5
-  zoomPitch: 45
+  panelAtSide: 1
+  panelMargin: 30
   maxClickDistance: 50
   onOpened:
     m_PersistentCalls:
@@ -2990,6 +2991,7 @@ MonoBehaviour:
   pressPart: {fileID: 0}
   lockedColor: {r: 0.35, g: 0.35, b: 0.37, a: 1}
   readyColor: {r: 0.85, g: 0.08, b: 0.06, a: 1}
+  earlyColor: {r: 1, g: 0.5, b: 0.05, a: 1}
   pulseSpeed: 1.2
   pulseGlow: 1.5
   pressDepth: 0.012
@@ -3720,19 +3722,19 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: b165fde3d939173fcbcb5a667a96731e, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.001
+      value: 0.0027766
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b165fde3d939173fcbcb5a667a96731e, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.001
+      value: 0.0027766
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b165fde3d939173fcbcb5a667a96731e, type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.001
+      value: 0.0027766
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b165fde3d939173fcbcb5a667a96731e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.447
+      value: 0.578
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b165fde3d939173fcbcb5a667a96731e, type: 3}
       propertyPath: m_LocalPosition.y
@@ -3740,7 +3742,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b165fde3d939173fcbcb5a667a96731e, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -9.281
+      value: -9.208
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b165fde3d939173fcbcb5a667a96731e, type: 3}
       propertyPath: m_LocalRotation.w
@@ -4272,7 +4274,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4170405681816404, guid: 59f9a93605a3eee4eb73efd2a0f43517, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.5156482
+      value: 0.709
       objectReference: {fileID: 0}
     - target: {fileID: 4170405681816404, guid: 59f9a93605a3eee4eb73efd2a0f43517, type: 3}
       propertyPath: m_LocalPosition.y
@@ -4280,7 +4282,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4170405681816404, guid: 59f9a93605a3eee4eb73efd2a0f43517, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -9.162764
+      value: -8.926
       objectReference: {fileID: 0}
     - target: {fileID: 4170405681816404, guid: 59f9a93605a3eee4eb73efd2a0f43517, type: 3}
       propertyPath: m_LocalRotation.w

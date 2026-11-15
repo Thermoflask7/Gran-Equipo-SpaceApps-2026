@@ -15,10 +15,40 @@ public static class GateAdvice
     // Only uses data from RocketPhysics, the mission and the catalog (GameData.parts).
     public static string Explain(string gate, GameManager gm)
     {
-        string title = ResultsScreen.GateText(gate);
-        string numbers = "";
-        string lesson = "";
-        string fix = "";
+        string title, numbers, lesson, fix;
+        Describe(gate, gm, out title, out numbers, out lesson, out fix);
+        string text = "<b><color=" + TitleColor + ">" + title + "</color></b>";
+        if (numbers != "") text += "   " + numbers;
+        if (lesson != "") text += "\n" + LessonLine(lesson);
+        if (fix != "") text += "\n" + FixLine(fix);
+        return text + "\n";
+    }
+
+    // Header of a collapsible entry: red title + numbers
+    public static string Header(string title, string numbers)
+    {
+        string text = "<color=" + TitleColor + ">" + title + "</color>";
+        if (numbers != "") text += "<size=85%><color=#E6EDF3>   " + numbers + "</color></size>";
+        return text;
+    }
+
+    public static string LessonLine(string lesson)
+    {
+        return "<color=" + LessonColor + ">" + lesson + "</color>";
+    }
+
+    public static string FixLine(string fix)
+    {
+        return "<color=" + FixColor + "><b>Fix:</b> " + fix + "</color>";
+    }
+
+    // The four parts of an entry, separately (the Results screen shows them in a collapsible section)
+    public static void Describe(string gate, GameManager gm, out string title, out string numbers, out string lesson, out string fix)
+    {
+        title = ResultsScreen.GateText(gate);
+        numbers = "";
+        lesson = "";
+        fix = "";
 
         if (gm != null && gm.mission != null)
         {
@@ -173,12 +203,6 @@ public static class GateAdvice
                     break;
             }
         }
-
-        string text = "<b><color=" + TitleColor + ">" + title + "</color></b>";
-        if (numbers != "") text += "   " + numbers;
-        if (lesson != "") text += "\n<size=85%><color=" + LessonColor + ">" + lesson + "</color></size>";
-        if (fix != "") text += "\n<size=85%><color=" + FixColor + "><b>Fix:</b> " + fix + "</color></size>";
-        return text + "\n";
     }
 
     // ---------- Helpers ----------

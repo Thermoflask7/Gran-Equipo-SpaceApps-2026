@@ -5,14 +5,15 @@ using UnityEngine.UI;
 
 // Unity menus for the Results screen (task 16):
 //   SpaceApps > Results screen > Add to open scene
-//       Puts a panel with title, score, breakdown and a "Back to menu" button on the Canvas
-//       of the open scene (03_Resultados or your Sandbox). Then save the scene.
+//       Puts a space background and a panel with title, score, a scroll view of collapsible
+//       sections and a "Back to menu" button on the overlay Canvas of the open scene
+//       (03_Resultados or your Sandbox). If there is one already, it offers to replace it. Then save the scene.
 //   SpaceApps > Results screen > Test: sample game
 //       Play mode only: fills the GameManager with a complete game (Artemis catalog)
 //       and recalculates the screen.
 public static class ResultsScreenBuilder
 {
-    static readonly Color BoxColor = new Color(0.08f, 0.1f, 0.16f, 0.95f);
+    static readonly Color BoxColor = new Color(0.04f, 0.06f, 0.12f, 0.82f);
     static readonly Color ButtonColor = new Color(0.2f, 0.45f, 0.85f);
 
     [MenuItem("SpaceApps/Results screen/Add to open scene")]
@@ -20,40 +21,120 @@ public static class ResultsScreenBuilder
     {
         // Overlay canvas only, never an arbitrary Canvas of the scene (audit F02)
         Canvas canvas = OverlayCanvasUtil.GetOrCreate();
-        if (Object.FindAnyObjectByType<ResultsScreen>(FindObjectsInactive.Include) != null
-            && !EditorUtility.DisplayDialog("Results screen", "This scene already has a ResultsScreen. Add another one?", "Add", "Cancel"))
-            return;
+        ResultsScreen old = Object.FindAnyObjectByType<ResultsScreen>(FindObjectsInactive.Include);
+        if (old != null)
+        {
+            if (!EditorUtility.DisplayDialog("Results screen", "This scene already has a ResultsScreen. Replace it with the new layout?", "Replace", "Cancel"))
+                return;
+            Undo.DestroyObjectImmediate(old.gameObject);
+        }
 
-        // Centered panel
+        // Space background behind everything (only one)
+        if (Object.FindAnyObjectByType<SpaceBackground>(FindObjectsInactive.Include) == null)
+        {
+            GameObject bg = new GameObject("SpaceBackground", typeof(RectTransform), typeof(RawImage), typeof(SpaceBackground));
+            bg.transform.SetParent(canvas.transform, false);
+            Stretch((RectTransform)bg.transform, Vector2.zero, Vector2.zero);
+            bg.GetComponent<RawImage>().raycastTarget = false;
+            bg.transform.SetAsFirstSibling();
+            Undo.RegisterCreatedObjectUndo(bg, "Add space background");
+        }
+
+        // Tall panel in the middle, see-through so the stars show at the sides
         GameObject root = new GameObject("ResultsScreen", typeof(RectTransform), typeof(Image));
         root.transform.SetParent(canvas.transform, false);
         RectTransform rt = (RectTransform)root.transform;
-        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta = new Vector2(1500, 950);
-        root.GetComponent<Image>().color = BoxColor;
+        rt.anchorMin = new Vector2(0.5f, 0f);
+        rt.anchorMax = new Vector2(0.5f, 1f);
+        rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.sizeDelta = new Vector2(1400, -80); // 40 px free at the top and bottom
+        rt.anchoredPosition = Vector2.zero;
+        Image box = root.GetComponent<Image>();
+        box.sprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UISprite.psd");
+        box.type = Image.Type.Sliced;
+        box.color = BoxColor;
 
-        TextMeshProUGUI title = CreateText(root.transform, "Title", "Results", 60);
+        TextMeshProUGUI title = CreateText(root.transform, "Title", "Results", 64);
         title.fontStyle = FontStyles.Bold;
-        Place(title.rectTransform, new Vector2(0, -60), new Vector2(1400, 80));
+        title.color = new Color(0.75f, 0.85f, 1f);
+        Place(title.rectTransform, new Vector2(0, -70), new Vector2(1300, 80));
 
-        TextMeshProUGUI score = CreateText(root.transform, "Score", "0 / 100", 90);
+        TextMeshProUGUI score = CreateText(root.transform, "Score", "0 / 100", 96);
         score.fontStyle = FontStyles.Bold;
-        Place(score.rectTransform, new Vector2(0, -160), new Vector2(1400, 110));
+        Place(score.rectTransform, new Vector2(0, -170), new Vector2(1300, 110));
 
-        TextMeshProUGUI report = CreateText(root.transform, "Breakdown", "", 26);
-        report.alignment = TextAlignmentOptions.TopLeft;
-        report.textWrappingMode = TextWrappingModes.Normal;
-        report.overflowMode = TextOverflowModes.Truncate;
-        report.enableAutoSizing = true; // task 35: long failure reports shrink to fit
-        report.fontSizeMin = 14;
-        report.fontSizeMax = 26;
-        Place(report.rectTransform, new Vector2(0, -520), new Vector2(1400, 560));
+        // Scroll view: Viewport (mask) > Content (sections, created at runtime) + scrollbar on the right
+        GameObject scrollGo = new GameObject("Scroll", typeof(RectTransform), typeof(ScrollRect));
+        scrollGo.transform.SetParent(root.transform, false);
+        Stretch((RectTransform)scrollGo.transform, new Vector2(40, 150), new Vector2(-30, -240));
 
+        GameObject viewport = new GameObject("Viewport", typeof(RectTransform), typeof(Image), typeof(RectMask2D));
+        viewport.transform.SetParent(scrollGo.transform, false);
+        Stretch((RectTransform)viewport.transform, Vector2.zero, new Vector2(-30, 0));
+        viewport.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0f); // invisible, but catches the mouse wheel
+
+        GameObject contentGo = new GameObject("Content", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
+        contentGo.transform.SetParent(viewport.transform, false);
+        RectTransform content = (RectTransform)contentGo.transform;
+        content.anchorMin = new Vector2(0f, 1f);
+        content.anchorMax = new Vector2(1f, 1f);
+        content.pivot = new Vector2(0.5f, 1f);
+        content.sizeDelta = Vector2.zero;
+        VerticalLayoutGroup layout = contentGo.GetComponent<VerticalLayoutGroup>();
+        layout.padding = new RectOffset(8, 8, 8, 24);
+        layout.spacing = 12;
+        layout.childControlWidth = true;
+        layout.childControlHeight = true;
+        layout.childForceExpandWidth = true;
+        layout.childForceExpandHeight = false;
+        contentGo.GetComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        GameObject barGo = new GameObject("Scrollbar", typeof(RectTransform), typeof(Image), typeof(Scrollbar));
+        barGo.transform.SetParent(scrollGo.transform, false);
+        RectTransform barRt = (RectTransform)barGo.transform;
+        barRt.anchorMin = new Vector2(1f, 0f);
+        barRt.anchorMax = new Vector2(1f, 1f);
+        barRt.pivot = new Vector2(1f, 0.5f);
+        barRt.sizeDelta = new Vector2(14, 0);
+        Image track = barGo.GetComponent<Image>();
+        track.sprite = box.sprite;
+        track.type = Image.Type.Sliced;
+        track.color = new Color(1f, 1f, 1f, 0.08f);
+        GameObject area = new GameObject("Sliding Area", typeof(RectTransform));
+        area.transform.SetParent(barGo.transform, false);
+        Stretch((RectTransform)area.transform, Vector2.zero, Vector2.zero);
+        GameObject handle = new GameObject("Handle", typeof(RectTransform), typeof(Image));
+        handle.transform.SetParent(area.transform, false);
+        Stretch((RectTransform)handle.transform, Vector2.zero, Vector2.zero);
+        Image handleImage = handle.GetComponent<Image>();
+        handleImage.sprite = box.sprite;
+        handleImage.type = Image.Type.Sliced;
+        handleImage.color = new Color(0.55f, 0.7f, 1f, 0.7f);
+        Scrollbar bar = barGo.GetComponent<Scrollbar>();
+        bar.handleRect = (RectTransform)handle.transform;
+        bar.targetGraphic = handleImage;
+        bar.direction = Scrollbar.Direction.BottomToTop;
+
+        ScrollRect scroll = scrollGo.GetComponent<ScrollRect>();
+        scroll.content = content;
+        scroll.viewport = (RectTransform)viewport.transform;
+        scroll.horizontal = false;
+        scroll.vertical = true;
+        scroll.movementType = ScrollRect.MovementType.Clamped;
+        scroll.scrollSensitivity = 10f; // mouse wheel speed
+        scroll.verticalScrollbar = bar;
+        scroll.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
+
+        // "Back to menu" button at the bottom
         GameObject buttonGo = new GameObject("MenuButton", typeof(RectTransform), typeof(Image), typeof(Button));
         buttonGo.transform.SetParent(root.transform, false);
-        Place((RectTransform)buttonGo.transform, new Vector2(0, -875), new Vector2(420, 90));
+        RectTransform buttonRt = (RectTransform)buttonGo.transform;
+        buttonRt.anchorMin = buttonRt.anchorMax = new Vector2(0.5f, 0f);
+        buttonRt.pivot = new Vector2(0.5f, 0.5f);
+        buttonRt.anchoredPosition = new Vector2(0, 75);
+        buttonRt.sizeDelta = new Vector2(420, 90);
         Image img = buttonGo.GetComponent<Image>();
-        img.sprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UISprite.psd");
+        img.sprite = box.sprite;
         img.type = Image.Type.Sliced;
         img.color = ButtonColor;
         TextMeshProUGUI label = CreateText(buttonGo.transform, "Text", "Back to menu", 36);
@@ -65,10 +146,19 @@ public static class ResultsScreenBuilder
         ResultsScreen screen = root.AddComponent<ResultsScreen>();
         screen.title = title;
         screen.score = score;
-        screen.report = report;
+        screen.content = content;
 
         Undo.RegisterCreatedObjectUndo(root, "Add results screen");
         Selection.activeGameObject = root;
+    }
+
+    // Fills the parent, with offsets from its bottom-left (min) and top-right (max) corners
+    static void Stretch(RectTransform rt, Vector2 offsetMin, Vector2 offsetMax)
+    {
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.offsetMin = offsetMin;
+        rt.offsetMax = offsetMax;
     }
 
     [MenuItem("SpaceApps/Results screen/Test: sample game")]

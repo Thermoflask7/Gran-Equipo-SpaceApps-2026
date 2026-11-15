@@ -109,11 +109,17 @@ public class PlanningStation : MonoBehaviour
         System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
 
         bool planningHit = false;
+        float firstOther = float.PositiveInfinity;
         foreach (var h in hits)
         {
             if (map != null && (h.collider.transform == map || h.collider.transform.IsChildOf(map))) continue;
             if (IsPlanningHit(h.collider.transform)) { planningHit = true; break; }
+            firstOther = Mathf.Min(firstOther, h.distance);
         }
+        // The calendar's white sheet may have no collider: also accept clicks inside
+        // the calendar's (or globe's) visual bounds when nothing closer blocks them.
+        if (!planningHit)
+            planningHit = RayHitsBounds(calendar, ray, firstOther) || RayHitsBounds(globe, ray, firstOther);
 
         if (debugClicks)
         {
@@ -123,6 +129,25 @@ public class PlanningStation : MonoBehaviour
 
         if (planningHit && !overUi)
             Open();
+    }
+
+    static bool RayHitsBounds(Transform root, Ray ray, float maxDistance)
+    {
+        if (root == null) return false;
+        Bounds b = Encapsulate(root);
+        if (b.size.sqrMagnitude < 1e-8f) return false;
+        return b.IntersectRay(ray, out float d) && d <= maxDistance + 0.05f;
+    }
+
+    void Start()
+    {
+        // The map is only shown while zoomed into the planning wall.
+        if (Application.isPlaying) SetMapVisible(false);
+    }
+
+    void SetMapVisible(bool visible)
+    {
+        if (map != null && map.gameObject.activeSelf != visible) map.gameObject.SetActive(visible);
     }
 
     bool IsPlanningHit(Transform hit)
@@ -139,6 +164,7 @@ public class PlanningStation : MonoBehaviour
         var dc = DeskCamera.Instance;
         if (dc == null || IsOpen) return;
         Subscribe();
+        SetMapVisible(true);
         EnsureZoomTarget(dc.GetComponent<Camera>());
         PlaceZoomTarget(dc.GetComponent<Camera>());
         IsOpen = true;
@@ -163,6 +189,7 @@ public class PlanningStation : MonoBehaviour
         if (!IsOpen) return;
         IsOpen = false;
         HideBack();
+        SetMapVisible(false);
     }
 
     void ShowBack()

@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf369ae48f447494f9170412c34c86b5, type: 3}
+  m_Name: EV-PL-02
+  m_EditorClassIdentifier: Assembly-CSharp::EventData
+  eventName: Educational supplier discount
+  description: The equipment supplier offers a favorable adjustment to simulated costs.
+  probability: 0.15
+  isGood: 1
+  moneyChange: 55
+  scoreChange: 1
+  phase: 0
+  weatherSensitive: 0
+  minigameRole: 0
+  lesson: The fictional budget can change during play; NASA does not use these credits.

@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc8c89cd30f7dbc4e836729cb0331949, type: 3}
+  m_Name: AST-P03
+  m_EditorClassIdentifier: Assembly-CSharp::AstronautData
+  astronautName: Maya Torres
+  portrait: {fileID: 0}
+  bio: Methodical navigator with strong problem-solving and trajectory-analysis skills.
+  research: 5
+  piloting: 7
+  engineering: 7

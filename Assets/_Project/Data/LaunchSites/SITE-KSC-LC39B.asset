@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97ba905a7fb8fd34bb556576bf60b13f, type: 3}
+  m_Name: SITE-KSC-LC39B
+  m_EditorClassIdentifier: Assembly-CSharp::LaunchSiteData
+  siteName: Kennedy Space Center - LC-39B
+  description: Real launch pad used for Artemis SLS missions. The 14 days of weather risk and wind data are fictional game scenarios, NOT forecasts or launch authorization.
+  latitude: 28.627306
+  longitude: -80.62087
+  weatherRiskByDay:
+  - 0.12
+  - 0.28
+  - 0.53
+  - 0.74
+  - 0.18
+  - 0.43
+  - 0.86
+  - 0.31
+  - 0.09
+  - 0.62
+  - 0.39
+  - 0.21
+  - 0.79
+  - 0.16

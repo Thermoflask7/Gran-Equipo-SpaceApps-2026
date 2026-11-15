@@ -23,7 +23,7 @@ public static class RocketPhysics
 {
     public const float G0 = 9.80665f;      // m/s2 (standard gravity, same as Cristina's data)
     public const float OutageHours = 1.5f;  // hours without sunlight the battery must cover (mission V13)
-    public const int MaxCopiesPerPart = 1;  // units of the same part (catalogId). 0 = no limit. Team decision pending (see Docs/P5)
+    public static readonly int MaxCopiesPerPart = 1;  // units of the same part (catalogId). 0 = no limit. Team decision pending (see Docs/P5)
 
     // dv of an engine with initial mass m0 and final mass mf (kg). Isp in seconds.
     public static float DeltaV(float isp, float m0, float mf)

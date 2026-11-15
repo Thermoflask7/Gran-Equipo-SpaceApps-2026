@@ -13,6 +13,11 @@ using UnityEngine;
 //   - Task 31: failure, abort and recovery (MissionFailureRules). A critical result in a safety-critical action
 //     ends the mission; a serious incident gets a recovery attempt; science never aborts the flight.
 // A phase does not end until its event and its minigames are done (it turns off LaunchScreen.autoAdvance).
+// Flight plan (task 45): each crew member has one guaranteed moment (Departure = pilot, Lunar orbit = scientist,
+// Return = engineer, the last one via WiringFlightHook) and a bad event can add one incident. Two limits keep the
+// flight short and never repeat a minigame: one minigame per crew role per phase (a bad event whose role already
+// played, or whose role has a planned minigame in that phase, only applies its points and lesson), and at most
+// maxMinigamesPerPhase minigames per phase. Recovery retries (task 31) are never blocked.
 //
 // For the minigames (tasks 12, 13, 14), register one handler per role (in Awake or OnEnable):
 //   flightPhases.RegisterMinigame(TrainingFocus.Piloting, OpenMyMinigame);
@@ -53,6 +58,9 @@ public class FlightPhases : MonoBehaviour
     [Tooltip("Task 31 thresholds. Empty = MissionFailureSettings.Default")]
     public MissionFailureSettings failureSettings;
 
+    [Tooltip("Most minigames that can open in one phase (recovery retries not counted). 0 = no limit")]
+    public int maxMinigamesPerPhase = 2;
+
     // Departure: piloting during the liftoff view (first 35 %). Lunar orbit: research.
     // Return has none by default: a second piloting result would be averaged with the first one (see SetResult).
     public List<PlannedMinigame> plannedMinigames = new List<PlannedMinigame>
@@ -75,7 +83,13 @@ public class FlightPhases : MonoBehaviour
     readonly Dictionary<TrainingFocus, Action> handlers = new Dictionary<TrainingFocus, Action>();
     readonly List<Request> queue = new List<Request>();
     readonly List<int> plannedDone = new List<int>(); // indexes of plannedMinigames already handled in this phase
+    readonly HashSet<TrainingFocus> playedThisPhase = new HashSet<TrainingFocus>(); // roles whose minigame opened in this phase
+    int openedThisPhase; // minigames opened in this phase (first attempts only)
     Request current;
+
+    // Task 45: did this role's minigame already open in the current phase? How many opened in it?
+    public bool PlayedThisPhase(TrainingFocus role) { return playedThisPhase.Contains(role); }
+    public int MinigamesThisPhase { get { return openedThisPhase; } }
     bool eventRolled;
 
     MissionResults Flight { get { return GameManager.Instance.flight; } }
@@ -153,6 +167,8 @@ public class FlightPhases : MonoBehaviour
 
         eventRolled = false;
         plannedDone.Clear();
+        playedThisPhase.Clear();
+        openedThisPhase = 0;
         queue.Clear();
         if (CurrentMinigame != TrainingFocus.None) MinigameDone();
 
@@ -192,7 +208,20 @@ public class FlightPhases : MonoBehaviour
         // A bad event on a role opens that role's minigame (for example, a failure -> maintenance).
         // Its severity (Auto = Serious) decides what a critical result means. A negative score or money alone never fails the mission.
         if (!e.isGood && e.minigameRole != TrainingFocus.None)
-            RequestMinigame(e.minigameRole, MissionFailureRules.SeverityOf(e), e.eventName);
+        {
+            // Task 45: that crew member already has a minigame in this phase, so they handle it without a second one
+            if (playedThisPhase.Contains(e.minigameRole) || HasPlanned(phase, e.minigameRole))
+                screen.Log("The " + CrewWord(e.minigameRole) + " is already on it: no extra minigame.");
+            else
+                RequestMinigame(e.minigameRole, MissionFailureRules.SeverityOf(e), e.eventName);
+        }
+    }
+
+    bool HasPlanned(EventPhase phase, TrainingFocus role)
+    {
+        foreach (PlannedMinigame m in plannedMinigames)
+            if (m != null && m.phase == phase && m.role == role) return true;
+        return false;
     }
 
     // ---------- Minigames ----------
@@ -202,6 +231,21 @@ public class FlightPhases : MonoBehaviour
         Request request = queue[0];
         queue.RemoveAt(0);
         TrainingFocus role = request.role;
+
+        // Task 45: one minigame per crew role per phase, and at most maxMinigamesPerPhase. Retries always open.
+        if (request.attempt == 0)
+        {
+            if (playedThisPhase.Contains(role))
+            {
+                screen.Log("The " + CrewWord(role) + " is already on it: no extra minigame.");
+                return;
+            }
+            if (maxMinigamesPerPhase > 0 && openedThisPhase >= maxMinigamesPerPhase)
+            {
+                screen.Log("Mission Control handles it from Earth: no extra minigame in this phase.");
+                return;
+            }
+        }
 
         Action open;
         if (!handlers.TryGetValue(role, out open) || open == null)
@@ -213,6 +257,8 @@ public class FlightPhases : MonoBehaviour
 
         current = request;
         CurrentMinigame = role;
+        playedThisPhase.Add(role);
+        if (request.attempt == 0) openedThisPhase++;
         screen.paused = true;
         screen.Log(RoleName(role) + " minigame" + (request.attempt > 0 ? " (recovery attempt " + (request.attempt + 1) + ")." : "."));
         if (MinigameRequested != null) MinigameRequested(role);
@@ -380,6 +426,15 @@ public class FlightPhases : MonoBehaviour
         if (role == TrainingFocus.Engineering) return "Maintenance";
         if (role == TrainingFocus.Research) return "Research";
         return "None";
+    }
+
+    // Crew member of a minigame role, for the log ("pilot", "engineer", "scientist")
+    public static string CrewWord(TrainingFocus role)
+    {
+        if (role == TrainingFocus.Piloting) return "pilot";
+        if (role == TrainingFocus.Engineering) return "engineer";
+        if (role == TrainingFocus.Research) return "scientist";
+        return "crew";
     }
 
     // Text of an event for the mission control log

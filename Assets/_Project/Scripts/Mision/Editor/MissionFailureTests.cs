@@ -389,6 +389,62 @@ public static class MissionFailureTests
             Check("Invalid spacecraft aborts at departure, training cannot compensate",
                 gm.flight.failureCode == MissionFailureRules.DepartureFailure && gm.flight.aborted && screen.Finished);
 
+            // ---------- Task 45: flight plan limits ----------
+
+            // P1. A bad piloting event after the planned piloting does not open piloting again
+            gm.ResetGame();
+            p = NewFlight(temp, out screen);
+            int pilots = 0;
+            p.RegisterMinigame(TrainingFocus.Piloting, () => pilots++);
+            EventData weather = Event(false, TrainingFocus.Piloting, -2, 0f);
+            weather.probability = 1f;
+            weather.phase = EventPhase.Departure;
+            p.events = new List<EventData> { weather };
+            SetProgress(screen, 0.25f);
+            Tick(p);
+            p.CompleteMinigame(TrainingFocus.Piloting, 0.8f);
+            SetProgress(screen, 0.6f);
+            Tick(p);
+            Tick(p);
+            Check("P1 Bad event of a role that already played: points applied, no second minigame",
+                pilots == 1 && gm.eventsHappened.Contains(weather) && !screen.paused && p.PlayedThisPhase(TrainingFocus.Piloting));
+            Object.DestroyImmediate(weather);
+
+            // P2. The same role asked twice in one phase opens once
+            gm.ResetGame();
+            p = NewFlight(temp, out screen);
+            p.plannedMinigames.Clear();
+            int engineers = 0;
+            p.RegisterMinigame(TrainingFocus.Engineering, () => engineers++);
+            p.RequestMinigame(TrainingFocus.Engineering, EventSeverity.Minor, "Test A");
+            p.RequestMinigame(TrainingFocus.Engineering, EventSeverity.Minor, "Test B");
+            SetProgress(screen, 0.3f);
+            Tick(p);
+            p.CompleteMinigame(TrainingFocus.Engineering, 0.8f);
+            Tick(p);
+            Check("P2 One minigame per crew role per phase", engineers == 1 && !screen.paused);
+
+            // P3. At most maxMinigamesPerPhase (2) per phase; a new phase starts from zero
+            gm.ResetGame();
+            p = NewFlight(temp, out screen);
+            p.plannedMinigames.Clear();
+            int e3 = 0, p3 = 0, r3 = 0;
+            p.RegisterMinigame(TrainingFocus.Engineering, () => e3++);
+            p.RegisterMinigame(TrainingFocus.Piloting, () => p3++);
+            p.RegisterMinigame(TrainingFocus.Research, () => r3++);
+            p.RequestMinigame(TrainingFocus.Engineering, EventSeverity.Minor, "Test A");
+            p.RequestMinigame(TrainingFocus.Piloting, EventSeverity.Minor, "Test B");
+            p.RequestMinigame(TrainingFocus.Research, EventSeverity.Minor, "Test C");
+            SetProgress(screen, 0.3f);
+            Tick(p);
+            p.CompleteMinigame(TrainingFocus.Engineering, 0.8f);
+            Tick(p);
+            p.CompleteMinigame(TrainingFocus.Piloting, 0.8f);
+            Tick(p);
+            Check("P3 Third minigame in a phase is skipped", e3 == 1 && p3 == 1 && r3 == 0 && p.MinigamesThisPhase == 2 && !screen.paused);
+            screen.NextPhase(); // -> lunar orbit
+            Check("P3 A new phase starts with no minigames played", p.MinigamesThisPhase == 0 && !p.PlayedThisPhase(TrainingFocus.Engineering));
+
             // 20b. Normal ending without failure awards the milestones in order
             gm.ResetGame();
             p = NewFlight(temp, out screen);

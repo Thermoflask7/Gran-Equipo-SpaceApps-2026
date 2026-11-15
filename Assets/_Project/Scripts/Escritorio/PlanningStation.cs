@@ -66,6 +66,10 @@ public class PlanningStation : MonoBehaviour
     MaterialPropertyBlock mapBlock;
     float mapAlpha = 1f;
     float mapAlphaTarget = 1f;
+    LaunchSiteSelector launchSites;
+
+    /// <summary>The launch site markers on the map (created in Play mode if missing).</summary>
+    public LaunchSiteSelector LaunchSites => launchSites;
 
     void OnEnable()
     {
@@ -150,6 +154,8 @@ public class PlanningStation : MonoBehaviour
     {
         // The map is only shown while zoomed into the planning wall.
         if (!Application.isPlaying || map == null) return;
+        launchSites = map.GetComponent<LaunchSiteSelector>();
+        if (launchSites == null) launchSites = map.gameObject.AddComponent<LaunchSiteSelector>();
         mapAlpha = 0f;
         mapAlphaTarget = 0f;
         ApplyMapAlpha();
@@ -191,6 +197,7 @@ public class PlanningStation : MonoBehaviour
         r.GetPropertyBlock(mapBlock);
         mapBlock.SetColor(BaseColorId, new Color(1f, 1f, 1f, mapAlpha));
         r.SetPropertyBlock(mapBlock);
+        if (launchSites != null) launchSites.SetAlpha(mapAlpha);
     }
 
     bool IsPlanningHit(Transform hit)

@@ -38,7 +38,7 @@ Valid statuses: `pending`, `in progress`, `in PR`, `done`.
 | 24 | `01_Planeacion`: put the stations on the desk (folder, rocket model, globe + calendar, launch button + checklist) and open each one from its 3D object | P1 | Cristina (folder), Mateo (globe + calendar) | claude_c, Grok | Folder: `FolderStation` on `notepad` (PR #35, in the scene). Globe + calendar: planning wall in the scene (task 6). Still open: the `BotonLanzamiento` and `SpaceMart` prefabs exist but are not placed in `01_Planeacion`; rocket model waits for 9b | in progress |
 | 25 | `03_Resultados`: add the Results panel (**SpaceApps → Results screen → Add to open scene**) to the scene and test it at the end of the loop. `ResultsScreen` is still not in the scene file | P1 | unassigned | none | — | pending |
 | 26 | Locked missions (Mars, Europa) shown as "coming soon" (`DestinationData.locked`) | P1 | unassigned | none | — | pending |
-| 27 | Audio: music and sound effects, using the volumes in `SpaceOsSettings` | All | unassigned | none | — | pending |
+| 27 | (Manual, if time allows) Audio: music and sound effects, using the volumes in `SpaceOsSettings` | All | team (manual) | none | — | pending |
 | 28 | How to play: short tutorial or hints for first-time players (the judges) | P1 | unassigned | none | — | pending |
 | 29 | Full-loop playtest (Menu → Planning → Launch → Results) and bug fixes before the final build | All | unassigned | none | — | pending |
 | 30 | Space Apps submission: project page text, demo video, link to the WebGL build, and credits for NASA data and third-party assets | P1–P5 | unassigned | none | — | pending |
@@ -50,3 +50,7 @@ Valid statuses: `pending`, `in progress`, `in PR`, `done`.
 | 36 | SpaceMart: highlight the 2–3 critical resources of the current mission (for SLS Block 1: mass to the Moon and Orion Δv), as the challenge asks | P2 | unassigned | none | — | pending |
 | 37 | Local leaderboard for 1 to 4 players (how we cover the challenge's "1 to 4 players"): each player enters a name before planning, plays the mission in turns on the same computer, and the best scores are saved in PlayerPrefs (WebGL-safe) and shown in Results and the Menu | P1 | unassigned | none | — | pending |
 | 38 | (Optional, after the core tasks) Rocket model parts from human-made or NASA 3D models instead of primitives: our own low poly models (Blender) or NASA 3D Resources / CC0 packs (Kenney, Quaternius) in `Assets/ThirdParty/` with credits. `RocketView` gets one prefab field per part type (SLS Block 1 / 1B, crew module, service module, abort tower, extras) and keeps the primitives as fallback when a field is empty. Check WebGL size and the license of each model | P2 | unassigned | none | — | pending |
+| 39 | (Manual, if time allows) Make our own 3D models and use them in the scenes (desk, launch site, props) in place of the greybox / third-party ones. Rocket parts are covered by task 38 | All | team (manual) | none | — | pending |
+| 40 | (Manual, if time allows) SpaceOS Shut down button returns to the main menu (`00_Menu`) after a confirmation warning | P2 | team (manual) | none | — | pending |
+| 41 | (Manual, if time allows) Make the game more fun | All | team (manual) | none | — | pending |
+| 42 | (Manual, if time allows) Tune the game mechanics and economy, and refine the gameplay loop | All | team (manual) | none | — | pending |

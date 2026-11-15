@@ -38,6 +38,8 @@ public class PlanningStation : MonoBehaviour
     [SerializeField] float mapHeightOffset = 0.05f;
     [Tooltip("How far the map sits off the wall toward the camera, in meters.")]
     [SerializeField] float mapWallOffset = 0.01f;
+    [Tooltip("Seconds for the map to fade in when zooming and fade out when returning.")]
+    [SerializeField, Min(0f)] float mapFadeDuration = 1f;
 
     [Header("Zoom")]
     [Tooltip("1 = the map and calendar fill the view. Higher leaves a margin.")]
@@ -60,6 +62,10 @@ public class PlanningStation : MonoBehaviour
     public float ZoomFill { get { return zoomFill; } set { zoomFill = value; } }
 
     DeskCamera subscribed;
+    static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+    MaterialPropertyBlock mapBlock;
+    float mapAlpha = 1f;
+    float mapAlphaTarget = 1f;
 
     void OnEnable()
     {
@@ -94,6 +100,7 @@ public class PlanningStation : MonoBehaviour
 
     void Update()
     {
+        UpdateMapFade();
         if (IsOpen) return;
         var mouse = Mouse.current;
         if (mouse == null || !mouse.leftButton.wasPressedThisFrame) return;
@@ -142,12 +149,48 @@ public class PlanningStation : MonoBehaviour
     void Start()
     {
         // The map is only shown while zoomed into the planning wall.
-        if (Application.isPlaying) SetMapVisible(false);
+        if (!Application.isPlaying || map == null) return;
+        mapAlpha = 0f;
+        mapAlphaTarget = 0f;
+        ApplyMapAlpha();
+        map.gameObject.SetActive(false);
     }
 
+    /// <summary>Fade the map in (activating it first) or out (deactivating it at the end).</summary>
     void SetMapVisible(bool visible)
     {
-        if (map != null && map.gameObject.activeSelf != visible) map.gameObject.SetActive(visible);
+        if (map == null) return;
+        mapAlphaTarget = visible ? 1f : 0f;
+        if (visible && !map.gameObject.activeSelf)
+        {
+            map.gameObject.SetActive(true);
+            ApplyMapAlpha();
+        }
+        if (mapFadeDuration <= 0f)
+        {
+            mapAlpha = mapAlphaTarget;
+            ApplyMapAlpha();
+            if (!visible) map.gameObject.SetActive(false);
+        }
+    }
+
+    void UpdateMapFade()
+    {
+        if (map == null || Mathf.Approximately(mapAlpha, mapAlphaTarget)) return;
+        float step = mapFadeDuration > 0f ? Time.deltaTime / mapFadeDuration : 1f;
+        mapAlpha = Mathf.MoveTowards(mapAlpha, mapAlphaTarget, step);
+        ApplyMapAlpha();
+        if (mapAlpha <= 0f && mapAlphaTarget <= 0f) map.gameObject.SetActive(false);
+    }
+
+    void ApplyMapAlpha()
+    {
+        var r = map != null ? map.GetComponent<Renderer>() : null;
+        if (r == null) return;
+        if (mapBlock == null) mapBlock = new MaterialPropertyBlock();
+        r.GetPropertyBlock(mapBlock);
+        mapBlock.SetColor(BaseColorId, new Color(1f, 1f, 1f, mapAlpha));
+        r.SetPropertyBlock(mapBlock);
     }
 
     bool IsPlanningHit(Transform hit)

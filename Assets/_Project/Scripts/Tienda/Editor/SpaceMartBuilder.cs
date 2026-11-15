@@ -152,13 +152,13 @@ public static class SpaceMartBuilder
         TextMeshProUGUI name = CreateText(row.transform, "Name", "Part", 28, Color.white);
         name.fontStyle = FontStyles.Bold;
         name.alignment = TextAlignmentOptions.TopLeft;
-        name.overflowMode = TextOverflowModes.Ellipsis;
+        name.overflowMode = TextOverflowModes.Truncate;
         Stretch(name.rectTransform, new Vector2(0, 0.62f), Vector2.one, new Vector2(18, 0), new Vector2(-270, -10));
         item.nameText = name;
 
         TextMeshProUGUI info = CreateText(row.transform, "Info", "", 20, GrayText);
         info.alignment = TextAlignmentOptions.TopLeft;
-        info.overflowMode = TextOverflowModes.Ellipsis;
+        info.overflowMode = TextOverflowModes.Truncate;
         Stretch(info.rectTransform, Vector2.zero, new Vector2(1, 0.62f), new Vector2(18, 8), new Vector2(-270, 0));
         item.infoText = info;
 

@@ -28,6 +28,7 @@ public class SpaceMartApp : MonoBehaviour
     Image detailIcon;
     Button actionButton;
     readonly List<Image> tabImages = new List<Image>();
+    readonly List<GameObject> tabDots = new List<GameObject>(); // red dots, same order as SpaceMart.Filters
 
     string currentFilter = "All";
     PartData selected;
@@ -36,6 +37,8 @@ public class SpaceMartApp : MonoBehaviour
     static readonly Color TabOn = new Color(0.95f, 0.55f, 0.15f, 1f);
     static readonly Color CardColor = new Color(0.10f, 0.12f, 0.20f, 1f);
     static readonly Color PriceColor = new Color(1f, 0.85f, 0.40f);
+    static readonly Color RequiredColor = new Color(0.95f, 0.22f, 0.22f, 1f);
+    static Sprite dotSprite;
 
     void Awake() => Setup();
     void Start() => Setup();
@@ -162,6 +165,7 @@ public class SpaceMartApp : MonoBehaviour
         RefreshDetail();
         RefreshCart();
         RefreshCardBadges();
+        RefreshRequiredDots();
     }
 
     void RefreshDetail()
@@ -287,6 +291,40 @@ public class SpaceMartApp : MonoBehaviour
         }
     }
 
+    // Red dot on the tabs and cards of required types with no part bought yet
+    void RefreshRequiredDots()
+    {
+        for (int i = 0; i < tabDots.Count && i < SpaceMart.Filters.Length; i++)
+        {
+            bool missing = false;
+            foreach (PartType type in RocketAssembly.RequiredTypes)
+                if (SpaceMart.FilterOf(type) == SpaceMart.Filters[i] && IsRequiredMissing(type)) missing = true;
+            if (tabDots[i] != null) tabDots[i].SetActive(missing);
+        }
+
+        if (gridContent == null) return;
+        for (int i = 0; i < gridContent.childCount; i++)
+        {
+            Transform card = gridContent.GetChild(i);
+            Transform dot = card.Find("RequiredDot");
+            if (dot == null) continue;
+            string id = card.name.StartsWith("Item_") ? card.name.Substring(5) : "";
+            PartData part = FindPart(id);
+            dot.gameObject.SetActive(part != null && IsRequiredMissing(part.type));
+        }
+    }
+
+    // True if the type is required for launch and no part of that type was bought
+    static bool IsRequiredMissing(PartType type)
+    {
+        GameManager gm = GameManager.Instance;
+        if (gm == null) return false;
+        if (System.Array.IndexOf(RocketAssembly.RequiredTypes, type) < 0) return false;
+        foreach (PartData p in gm.boughtParts)
+            if (p != null && p.type == type) return false;
+        return true;
+    }
+
     PartData FindPart(string catalogId)
     {
         if (shop == null || shop.catalog == null) return null;
@@ -372,6 +410,15 @@ public class SpaceMartApp : MonoBehaviour
         moneyText.rectTransform.offsetMin = new Vector2(200f, 0f);
         moneyText.rectTransform.offsetMax = new Vector2(-64f, 0f);
 
+        var legend = CreateRect("RequiredLegend", title);
+        legend.anchorMin = legend.anchorMax = legend.pivot = new Vector2(0f, 0.5f);
+        legend.anchoredPosition = new Vector2(170f, 0f);
+        legend.sizeDelta = new Vector2(260f, 30f);
+        CreateDot(legend, new Vector2(0f, 0.5f), new Vector2(7f, 0f), 14f).SetActive(true);
+        var legendLabel = CreateText("Label", legend, "Required for launch", 16f, TextAlignmentOptions.MidlineLeft);
+        legendLabel.rectTransform.offsetMin = new Vector2(22f, 0f);
+        legendLabel.color = RequiredColor;
+
         var close = CreateButton("Close", title, new Color(0.75f, 0.20f, 0.20f, 1f));
         var closeRt = (RectTransform)close.transform;
         closeRt.anchorMin = closeRt.anchorMax = closeRt.pivot = new Vector2(1f, 0.5f);
@@ -393,6 +440,7 @@ public class SpaceMartApp : MonoBehaviour
         tabRow.childForceExpandWidth = true;
         tabRow.childForceExpandHeight = true;
         tabImages.Clear();
+        tabDots.Clear();
         for (int i = 0; i < SpaceMart.Filters.Length; i++)
         {
             string filter = SpaceMart.Filters[i];
@@ -404,6 +452,7 @@ public class SpaceMartApp : MonoBehaviour
             string captured = filter;
             tab.onClick.AddListener(() => SelectFilter(captured));
             tabImages.Add(tab.GetComponent<Image>());
+            tabDots.Add(CreateDot(tab.transform, new Vector2(1f, 1f), new Vector2(-9f, -9f), 12f));
         }
 
         var body = CreateRect("Body", window.transform);
@@ -579,6 +628,9 @@ public class SpaceMartApp : MonoBehaviour
         badge.rectTransform.offsetMax = new Vector2(-12f, 0f);
         badge.color = new Color(0.55f, 0.90f, 0.55f);
 
+        GameObject dot = CreateDot(card.transform, new Vector2(0f, 1f), new Vector2(12f, -12f), 16f);
+        dot.SetActive(IsRequiredMissing(part.type));
+
         PartData captured = part;
         card.onClick.AddListener(() => ShowDetail(captured));
     }
@@ -653,6 +705,40 @@ public class SpaceMartApp : MonoBehaviour
         scroll.scrollSensitivity = 40f;
         scroll.inertia = true;
         return content;
+    }
+
+    // Small red circle (inactive until RefreshRequiredDots turns it on)
+    static GameObject CreateDot(Transform parent, Vector2 anchor, Vector2 position, float size)
+    {
+        RectTransform rt = CreateImage("RequiredDot", parent, RequiredColor);
+        rt.anchorMin = rt.anchorMax = anchor;
+        rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.anchoredPosition = position;
+        rt.sizeDelta = new Vector2(size, size);
+        var image = rt.GetComponent<Image>();
+        image.sprite = DotSprite();
+        image.raycastTarget = false;
+        rt.gameObject.SetActive(false);
+        return rt.gameObject;
+    }
+
+    // Circle sprite made in code (the built-in Knob sprite is only reachable from the editor)
+    static Sprite DotSprite()
+    {
+        if (dotSprite != null) return dotSprite;
+        const int size = 32;
+        var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        tex.wrapMode = TextureWrapMode.Clamp;
+        float r = size / 2f;
+        for (int y = 0; y < size; y++)
+            for (int x = 0; x < size; x++)
+            {
+                float d = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), new Vector2(r, r));
+                tex.SetPixel(x, y, new Color(1f, 1f, 1f, Mathf.Clamp01(r - d)));
+            }
+        tex.Apply();
+        dotSprite = Sprite.Create(tex, new Rect(0f, 0f, size, size), new Vector2(0.5f, 0.5f));
+        return dotSprite;
     }
 
     static void Stretch(RectTransform rt, float left, float bottom, float right, float top)

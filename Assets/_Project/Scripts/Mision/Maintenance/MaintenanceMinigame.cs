@@ -13,16 +13,16 @@ using UnityEngine.UI;
 // While a system's panel is OK (no burned fuses / green zone / tuned / LEDs matched),
 // its bar rises; otherwise it drains.
 //
-// Use from the flight phases (task 11) or from an event with minigameRole = Engineering:
-//   launchScreen.paused = true;
-//   minigame.gameObject.SetActive(true);
-//   minigame.Completed += result => { GameManager.Instance.missionScore += result * 10; launchScreen.paused = false; };
-//   minigame.StartGame();   // or let the player press "Start"
+// Use from the flight phases (task 11): add MaintenanceFlightHook next to this component in 02_Lanzamiento.
+// It registers with FlightPhases for TrainingFocus.Engineering, opens this minigame and, on Completed, writes
+//   FlightPhases.SetResult(gm.flight, TrainingFocus.Engineering, minigame.RawResult); flightPhases.MinigameDone();
+// Never pass the Completed argument (FinalResult) to SetResult and never add to gm.missionScore by hand:
+// MissionScoring applies SkillMultiplier itself and recomputes missionScore from scratch (audit F08).
 //
 // Result:
-//   RawResult   = 0 to 1, how healthy the systems stayed on average (player performance only)
-//   FinalResult = RawResult * the engineer's SkillMultiplier (GDD rule)
-// The minigame does NOT add points to the GameManager: whoever opens it decides that.
+//   RawResult   = 0 to 1, how healthy the systems stayed on average (player performance only) -> goes to flight.repairResult
+//   FinalResult = RawResult * the engineer's SkillMultiplier (GDD rule), only for showing it on screen
+// The minigame does NOT touch the GameManager: MaintenanceFlightHook does.
 public class MaintenanceMinigame : MonoBehaviour
 {
     [Header("Systems (same order in every array)")]

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc8c89cd30f7dbc4e836729cb0331949, type: 3}
   m_Name: AST-E03
   m_EditorClassIdentifier: Assembly-CSharp::AstronautData
-  astronautName: "Renata Le\xF3n"
+  astronautName: "Leila Haddad"
   portrait: {fileID: 0}
   bio: Versatile instrumentation and operations engineer.
   research: 6

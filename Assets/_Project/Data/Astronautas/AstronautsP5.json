@@ -9,7 +9,7 @@
   "astronauts": [
     {
       "id": "AST-P01",
-      "astronautName": "Lucía Aranda",
+      "astronautName": "Amara Okafor",
       "bio": "Orbital maneuvering specialist who prioritizes flight procedures and independent cross-checks.",
       "research": 3,
       "piloting": 9,
@@ -20,7 +20,7 @@
     },
     {
       "id": "AST-P02",
-      "astronautName": "Daniel Ibarra",
+      "astronautName": "Kenji Watanabe",
       "bio": "Test pilot with fictional navigation experience who performs well under pressure.",
       "research": 4,
       "piloting": 8,
@@ -31,7 +31,7 @@
     },
     {
       "id": "AST-P03",
-      "astronautName": "Maya Torres",
+      "astronautName": "Ingrid Solberg",
       "bio": "Methodical navigator with strong problem-solving and trajectory-analysis skills.",
       "research": 5,
       "piloting": 7,
@@ -42,7 +42,7 @@
     },
     {
       "id": "AST-E01",
-      "astronautName": "Sofía Navarro",
+      "astronautName": "Priya Raman",
       "bio": "Systems engineer who identifies unexpected power loads and improves maintenance procedures.",
       "research": 4,
       "piloting": 5,
@@ -53,7 +53,7 @@
     },
     {
       "id": "AST-E02",
-      "astronautName": "Emilio Cruz",
+      "astronautName": "Tomás Herrera",
       "bio": "Electrical diagnostics specialist focused on mission-system support.",
       "research": 5,
       "piloting": 6,
@@ -64,7 +64,7 @@
     },
     {
       "id": "AST-E03",
-      "astronautName": "Renata León",
+      "astronautName": "Leila Haddad",
       "bio": "Versatile instrumentation and operations engineer.",
       "research": 6,
       "piloting": 5,
@@ -75,7 +75,7 @@
     },
     {
       "id": "AST-R01",
-      "astronautName": "Aina Mendoza",
+      "astronautName": "Mei Chen",
       "bio": "Lunar-observation researcher who carefully documents measurements.",
       "research": 9,
       "piloting": 4,
@@ -86,7 +86,7 @@
     },
     {
       "id": "AST-R02",
-      "astronautName": "Noah Salcedo",
+      "astronautName": "Jonas Becker",
       "bio": "Data analyst and researcher focused on radiation observations.",
       "research": 8,
       "piloting": 5,
@@ -97,7 +97,7 @@
     },
     {
       "id": "AST-R03",
-      "astronautName": "Valeria Campos",
+      "astronautName": "Aroha Ngata",
       "bio": "Scientist specializing in experiment selection and communication of results.",
       "research": 7,
       "piloting": 6,
@@ -108,7 +108,7 @@
     },
     {
       "id": "AST-M01",
-      "astronautName": "Alex Ríos",
+      "astronautName": "Alex Tremblay",
       "bio": "Mission specialist with balanced skills who can support any team.",
       "research": 7,
       "piloting": 7,

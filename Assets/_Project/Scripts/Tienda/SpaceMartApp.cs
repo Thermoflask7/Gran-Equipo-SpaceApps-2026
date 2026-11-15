@@ -415,8 +415,8 @@ public class SpaceMartApp : MonoBehaviour
     {
         var card = CreateButton("Item_" + item.id, gridContent, new Color(0.10f, 0.12f, 0.20f, 1f));
         var le = card.gameObject.AddComponent<LayoutElement>();
-        le.minHeight = 96f;
-        le.preferredHeight = 96f;
+        le.minHeight = 280f;
+        le.preferredHeight = 280f;
         le.flexibleWidth = 1f;
 
         var iconGo = new GameObject("Icono", typeof(RectTransform), typeof(Image));
@@ -425,29 +425,29 @@ public class SpaceMartApp : MonoBehaviour
         iconRt.anchorMin = new Vector2(0f, 0.5f);
         iconRt.anchorMax = new Vector2(0f, 0.5f);
         iconRt.pivot = new Vector2(0f, 0.5f);
-        iconRt.anchoredPosition = new Vector2(12f, 0f);
-        iconRt.sizeDelta = new Vector2(64f, 64f);
+        iconRt.anchoredPosition = new Vector2(16f, 0f);
+        iconRt.sizeDelta = new Vector2(160f, 160f);
         var icon = iconGo.GetComponent<Image>();
         icon.color = item.color;
         icon.raycastTarget = false;
 
         var name = CreateText("Nombre", card.transform, item.name, 22f, TextAlignmentOptions.MidlineLeft);
-        name.rectTransform.anchorMin = new Vector2(0f, 0.50f);
+        name.rectTransform.anchorMin = new Vector2(0f, 0.62f);
         name.rectTransform.anchorMax = new Vector2(1f, 1f);
-        name.rectTransform.offsetMin = new Vector2(88f, 0f);
+        name.rectTransform.offsetMin = new Vector2(196f, 0f);
         name.rectTransform.offsetMax = new Vector2(-12f, -6f);
 
         var spec = CreateText("Spec", card.transform, item.spec, 16f, TextAlignmentOptions.MidlineLeft);
-        spec.rectTransform.anchorMin = new Vector2(0f, 0.22f);
-        spec.rectTransform.anchorMax = new Vector2(1f, 0.55f);
-        spec.rectTransform.offsetMin = new Vector2(88f, 0f);
+        spec.rectTransform.anchorMin = new Vector2(0f, 0.28f);
+        spec.rectTransform.anchorMax = new Vector2(1f, 0.64f);
+        spec.rectTransform.offsetMin = new Vector2(196f, 0f);
         spec.rectTransform.offsetMax = new Vector2(-12f, 0f);
         spec.color = new Color(0.80f, 0.82f, 0.88f);
 
         var price = CreateText("Precio", card.transform, SpaceMartCatalog.FormatPrice(item.price), 18f, TextAlignmentOptions.MidlineLeft);
         price.rectTransform.anchorMin = new Vector2(0f, 0f);
-        price.rectTransform.anchorMax = new Vector2(1f, 0.28f);
-        price.rectTransform.offsetMin = new Vector2(88f, 6f);
+        price.rectTransform.anchorMax = new Vector2(1f, 0.30f);
+        price.rectTransform.offsetMin = new Vector2(196f, 6f);
         price.rectTransform.offsetMax = new Vector2(-12f, 0f);
         price.color = new Color(1f, 0.85f, 0.40f);
 

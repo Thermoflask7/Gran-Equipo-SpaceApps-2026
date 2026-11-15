@@ -220,6 +220,15 @@ public class GameManager : MonoBehaviour
         return missionRead && IsCrewReady() && rocketValid && IsLaunchPlanned();
     }
 
+    // Minimum to launch early, at the player's own risk: mission read, the 3 astronauts assigned
+    // (training optional), parts in the rocket (it may be invalid or badly designed) and launch site + date.
+    // What is missing is not blocked here: it hurts the flight and the score later.
+    public bool CanLaunchEarly()
+    {
+        return missionRead && pilot != null && engineer != null && scientist != null
+            && rocketParts.Count > 0 && IsLaunchPlanned();
+    }
+
     // ---------- Scenes ----------
 
     public void GoToScene(string sceneName)

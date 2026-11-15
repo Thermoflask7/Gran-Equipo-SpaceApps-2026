@@ -135,6 +135,7 @@ public static class Task18DataImporter
         Debug.Log("P5: imported " + a.astronauts.Length + " astronauts, "
             + e.events.Length + " events and " + selectable + " site(s)."
             + " Rocket parts and mission data were not changed.");
+        GameDataBuilder.Rebuild(); // so the game can find the new assets at runtime
     }
 
     static T Read<T>(string path) where T : class
@@ -177,7 +178,7 @@ public static class Task18DataImporter
     static List<string> Validate(AstronautFile a, EventsFileRoot e, SitesFileRoot s)
     {
         List<string> errors = new List<string>();
-        if (a.astronauts == null || a.astronauts.Length < 4) errors.Add("At least four astronaut candidates are required.");
+        if (a.astronauts == null || a.astronauts.Length < 3) errors.Add("At least three astronaut candidates are required.");
         if (e.events == null || e.events.Length == 0) errors.Add("No events were provided.");
         if (s.sites == null || s.sites.Length == 0) errors.Add("No launch sites were provided.");
         if (errors.Count > 0) return errors;

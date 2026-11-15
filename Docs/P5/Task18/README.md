@@ -41,7 +41,7 @@
 
 ### Two decisions for P1/P3
 
-1. **Fourth crew member:** `MisionArtemis.asset` requires four people; `GameManager.IsCrewReady()` currently checks only `pilot`, `engineer`, `scientist`, and their training. The dataset includes ten candidates, but the package does **not** add a fourth public field or alter readiness checks. P1/P3 should decide whether to use `reserves[0]` as a mission specialist or add a dedicated field. The selected crew must contain four unique candidates; do not modify the candidate ScriptableObjects at runtime.
+1. **Fourth crew member — resolved:** the team chose a **crew of 3** (`crewCount = 3`, see `Docs/P5/README.md` section 5), so nothing below is needed any more. Original note: `MisionArtemis.asset` required four people; `GameManager.IsCrewReady()` currently checks only `pilot`, `engineer`, `scientist`, and their training. The dataset includes ten candidates, but the package does **not** add a fourth public field or alter readiness checks. P1/P3 should decide whether to use `reserves[0]` as a mission specialist or add a dedicated field. The selected crew must contain four unique candidates; do not modify the candidate ScriptableObjects at runtime.
 2. **Globe site choices:** NASA uses LC-39B for Artemis SLS launches. Only LC-39B is imported as a playable site. LC-39A and Vandenberg are **non-playable informational references**. Do not depict them as certified SLS launch locations. Additional playable sites would require explicit agreement on a fictional simulation mode or a compatible launch vehicle.
 
 ### Wind, cloud cover, and precipitation
@@ -63,7 +63,7 @@ Events currently alter money, score, history, and may trigger a minigame based o
 - LC-39B: a **real** launch pad documented by NASA.
 - LC-39B coordinates: approximate historical NASA reference for the in-game globe.
 - Orion's capacity for four crew members is based on NASA material; all **candidate names, bios, and skills are fictional**.
-- The V13 educational NRHO mission (12 days, four crew) is **not** the actual Artemis II flight plan.
+- The V13 educational NRHO mission (12 days, crew of 3 in the game) is **not** the actual Artemis II flight plan.
 - The 14-day weather, event rates, and event bonuses are **fictional game parameters**, not NASA observations or predictions.
 
 Source links and classifications are in `QA/Sources_and_Classification.json`.

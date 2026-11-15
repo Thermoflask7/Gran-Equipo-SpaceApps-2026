@@ -158,18 +158,18 @@ public static class CatalogImporter
         mission.name = "MisionArtemis"; // same name as the asset so they can be compared
 
         mission.destinationName = "Crewed lunar orbit (Artemis)";
-        mission.description = "Take 4 astronauts in Orion to an orbit around the Moon (NRHO), collect data and return. Educational mission inspired by Artemis; it is not a real NASA mission.";
+        mission.description = "Take 3 astronauts in Orion to an orbit around the Moon (NRHO), collect data and return. Educational mission inspired by Artemis; it is not a real NASA mission.";
         mission.requiredDeltaV = 1060f; // 940 nominal (40 correction + 450 capture + 450 departure) + 120 reserve
         mission.missionDays = 12;
         mission.locked = false;
         mission.tliExtraMass = 682f;    // 26,536 at translunar injection - 25,854 after
-        mission.crewCount = 4;
+        mission.crewCount = 3;   // team decision: crew of 3 (pilot, engineer, scientist)
         mission.waterPerPersonDay = 2.5f;
         mission.oxygenPerPersonDay = 0.84f;
         mission.foodPerPersonDay = 0.75f;
-        mission.baseWaterKg = 135f;
-        mission.baseOxygenKg = 47f;
-        mission.baseFoodKg = 44f;
+        mission.baseWaterKg = 101.25f; // V13 values x 3/4 (crew of 3), keeps the V13 balance
+        mission.baseOxygenKg = 35.25f;
+        mission.baseFoodKg = 33f;
         mission.minSciencePoints = 40f;
         mission.maxDownlinkSeconds = 3600f;
 

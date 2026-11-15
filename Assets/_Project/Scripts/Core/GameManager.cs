@@ -67,6 +67,10 @@ public class GameManager : MonoBehaviour
         instance = this;
         DontDestroyOnLoad(gameObject);
         ResetGame();
+
+        // A GameManager created automatically (scene tested on its own) still gets the mission
+        GameData data = GameData.Instance;
+        if (mission == null && data != null) mission = data.mission;
     }
 
     // ---------- Game ----------
@@ -188,6 +192,18 @@ public class GameManager : MonoBehaviour
     }
 
     // ---------- Launch ----------
+
+    // Globe/calendar: chooses the site and the day (index in site.weatherRiskByDay) and sets weatherRisk.
+    // Returns false and changes nothing if the site is null or the day is out of range.
+    public bool SetLaunch(LaunchSiteData site, int day)
+    {
+        if (site == null || site.weatherRiskByDay == null) return false;
+        if (day < 0 || day >= site.weatherRiskByDay.Length) return false;
+        launchSite = site;
+        launchDay = day;
+        weatherRisk = Mathf.Clamp01(site.weatherRiskByDay[day]);
+        return true;
+    }
 
     public bool IsLaunchPlanned()
     {

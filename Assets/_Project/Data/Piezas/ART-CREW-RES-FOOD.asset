@@ -30,7 +30,7 @@ MonoBehaviour:
   maxMissionDays: 0
   waterKg: 0
   oxygenKg: 0
-  foodKg: 30
+  foodKg: 22.5
   sciencePoints: 0
   dataRateBps: 0
   experimentDataBits: 0

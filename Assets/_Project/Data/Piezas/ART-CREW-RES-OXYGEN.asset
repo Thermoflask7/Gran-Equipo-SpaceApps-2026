@@ -29,7 +29,7 @@ MonoBehaviour:
   crewCapacity: 0
   maxMissionDays: 0
   waterKg: 0
-  oxygenKg: 12
+  oxygenKg: 9
   foodKg: 0
   sciencePoints: 0
   dataRateBps: 0

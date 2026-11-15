@@ -13,19 +13,19 @@ MonoBehaviour:
   m_Name: MisionArtemis
   m_EditorClassIdentifier: Assembly-CSharp::DestinationData
   destinationName: Crewed lunar orbit (Artemis)
-  description: Take 4 astronauts in Orion to an orbit around the Moon (NRHO), collect data and return. Educational mission inspired by Artemis; it is not a real NASA mission.
+  description: Take 3 astronauts in Orion to an orbit around the Moon (NRHO), collect data and return. Educational mission inspired by Artemis; it is not a real NASA mission.
   launchDeltaV: 0
   requiredDeltaV: 1060
   maxMass: 0
   missionDays: 12
   locked: 0
   tliExtraMass: 682
-  crewCount: 4
+  crewCount: 3
   waterPerPersonDay: 2.5
   oxygenPerPersonDay: 0.84
   foodPerPersonDay: 0.75
-  baseWaterKg: 135
-  baseOxygenKg: 47
-  baseFoodKg: 44
+  baseWaterKg: 101.25
+  baseOxygenKg: 35.25
+  baseFoodKg: 33
   minSciencePoints: 40
   maxDownlinkSeconds: 3600

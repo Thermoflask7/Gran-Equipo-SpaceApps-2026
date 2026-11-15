@@ -35,7 +35,7 @@
     "REAL_FACILITY": "A real location identified in NASA sources; names and approximate coordinates are used.",
     "FICTIONAL_GAME_DESIGN": "Names, biographies, skills, events, probabilities, and scores created for the game.",
     "SYNTHETIC_EDUCATIONAL_SCENARIO": "Invented 14-day weather risks, wind and cloud data used to test the calendar; not measurements or forecasts.",
-    "GAME_MISSION_BASE": "The team's educational Artemis V13 mission with a four-person crew and 12-day duration; not an actual Artemis II flight."
+    "GAME_MISSION_BASE": "The team's educational Artemis V13 mission with a three-person crew (team decision) and 12-day duration; not an actual Artemis II flight."
   },
   "repoCommit": "e290427ba958770bfacb43f2f49d1e005f89866c"
 }

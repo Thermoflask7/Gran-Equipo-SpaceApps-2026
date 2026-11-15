@@ -9,7 +9,7 @@ P = {p["id"]: p for p in json.load(open(os.path.join(ROOT, "Assets/_Project/Data
 G0 = 9.80665
 OPTIONAL = [i for i, p in P.items() if p["type"] not in ("Capsule", "ServiceModule", "AbortSystem", "LaunchService")]
 LAUNCHERS = ["ART-SLS-BLOCK1", "ART-SLS-BLOCK1B"]
-MISSION = dict(crew=4, water=2.5, oxygen=0.84, food=0.75, base_water=135, base_oxygen=47, base_food=44,
+MISSION = dict(crew=3, water=2.5, oxygen=0.84, food=0.75, base_water=101.25, base_oxygen=35.25, base_food=33,
                tli_extra=682, dv=1060, science=40, downlink_s=3600, outage_h=1.5)
 
 def problems(ids, days, budget=3400):

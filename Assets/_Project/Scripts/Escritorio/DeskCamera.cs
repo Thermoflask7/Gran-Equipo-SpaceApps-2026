@@ -34,6 +34,7 @@ public class DeskCamera : MonoBehaviour
 
     [Tooltip("Escape regresa al escritorio cuando esta enfocada.")]
     [SerializeField] bool escapeReturns = true;
+    public bool EscapeReturns { get { return escapeReturns; } set { escapeReturns = value; } } // TutorialPopup turns it off while open
 
     [Header("Eventos")]
     public UnityEvent onFocused;   // llego al objetivo

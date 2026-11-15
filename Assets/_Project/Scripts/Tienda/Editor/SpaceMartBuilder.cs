@@ -7,13 +7,16 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
-// Unity menus for the SpaceMart app (task 8):
+// Unity menus for the standalone SpaceMart prefab (task 8, tests only).
+// The live in-game front-end is SpaceMartApp on the desk PC (SpaceApps > Build desk PC).
+// Do not add this prefab to 01_Planeacion: that would be a second shop UI.
 //   SpaceApps > SpaceMart > Create prefab
 //       Creates Assets/_Project/Prefabs/SpaceMart.prefab with every part in Data/Piezas
 //       and the Artemis mission, with category tabs on top of the list.
 //       It can be run again (for example after importing the catalog).
 //   SpaceApps > SpaceMart > Add to open scene
 //       Puts the prefab inside the Canvas of the open scene (creates a Canvas and an EventSystem if missing).
+//       Blocked in 01_Planeacion and in any scene that already has SpaceMartApp.
 //   SpaceApps > SpaceMart > Test: reset game
 //       Play mode only: gives back the starting credits and empties the cart.
 public static class SpaceMartBuilder
@@ -152,13 +155,13 @@ public static class SpaceMartBuilder
         TextMeshProUGUI name = CreateText(row.transform, "Name", "Part", 28, Color.white);
         name.fontStyle = FontStyles.Bold;
         name.alignment = TextAlignmentOptions.TopLeft;
-        name.overflowMode = TextOverflowModes.Ellipsis;
+        name.overflowMode = TextOverflowModes.Truncate;
         Stretch(name.rectTransform, new Vector2(0, 0.62f), Vector2.one, new Vector2(18, 0), new Vector2(-270, -10));
         item.nameText = name;
 
         TextMeshProUGUI info = CreateText(row.transform, "Info", "", 20, GrayText);
         info.alignment = TextAlignmentOptions.TopLeft;
-        info.overflowMode = TextOverflowModes.Ellipsis;
+        info.overflowMode = TextOverflowModes.Truncate;
         Stretch(info.rectTransform, Vector2.zero, new Vector2(1, 0.62f), new Vector2(18, 8), new Vector2(-270, 0));
         item.infoText = info;
 
@@ -195,6 +198,22 @@ public static class SpaceMartBuilder
     [MenuItem("SpaceApps/SpaceMart/Add to open scene")]
     static void AddToScene()
     {
+        var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+        if (scene.IsValid() && scene.path.Replace("\\", "/").EndsWith("01_Planeacion.unity"))
+        {
+            EditorUtility.DisplayDialog("SpaceMart",
+                "The in-monitor SpaceOS window (SpaceMartApp) is the shop front-end in 01_Planeacion. The standalone prefab is only for tests in other scenes.",
+                "OK");
+            return;
+        }
+        if (Object.FindAnyObjectByType<SpaceMartApp>() != null)
+        {
+            EditorUtility.DisplayDialog("SpaceMart",
+                "This scene already has SpaceMartApp, the in-monitor SpaceOS front-end. The standalone prefab was not added.",
+                "OK");
+            return;
+        }
+
         GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
         if (prefab == null)
         {

@@ -19,7 +19,8 @@ Valid statuses: `pending`, `in progress`, `in PR`, `done`.
 | 6 | Globe + calendar (site, weather, wind) | P3 | Mateo | Grok | `feat/mateo/globo-calendario` | in progress |
 | 7 | Computer: app desktop, settings and shut down | P2 | Mateo | Grok | `pantalla-escritorio` | in progress |
 | 8 | Computer: SpaceMart app (buy parts) | P2 | Elena | Claude | `ia/claude/spacemart` (done, PR #18) + `ia/claude/spacemart-filters` (category tabs) | in PR |
-| 9 | Rocket model: assembly with purchased parts | P2 | Cristina (logic only; the prefab/UI is still unassigned) | claude_c | `ia/claude_c/rocket-assembly` (logic: `RocketAssembly`) | in progress |
+| 9a | Rocket model logic: `RocketAssembly` (mount bought parts, `rocketValid`) | P2 | Cristina | claude_c | `ia/claude_c/rocket-assembly` (PR #23, 25/25 tests OK in Unity) | done |
+| 9b | Rocket model: prefab, UI and 3D model (calls `RocketAssembly`) | P2 | unassigned | none | — | pending |
 | 10 | `02_Lanzamiento`: split screen (2D mission control + 3D rocket) | P4 | Mateo | Grok | `feat/mateo/lanzamiento` | in progress |
 | 11 | Flight phases: departure, lunar orbit, return | P4 | unassigned | none | — | pending |
 | 12 | Piloting minigame | P4 | KvotheGuile | Claude-M | `ia/claude-m/pilotaje` | pending |

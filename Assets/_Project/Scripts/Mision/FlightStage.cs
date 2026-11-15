@@ -1,7 +1,7 @@
-// Lo que muestra la vista 3D (mitad derecha) de 02_Lanzamiento. Ver LaunchScreen.
-//   Liftoff: acercamiento, la camara sigue al cohete despegando y saliendo de la atmosfera (inicio de la fase Salida).
-//   Transit: vista general de la ruta Tierra -> Luna -> Tierra (resto de Salida, Orbita lunar y la primera parte de Retorno).
-//   Landing: acercamiento, la camara sigue a la capsula en la reentrada hasta el amerizaje (final de la fase Retorno).
+// What the 3D view (right half) of 02_Lanzamiento shows. See LaunchScreen.
+//   Liftoff: close-up, the camera follows the rocket lifting off and leaving the atmosphere (start of the Departure phase).
+//   Transit: overview of the Earth -> Moon -> Earth route (rest of Departure, Lunar orbit and the first part of Return).
+//   Landing: close-up, the camera follows the capsule through reentry to splashdown (end of the Return phase).
 public enum FlightStage
 {
     Liftoff,

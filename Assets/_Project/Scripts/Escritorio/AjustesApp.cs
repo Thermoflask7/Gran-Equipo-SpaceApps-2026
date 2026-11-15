@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// SpaceOS Settings app: audio, graphics, controls and about.
-/// Se registra con ComputerDesktop.RegisterApp("ajustes") y construye su UI en runtime.
+/// Registers with ComputerDesktop.RegisterApp("ajustes") and builds its UI at runtime.
 /// </summary>
 public class AjustesApp : MonoBehaviour
 {
@@ -273,7 +273,7 @@ public class AjustesApp : MonoBehaviour
     GameObject BuildAudioPanel(RectTransform body)
     {
         var content = CreateScrollContent(body, "Audio");
-        CreateSectionLabel(content, "Volumen");
+        CreateSectionLabel(content, "Volume");
         CreateVolumeSlider(content, "Master", SpaceOsSettings.MasterVolume, v =>
         {
             SpaceOsSettings.MasterVolume = v;
@@ -296,8 +296,8 @@ public class AjustesApp : MonoBehaviour
     GameObject BuildGraphicsPanel(RectTransform body)
     {
         var content = CreateScrollContent(body, "Graphics");
-        CreateSectionLabel(content, "Calidad y pantalla");
-        qualityValue = CreateCycleRow(content, "Calidad", CurrentQualityName(), () => CycleQuality(-1), () => CycleQuality(1));
+        CreateSectionLabel(content, "Quality and display");
+        qualityValue = CreateCycleRow(content, "Quality", CurrentQualityName(), () => CycleQuality(-1), () => CycleQuality(1));
         fullscreenValue = CreateToggleRow(content, "Fullscreen", () => SpaceOsSettings.Fullscreen, on =>
         {
             SpaceOsSettings.Fullscreen = on;
@@ -326,7 +326,7 @@ public class AjustesApp : MonoBehaviour
         }, out sensitivitySlider, out sensitivityValue, v => v.ToString("0.00") + "x");
         CreateHint(content, "Sensitivity is stored in SpaceOsSettings.CameraSensitivity for stations that move the camera.");
         CreateSectionLabel(content, "Current controls");
-        CreateInfoLine(content, "Clic izquierdo", "Seleccionar objetos e iconos, y arrastrar deslizadores.");
+        CreateInfoLine(content, "Left click", "Select objects and icons, and drag sliders.");
         CreateInfoLine(content, "Esc", "Close the station and return to the desk.");
         CreateInfoLine(content, "Mouse wheel", "Scroll lists and windows (SpaceMart, Settings).");
         CreateInfoLine(content, "Back", "Button in the SpaceOS corner; same action as Esc.");
@@ -336,21 +336,18 @@ public class AjustesApp : MonoBehaviour
     GameObject BuildInfoPanel(RectTransform body)
     {
         var content = CreateScrollContent(body, "About");
-        CreateSectionLabel(content, "El juego");
-        CreateInfoLine(content, "Title", "Gran Equipo");
-        CreateInfoLine(content, "Team", "Gran Equipo – NASA Space Apps 2026");
-        CreateInfoLine(content, "Reto", "Space Mission Design Game");
+        CreateSectionLabel(content, "The game");
+        CreateInfoLine(content, "Title", "Space Mission Simulator Astra");
+        CreateInfoLine(content, "Team", "Gran Equipo");
+        CreateInfoLine(content, "Challenge", "Space mission design game");
         CreateInfoLine(content, "Version", Application.version);
         CreateInfoLine(content, "Unity", Application.unityVersion);
-        CreateInfoLine(content, "Plataforma", Application.platform.ToString());
+        CreateInfoLine(content, "Platform", Application.platform.ToString());
         CreateSectionLabel(content, "Description");
-        CreateParagraph(content, "Educational game about designing a crewed lunar-orbit mission, inspired by Artemis, for the NASA Space Apps Challenge 2026. From the planning desk you buy parts, assemble the rocket and launch the mission.");
+        CreateParagraph(content, "Educational game about designing a crewed lunar-orbit mission, inspired by real Moon missions. From the planning desk you buy parts, assemble the rocket and launch the mission.");
         CreateSectionLabel(content, "Credits");
         CreateInfoLine(content, "Team", "Gran Equipo");
-        CreateInfoLine(content, "Programming", "To be decided");
-        CreateInfoLine(content, "Art", "To be decided");
-        CreateInfoLine(content, "Audio", "To be decided");
-        CreateInfoLine(content, "Agradecimientos", "NASA Space Apps Challenge 2026");
+        CreateInfoLine(content, "Members", "Mateo Zaragoza, Mar Fr\u00edas, Cristina Mendoza, Fer Gautr\u00edn, Elena Fierros");
         return content.parent.parent.gameObject;
     }
 

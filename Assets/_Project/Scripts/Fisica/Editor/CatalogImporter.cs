@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEngine;
 
 // Imports Cristina's catalog (Data/Catalogo/CatalogoArtemis.json) as ScriptableObjects.
-// Menu: SpaceApps -> Import Artemis catalog.
+// Menu: SpaceApps -> Import mission catalog.
 //   - Creates or updates one PartData per part in Data/Piezas (file = catalog id).
 //     If the asset already exists, its values are updated and the GUID is kept (references do not break).
 //   - Creates the mission Data/Destinos/MisionArtemis.asset (Cristina's mission V13) if it does not exist.
@@ -49,7 +49,7 @@ public static class CatalogImporter
         public float experimentDataBits;
     }
 
-    [MenuItem("SpaceApps/Import Artemis catalog")]
+    [MenuItem("SpaceApps/Import mission catalog")]
     public static void Import()
     {
         TextAsset json = AssetDatabase.LoadAssetAtPath<TextAsset>(CatalogPath);
@@ -105,7 +105,7 @@ public static class CatalogImporter
 
         ImportMission(false);
         AssetDatabase.SaveAssets();
-        Debug.Log("Artemis catalog imported: " + count + " parts in " + PartsFolder + " and the mission in " + MissionPath);
+        Debug.Log("Mission catalog imported: " + count + " parts in " + PartsFolder + " and the mission in " + MissionPath);
     }
 
     [MenuItem("SpaceApps/Restore V13 mission")]

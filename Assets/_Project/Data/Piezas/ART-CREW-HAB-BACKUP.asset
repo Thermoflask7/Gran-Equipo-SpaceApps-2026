@@ -15,7 +15,7 @@ MonoBehaviour:
   catalogId: ART-CREW-HAB-BACKUP
   partName: Crew-life-support redundancy upgrade (fictional)
   type: 10
-  description: Optional extra resilience and maintenance margin, not replacement for Orion life support.
+  description: Optional extra resilience and maintenance margin, not a replacement for the capsule's life support.
   icon: {fileID: 0}
   price: 150
   dryMass: 130

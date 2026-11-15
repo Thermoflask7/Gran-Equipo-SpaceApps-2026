@@ -232,8 +232,8 @@ public class RocketModel : MonoBehaviour
 
     public static string RequiredName(PartType type)
     {
-        if (type == PartType.LaunchService) return "an SLS launcher";
-        if (type == PartType.Capsule) return "the Orion crew module";
+        if (type == PartType.LaunchService) return "a heavy launcher";
+        if (type == PartType.Capsule) return "the crew capsule";
         if (type == PartType.ServiceModule) return "the service module";
         if (type == PartType.AbortSystem) return "the launch abort system";
         return type.ToString();

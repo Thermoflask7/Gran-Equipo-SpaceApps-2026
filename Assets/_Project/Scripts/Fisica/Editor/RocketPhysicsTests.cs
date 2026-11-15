@@ -34,7 +34,7 @@ public static class RocketPhysicsTests
         // 1. PASS_BLOCK1_OBSERVATION
         List<PartData> p1 = Parts("ART-SLS-BLOCK1", "ART-COMMS-DS", "ART-SCI-LUNAR", "ART-SCI-RAD");
         Near("1 Block 1 observation: mass at translunar injection", RocketPhysics.TliMass(p1, mission12), 26660f);
-        Near("1 Block 1 observation: SLS margin", RocketPhysics.DeliveryMargin(p1, mission12), 340f);
+        Near("1 Block 1 observation: launcher margin", RocketPhysics.DeliveryMargin(p1, mission12), 340f);
         Near("1 Block 1 observation: spacecraft dv", RocketPhysics.SpacecraftDeltaV(p1), 1103.27f);
         Near("1 Block 1 observation: 460 credits left", Budget - RocketPhysics.TotalPrice(p1), 460f);
         Near("1 Block 1 observation: 48 science points", RocketPhysics.SciencePoints(p1), 48f);
@@ -105,7 +105,7 @@ public static class RocketPhysicsTests
         return AssetDatabase.LoadAssetAtPath<PartData>("Assets/_Project/Data/Piezas/" + id + ".asset");
     }
 
-    // Mandatory Orion (capsule, service module, abort tower) + the parts passed in.
+    // Mandatory spacecraft (capsule, service module, abort tower) + the parts passed in.
     static List<PartData> Parts(params string[] ids)
     {
         List<PartData> list = new List<PartData> { Part("ART-CM-ORION"), Part("ART-ESM-ORION"), Part("ART-LAS-ORION") };

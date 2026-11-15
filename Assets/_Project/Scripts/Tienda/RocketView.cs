@@ -3,10 +3,10 @@ using UnityEngine;
 
 // Low poly rocket of the rocket model screen (task 9b, P2). RocketModel puts it in a hidden studio and films it. Low poly, built from Unity primitives at runtime.
 // It draws gm.rocketParts and redraws by itself when they change:
-//   stand (always) -> SLS (4 RS-25 engines, orange core stage with intertank band, 2 boosters, stage adapter + ICPS;
-//   Block 1B: Exploration Upper Stage) -> Orion European service module with 4 solar wings in an X
+//   stand (always) -> launcher (4 core engines, orange core stage with intertank band, 2 boosters, stage adapter + upper stage;
+//   Block 1B: bigger upper stage) -> service module with 4 solar wings in an X
 //   -> crew module (cut cone, heat shield) -> launch abort system (fairing, tower, nose).
-// Proportions from the real vehicle at 1 unit = 10 m (SLS Block 1 crew ~98 m tall).
+// Proportions from the real vehicle at 1 unit = 10 m (standard launcher crew ~98 m tall).
 //   Optional parts (modules, science, antenna, battery) go as small blocks around the service module.
 // Parts that are not mounted are not drawn, so the player sees the rocket grow.
 // Local units: about 10.5 tall with everything mounted. If the object has a BoxCollider it is resized to the model.
@@ -15,7 +15,7 @@ public class RocketView : MonoBehaviour
     public float spinSpeed = 12f; // degrees per second, 0 = still
 
     static readonly Color StandColor = new Color(0.25f, 0.25f, 0.28f);
-    static readonly Color CoreColor = new Color(0.9f, 0.5f, 0.15f);   // SLS orange foam
+    static readonly Color CoreColor = new Color(0.9f, 0.5f, 0.15f);   // launcher orange foam
     static readonly Color WhiteColor = new Color(0.92f, 0.92f, 0.9f);
     static readonly Color GreyColor = new Color(0.6f, 0.62f, 0.66f);
     static readonly Color PanelColor = new Color(0.15f, 0.25f, 0.6f);
@@ -59,22 +59,22 @@ public class RocketView : MonoBehaviour
         model.SetParent(transform, false);
         model.localEulerAngles = new Vector3(0f, angle, 0f);
 
-        // Scale: 1 unit = 10 m, proportions from the real SLS Block 1 (crew) and Orion
+        // Scale: 1 unit = 10 m, proportions from the real standard launcher (crew) and spacecraft
         float y = 0f;
         Cylinder("Stand", 0f, y, 0f, 1.2f, 0.15f, StandColor);
         y += 0.15f;
 
-        PartData sls = Find(parts, PartType.LaunchService);
-        if (sls != null)
+        PartData launcherPart = Find(parts, PartType.LaunchService);
+        if (launcherPart != null)
         {
-            bool block1B = sls.payloadCapacity > 30000f || (sls.catalogId != null && sls.catalogId.Contains("1B"));
+            bool block1B = launcherPart.payloadCapacity > 30000f || (launcherPart.catalogId != null && launcherPart.catalogId.Contains("1B"));
 
-            // 4 RS-25 engines under the core stage
+            // 4 core engines under the core stage
             for (int i = 0; i < 4; i++)
             {
                 float ex = (i % 2 == 0 ? -1f : 1f) * 0.15f;
                 float ez = (i < 2 ? -1f : 1f) * 0.15f;
-                Cone("RS-25 engine " + (i + 1), ex, y, ez, 0.1f, 0.35f, DarkColor, 0.045f);
+                Cone("Core engine " + (i + 1), ex, y, ez, 0.1f, 0.35f, DarkColor, 0.045f);
             }
             y += 0.35f;
 
@@ -96,7 +96,7 @@ public class RocketView : MonoBehaviour
 
             if (block1B)
             {
-                // Exploration Upper Stage (as wide as the core) + universal stage adapter
+                // bigger upper stage (as wide as the core) + universal stage adapter
                 Cylinder("Exploration upper stage", 0f, y, 0f, 0.42f, 1.3f, WhiteColor);
                 y += 1.3f;
                 Cone("Universal stage adapter", 0f, y, 0f, 0.42f, 0.6f, GreyColor, 0.27f);
@@ -104,12 +104,12 @@ public class RocketView : MonoBehaviour
             }
             else
             {
-                // Launch vehicle stage adapter (8.4 m -> 5 m) + ICPS + Orion stage adapter
+                // Launch vehicle stage adapter (8.4 m -> 5 m) + upper stage + spacecraft stage adapter
                 Cone("Stage adapter", 0f, y, 0f, 0.42f, 0.6f, WhiteColor, 0.25f);
                 y += 0.6f;
-                Cylinder("Interim upper stage (ICPS)", 0f, y, 0f, 0.25f, 0.9f, WhiteColor);
+                Cylinder("Upper stage", 0f, y, 0f, 0.25f, 0.9f, WhiteColor);
                 y += 0.9f;
-                Cylinder("Orion stage adapter", 0f, y, 0f, 0.27f, 0.15f, GreyColor);
+                Cylinder("Spacecraft adapter", 0f, y, 0f, 0.27f, 0.15f, GreyColor);
                 y += 0.15f;
             }
         }
@@ -117,7 +117,7 @@ public class RocketView : MonoBehaviour
         float serviceY = y;
         if (Find(parts, PartType.ServiceModule) != null)
         {
-            // European service module: 5.2 m wide, ~4 m tall, 4 solar wings in an X (~19 m span)
+            // service module: 5.2 m wide, ~4 m tall, 4 solar wings in an X (~19 m span)
             Cylinder("Service module", 0f, y, 0f, 0.26f, 0.4f, SilverColor);
             Cylinder("Crew module adapter", 0f, y + 0.4f, 0f, 0.255f, 0.08f, GreyColor);
             for (int i = 0; i < 4; i++)

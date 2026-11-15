@@ -3,12 +3,12 @@
   "datasetType": "launch_sites_and_synthetic_weather",
   "sourceRepoCommit": "e290427ba958770bfacb43f2f49d1e005f89866c",
   "sourceClass": "MIXED_REAL_LOCATION_AND_FICTIONAL_WEATHER",
-  "notes": "Only one real SLS launch site is selectable. The current physics model does not verify launch-site certification or real forecasts. The UI can read illustrative wind metadata from this JSON; the existing ScriptableObject only stores the 14 daily risk values.",
+  "notes": "Only one real launch site is selectable. The current physics model does not verify launch-site certification or real forecasts. The UI can read illustrative wind metadata from this JSON; the existing ScriptableObject only stores the 14 daily risk values.",
   "sites": [
     {
       "id": "SITE-KSC-LC39B",
-      "siteName": "Kennedy Space Center - LC-39B",
-      "description": "Real launch pad used for Artemis SLS missions. The 14 days of weather risk and wind data are fictional game scenarios, NOT forecasts or launch authorization.",
+      "siteName": "Merritt Island, Pad 39B",
+      "description": "Real launch pad on the Florida coast used for crewed Moon missions. The 14 days of weather risk and wind data are fictional game scenarios, NOT forecasts or launch authorization.",
       "latitude": 28.627306,
       "longitude": -80.620869,
       "isSelectable": true,
@@ -157,25 +157,25 @@
           "classification": "SYNTHETIC_EDUCATIONAL_SCENARIO"
         }
       ],
-      "coordinatesProvenance": "NASA Apollo/Saturn V AS-505 Postflight Trajectory report; approximate historical LC-39B coordinates.",
+      "coordinatesProvenance": "Historical post-flight trajectory report; approximate historical LC-39B coordinates.",
       "locationClass": "REAL_FACILITY",
       "weatherClass": "SYNTHETIC_EDUCATIONAL_SCENARIO"
     }
   ],
   "referenceOnlyLocations": [
     {
-      "name": "Kennedy Space Center - LC-39A",
+      "name": "Merritt Island, Pad 39A",
       "category": "REAL_NON_SLS_REFERENCE",
       "isSelectable": false,
       "supportsSLS": false,
-      "note": "Real launch pad, but not the site adopted for the SLS Artemis game model. Informational comparison only; not imported as a playable site."
+      "note": "Real launch pad, but not the site adopted for the game model. Informational comparison only; not imported as a playable site."
     },
     {
       "name": "Vandenberg Space Force Base",
       "category": "REAL_NON_SLS_REFERENCE",
       "isSelectable": false,
       "supportsSLS": false,
-      "note": "Real launch center, but NOT compatible with the SLS configuration in this game without major architectural changes. Informational comparison only; not imported."
+      "note": "Real launch center, but NOT compatible with the heavy launcher in this game without major architectural changes. Informational comparison only; not imported."
     }
   ]
 }

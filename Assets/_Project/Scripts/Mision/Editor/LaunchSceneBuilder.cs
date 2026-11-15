@@ -32,7 +32,7 @@ public static class LaunchSceneBuilder
     const string ScenePath = "Assets/_Project/Scenes/" + Scenes.Launch + ".unity";
     const string MaterialFolder = "Assets/_Project/Art/Materiales/Lanzamiento";
 
-    // Objetos raiz que crea este menu (y los del greybox inicial que reemplaza)
+    // Root objects this menu creates (and the ones of the first greybox it replaces)
     static readonly string[] Generated =
     {
         "Main Camera", "Directional Light", "Canvas",
@@ -107,13 +107,13 @@ public static class LaunchSceneBuilder
         lightGo.transform.rotation = Quaternion.Euler(40f, -60f, 0f);
 
         Camera leftCam = CreateCamera("CamaraControlMision", new Rect(0f, 0f, 0.5f, 1f), PanelColor, 0f);
-        leftCam.cullingMask = 0; // no dibuja objetos 3D; la UI de la izquierda va en el Canvas
+        leftCam.cullingMask = 0; // draws no 3D objects; the left UI goes on the Canvas
 
         Camera rightCam = CreateCamera("CamaraCohete", new Rect(0.5f, 0f, 0.5f, 1f), Color.black, 1f);
         rightCam.gameObject.tag = "MainCamera";
         rightCam.gameObject.AddComponent<AudioListener>();
         rightCam.fieldOfView = 60f;
-        rightCam.farClipPlane = 2000f; // los acercamientos usan planetas grandes (radio 400)
+        rightCam.farClipPlane = 2000f; // the close-ups use big planets (radius 400)
         rightCam.transform.position = new Vector3(7f, 14f, -14f);
         rightCam.transform.LookAt(new Vector3(7f, 0f, 0f));
 
@@ -130,14 +130,14 @@ public static class LaunchSceneBuilder
         path.widthMultiplier = 0.06f;
         path.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         path.receiveShadows = false;
-        // La ruta usa URP/Unlit (si existe) para que se vea igual sin importar la luz
+        // The route uses URP/Unlit (if it exists) so it looks the same whatever the light
         path.sharedMaterial = MakeMaterial("Ruta", new Color(0.5f, 0.55f, 0.65f), rocket.GetComponent<Renderer>().sharedMaterial,
             Shader.Find("Universal Render Pipeline/Unlit"));
 
         // ---------- Acercamientos: despegue y amerizaje ----------
         Shader unlit = Shader.Find("Universal Render Pipeline/Unlit");
 
-        // Despegue: superficie (esfera grande, se ve la curva al subir), plataforma, torre, nubes y cohete grande
+        // Liftoff: ground (big sphere, the curve shows while climbing), pad, tower, clouds and big rocket
         Transform liftoff = new GameObject("Despegue").transform;
         liftoff.position = new Vector3(1000f, 0f, 0f);
         CreateBody(PrimitiveType.Sphere, "Superficie", liftoff, new Vector3(0f, -400f, 0f), Vector3.one * 800f, "TierraCerca", new Color(0.25f, 0.5f, 0.3f));
@@ -155,7 +155,7 @@ public static class LaunchSceneBuilder
         CreateBody(PrimitiveType.Capsule, "Cuerpo", closeRocket, new Vector3(0f, 5f, 0f), new Vector3(1.5f, 5f, 1.5f), "Cohete", new Color(1f, 0.55f, 0.15f));
         Transform flame = CreateBody(PrimitiveType.Sphere, "Llama", closeRocket, new Vector3(0f, -1.2f, 0f), new Vector3(1.3f, 3f, 1.3f), "Llama", new Color(1f, 0.75f, 0.2f), unlit);
 
-        // Amerizaje: oceano (esfera grande), capsula con plasma de reentrada y paracaidas
+        // Splashdown: ocean (big sphere), capsule with reentry plasma and parachutes
         Transform landing = new GameObject("Amerizaje").transform;
         landing.position = new Vector3(-1000f, 0f, 0f);
         CreateBody(PrimitiveType.Sphere, "Oceano", landing, new Vector3(0f, -400f, 0f), Vector3.one * 800f, "Oceano", new Color(0.1f, 0.3f, 0.6f));
@@ -178,7 +178,7 @@ public static class LaunchSceneBuilder
         scaler.matchWidthOrHeight = 0.5f;
         Transform root = canvasGo.transform;
 
-        // Mitad izquierda: control de mision
+        // Left half: mission control
         GameObject control = new GameObject("ControlMision", typeof(RectTransform), typeof(Image));
         control.transform.SetParent(root, false);
         RectTransform cr = (RectTransform)control.transform;
@@ -187,7 +187,7 @@ public static class LaunchSceneBuilder
         cr.offsetMin = cr.offsetMax = Vector2.zero;
         control.GetComponent<Image>().color = PanelColor;
 
-        // Pantalla grande al fondo
+        // Big screen at the back
         RectTransform frame = Box(control.transform, "PantallaGrande", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -30f), new Vector2(880f, 500f), ScreenFrame, null);
         RectTransform screen = Box(frame, "Fondo", Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero, ScreenColor, null);
         screen.anchorMin = Vector2.zero;
@@ -195,7 +195,7 @@ public static class LaunchSceneBuilder
         screen.offsetMin = new Vector2(8f, 8f);
         screen.offsetMax = new Vector2(-8f, -8f);
 
-        TextMeshProUGUI title = CreateText(screen, "Titulo", "MISSION CONTROL · ARTEMIS", 30, TextAlignmentOptions.Center, Color.white);
+        TextMeshProUGUI title = CreateText(screen, "Titulo", "MISSION CONTROL · ASTRA", 30, TextAlignmentOptions.Center, Color.white);
         Place(title.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -15f), new Vector2(820f, 45f));
 
         TextMeshProUGUI phase = CreateText(screen, "Fase", "PHASE: DEPARTURE · LIFTOFF", 60, TextAlignmentOptions.Center, AccentColor);
@@ -216,18 +216,18 @@ public static class LaunchSceneBuilder
         TextMeshProUGUI test = CreateText(screen, "AvisoPrueba", "simulated data", 20, TextAlignmentOptions.Right, new Color(1f, 1f, 1f, 0.4f));
         Place(test.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 8f), new Vector2(300f, 30f));
 
-        // Bitacora entre la pantalla y los operadores
+        // Log between the screen and the operators
         TextMeshProUGUI logText = CreateText(control.transform, "Bitacora", "<b>Mission log</b>", 26, TextAlignmentOptions.TopLeft, LogColor);
         Place(logText.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 290f), new Vector2(860f, 250f));
 
-        // Operadores en sus computadoras (vistos de espaldas, mirando la pantalla grande)
+        // Operators at their computers (seen from behind, looking at the big screen)
         Sprite circle = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Knob.psd");
         CreateOperator(control.transform, "FLIGHT", -330f, new Color(0.75f, 0.25f, 0.25f), circle);
         CreateOperator(control.transform, "TRAJECTORY", -110f, new Color(0.25f, 0.55f, 0.3f), circle);
         CreateOperator(control.transform, "SYSTEMS", 110f, new Color(0.3f, 0.35f, 0.75f), circle);
         CreateOperator(control.transform, "SCIENCE", 330f, new Color(0.65f, 0.45f, 0.75f), circle);
 
-        // Mitad derecha: fundido entre vistas, titulo de la vista 3D y boton de prueba
+        // Right half: fade between views, 3D view title and test button
         GameObject fadeGo = new GameObject("FundidoVista3D", typeof(RectTransform), typeof(Image));
         fadeGo.transform.SetParent(root, false);
         RectTransform fadeRt = (RectTransform)fadeGo.transform;
@@ -245,7 +245,7 @@ public static class LaunchSceneBuilder
         Button skip = CreateButton(root, "BotonSaltarFase", "Skip (test)", 28);
         Place((RectTransform)skip.transform, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-30f, 30f), new Vector2(320f, 70f));
 
-        // Panel de fin de mision
+        // End of mission panel
         GameObject finish = new GameObject("PanelFin", typeof(RectTransform), typeof(Image));
         finish.transform.SetParent(root, false);
         RectTransform fr = (RectTransform)finish.transform;
@@ -358,7 +358,7 @@ public static class LaunchSceneBuilder
         return go.transform;
     }
 
-    // Copia el material por defecto del pipeline (URP Lit) y le pone color (y otro shader si se pide). Se guarda como asset.
+    // Copies the pipeline default material (URP Lit) and sets its color (and another shader if asked). Saved as an asset.
     static Material MakeMaterial(string name, Color color, Material template, Shader shader = null)
     {
         EnsureFolder(MaterialFolder);

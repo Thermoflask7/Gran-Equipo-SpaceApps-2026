@@ -4,9 +4,9 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
-/// Lanza un rayo desde la camara del escritorio hacia la malla curva y traduce
-/// el UV a coordenadas del Canvas (RenderTexture) para que los botones reciban hover y clic.
-/// Aplica la misma barrel distortion del shader CRT, si esta activa.
+/// Casts a ray from the desk camera to the curved mesh and maps
+/// the UV to Canvas (RenderTexture) coordinates so buttons get hover and clicks.
+/// Applies the same barrel distortion as the CRT shader, if it is on.
 /// </summary>
 public class SpaceOsGraphicRaycaster : GraphicRaycaster
 {
@@ -49,8 +49,8 @@ public class SpaceOsGraphicRaycaster : GraphicRaycaster
         Vector2 uv = hit.textureCoord;
         if (screen != null) uv = screen.MeshUvToCanvasUv(uv);
 
-        // Dejamos la posicion remapeada: ScrollRect (rueda y arrastre) y los
-        // botones usan las coordenadas del canvas/RT, no las del Game view.
+        // We keep the remapped position: ScrollRect (wheel and drag) and the
+        // buttons use the canvas/RT coordinates, not the Game view ones.
         eventData.position = new Vector2(uv.x * pw, uv.y * ph);
         base.Raycast(eventData, resultAppendList);
     }

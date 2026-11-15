@@ -1,9 +1,9 @@
 using UnityEngine;
 
 /// <summary>
-/// Genera una malla rectangular ligeramente abombada (sagitta) para la pantalla del CRT.
-/// El centro queda en z=0 (mas cerca de la camara) y los bordes se hunden hacia +Z,
-/// el interior del monitor, si el transform mira igual que el canvas (forward hacia adentro).
+/// Builds a slightly bulged rectangular mesh (sagitta) for the CRT screen.
+/// The center stays at z=0 (closest to the camera) and the edges sink toward +Z,
+/// into the monitor, if the transform faces like the canvas (forward pointing inward).
 /// </summary>
 [ExecuteAlways]
 [DisallowMultipleComponent]
@@ -16,10 +16,10 @@ public class CurvedScreenMesh : MonoBehaviour
     [SerializeField] float width = DefaultWidth;
     [SerializeField] float height = DefaultHeight;
 
-    [Tooltip("Sagitta horizontal (izq-der). En el CRT va en 0: la curva es de arriba a abajo.")]
+    [Tooltip("Horizontal sagitta (left-right). On the CRT it is 0: the curve goes top to bottom.")]
     [SerializeField] float horizontalSagitta = 0f;
 
-    [Tooltip("Sagitta vertical (arriba-abajo), en metros. El centro se abomba hacia la camara.")]
+    [Tooltip("Vertical sagitta (top-bottom), in meters. The center bulges toward the camera.")]
     [SerializeField] float verticalSagitta = 0.01f;
 
     [SerializeField, Range(2, 64)] int segmentsX = 24;
@@ -105,7 +105,7 @@ public class CurvedScreenMesh : MonoBehaviour
                 float u = (float)x / sx;
                 float px = (u - 0.5f) * w;
                 float nu = (u * 2f) - 1f;
-                // Bordes hacia +Z (interior del monitor). Centro en z=0, mas cerca de la camara.
+                // Edges toward +Z (inside the monitor). Center at z=0, closest to the camera.
                 float z = hs * (nu * nu) + vs * (nv * nv);
                 int i = y * vx + x;
                 verts[i] = new Vector3(px, py, z);
@@ -122,7 +122,7 @@ public class CurvedScreenMesh : MonoBehaviour
                 int i1 = i0 + 1;
                 int i2 = i0 + vx;
                 int i3 = i2 + 1;
-                // Sentido horario visto desde -Z (lado de la camara). Unity recorta las caras traseras.
+                // Clockwise seen from -Z (camera side). Unity culls back faces.
                 tris[t++] = i0;
                 tris[t++] = i2;
                 tris[t++] = i1;

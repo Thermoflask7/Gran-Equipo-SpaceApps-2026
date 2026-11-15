@@ -4,7 +4,7 @@ using UnityEngine;
 
 // RocketAssembly tests (task 9 logic). Signed: claude_c.
 // Menu: SpaceApps -> Rocket assembly tests. Writes each test to the console with OK or FAILED.
-// Uses the imported catalog (menu SpaceApps -> Import Artemis catalog) and a temporary GameManager.
+// Uses the imported catalog (menu SpaceApps -> Import mission catalog) and a temporary GameManager.
 public static class RocketAssemblyTests
 {
     static int passed;
@@ -28,7 +28,7 @@ public static class RocketAssemblyTests
         if (baseMission == null || block1 == null || block1b == null || capsule == null || service == null
             || tower == null || comms == null || lunar == null || rad == null)
         {
-            Debug.LogError("Rocket assembly tests: run SpaceApps -> Import Artemis catalog first. The tests were not run.");
+            Debug.LogError("Rocket assembly tests: run SpaceApps -> Import mission catalog first. The tests were not run.");
             return;
         }
         DestinationData mission = Object.Instantiate(baseMission);
@@ -42,7 +42,7 @@ public static class RocketAssemblyTests
 
         // Nothing bought
         Check("Empty rocket is not valid", !gm.rocketValid && RocketAssembly.Status(gm) != "");
-        Check("Empty rocket misses SLS and the 3 Orion parts", RocketAssembly.MissingRequired(gm).Count == 4);
+        Check("Empty rocket misses the launcher and the 3 spacecraft parts", RocketAssembly.MissingRequired(gm).Count == 4);
         Check("A part that was not bought cannot be mounted", !RocketAssembly.Mount(gm, capsule) && gm.rocketParts.Count == 0);
         Check("Null part cannot be mounted", !RocketAssembly.Mount(gm, null) && RocketAssembly.MountProblem(gm, null) != "");
 
@@ -71,14 +71,14 @@ public static class RocketAssemblyTests
         gm.boughtParts.Add(block1b);
         Check("Mount Block 1B swaps the launcher", RocketAssembly.Mount(gm, block1b)
             && RocketAssembly.IsMounted(gm, block1b) && !RocketAssembly.IsMounted(gm, block1));
-        Check("Only one SLS on the rocket", CountType(gm.rocketParts, PartType.LaunchService) == 1);
+        Check("Only one launcher on the rocket", CountType(gm.rocketParts, PartType.LaunchService) == 1);
         Check("Block 1 goes back to the tray", RocketAssembly.UnmountedParts(gm).Contains(block1));
 
-        // MountAll never mounts a second SLS
+        // MountAll never mounts a second launcher
         RocketAssembly.Clear(gm);
         Check("Clear empties the rocket", gm.rocketParts.Count == 0 && !gm.rocketValid);
         RocketAssembly.MountAll(gm);
-        Check("MountAll with 2 SLS bought mounts only one", CountType(gm.rocketParts, PartType.LaunchService) == 1
+        Check("MountAll with 2 launchers bought mounts only one", CountType(gm.rocketParts, PartType.LaunchService) == 1
             && gm.rocketParts.Count == 7);
 
         // Sync after selling (SpaceMart sells through gm.SellPart) and after outside edits

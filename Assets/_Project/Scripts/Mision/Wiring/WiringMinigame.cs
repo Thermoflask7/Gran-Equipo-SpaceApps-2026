@@ -189,7 +189,7 @@ public class WiringMinigame : MonoBehaviour
 
         LoadBoard(0);
 
-        introBody.text = "Some cables on Orion came loose! Fix <b>" + perRound + " panels</b> in <b>" + Mathf.RoundToInt(S.roundSeconds)
+        introBody.text = "Some cables on the spacecraft came loose! Fix <b>" + perRound + " panels</b> in <b>" + Mathf.RoundToInt(S.roundSeconds)
             + " seconds</b>.\n\n<b>Connect each color to its twin. Cables can't cross!</b>\n\n"
             + "<size=80%><color=#A6B8D1>Each panel adds one more system.</color></size>";
         introPanel.SetActive(true);

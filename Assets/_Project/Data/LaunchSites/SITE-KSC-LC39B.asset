@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97ba905a7fb8fd34bb556576bf60b13f, type: 3}
   m_Name: SITE-KSC-LC39B
   m_EditorClassIdentifier: Assembly-CSharp::LaunchSiteData
-  siteName: Kennedy Space Center - LC-39B
-  description: Real launch pad used for Artemis SLS missions. The 14 days of weather risk and wind data are fictional game scenarios, NOT forecasts or launch authorization.
+  siteName: Merritt Island, Pad 39B
+  description: Real launch pad on the Florida coast used for crewed Moon missions. The 14 days of weather risk and wind data are fictional game scenarios, NOT forecasts or launch authorization.
   latitude: 28.627306
   longitude: -80.62087
   weatherRiskByDay:

@@ -59,9 +59,9 @@ public static class GateAdvice
             {
                 case "DELIVERY":
                 {
-                    PartData sls = RocketPhysics.LaunchService(parts);
+                    PartData launcherPart = RocketPhysics.LaunchService(parts);
                     float tli = RocketPhysics.TliMass(parts, m);
-                    float capacity = sls != null ? sls.payloadCapacity : 0f;
+                    float capacity = launcherPart != null ? launcherPart.payloadCapacity : 0f;
                     title = "Too heavy for the launcher";
                     numbers = Kg(tli) + " to send, the launcher carries " + Kg(capacity);
                     lesson = "Every module you add uses part of the launcher capacity.";
@@ -267,7 +267,7 @@ public static class GateAdvice
         return null;
     }
 
-    // Catalog names are long: "SLS Block 1B launch service - future-architecture reference" -> "SLS Block 1B launch service"
+    // Catalog names are long: "Heavy launcher, upgraded (bigger upper stage)" -> "Heavy launcher, upgraded"
     static string ShortName(PartData p)
     {
         string name = p.partName;

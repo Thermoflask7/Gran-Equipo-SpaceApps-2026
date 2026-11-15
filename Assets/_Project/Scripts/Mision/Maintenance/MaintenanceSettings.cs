@@ -56,7 +56,7 @@ public class MaintenanceSettings : ScriptableObject
     [Range(0f, 1f)] public float oxygenStartLevel = 0.4f;
 
     [Header("Communications (radio)")]
-    [Tooltip("Frequencies shown on the dial, in MHz (S-band, the one Orion uses)")]
+    [Tooltip("Frequencies shown on the dial, in MHz (S-band, common on crewed spacecraft)")]
     public float minFrequency = 2200f;
     public float maxFrequency = 2300f;
     [Tooltip("How close to the correct frequency the dial must be (fraction of the dial)")]

@@ -16,7 +16,7 @@
       "engineering": 4,
       "primaryRole": "Piloting",
       "sourceClass": "FICTIONAL_GAME_DESIGN",
-      "note": "Fictional candidate and skill scores; do not portray this character as a real NASA astronaut."
+      "note": "Fictional candidate and skill scores; do not portray this character as a real astronaut."
     },
     {
       "id": "AST-P02",
@@ -27,7 +27,7 @@
       "engineering": 6,
       "primaryRole": "Piloting",
       "sourceClass": "FICTIONAL_GAME_DESIGN",
-      "note": "Fictional candidate and skill scores; do not portray this character as a real NASA astronaut."
+      "note": "Fictional candidate and skill scores; do not portray this character as a real astronaut."
     },
     {
       "id": "AST-P03",
@@ -38,7 +38,7 @@
       "engineering": 7,
       "primaryRole": "Piloting",
       "sourceClass": "FICTIONAL_GAME_DESIGN",
-      "note": "Fictional candidate and skill scores; do not portray this character as a real NASA astronaut."
+      "note": "Fictional candidate and skill scores; do not portray this character as a real astronaut."
     },
     {
       "id": "AST-E01",
@@ -49,7 +49,7 @@
       "engineering": 9,
       "primaryRole": "Engineering",
       "sourceClass": "FICTIONAL_GAME_DESIGN",
-      "note": "Fictional candidate and skill scores; do not portray this character as a real NASA astronaut."
+      "note": "Fictional candidate and skill scores; do not portray this character as a real astronaut."
     },
     {
       "id": "AST-E02",
@@ -60,7 +60,7 @@
       "engineering": 8,
       "primaryRole": "Engineering",
       "sourceClass": "FICTIONAL_GAME_DESIGN",
-      "note": "Fictional candidate and skill scores; do not portray this character as a real NASA astronaut."
+      "note": "Fictional candidate and skill scores; do not portray this character as a real astronaut."
     },
     {
       "id": "AST-E03",
@@ -71,7 +71,7 @@
       "engineering": 7,
       "primaryRole": "Engineering",
       "sourceClass": "FICTIONAL_GAME_DESIGN",
-      "note": "Fictional candidate and skill scores; do not portray this character as a real NASA astronaut."
+      "note": "Fictional candidate and skill scores; do not portray this character as a real astronaut."
     },
     {
       "id": "AST-R01",
@@ -82,7 +82,7 @@
       "engineering": 5,
       "primaryRole": "Research",
       "sourceClass": "FICTIONAL_GAME_DESIGN",
-      "note": "Fictional candidate and skill scores; do not portray this character as a real NASA astronaut."
+      "note": "Fictional candidate and skill scores; do not portray this character as a real astronaut."
     },
     {
       "id": "AST-R02",
@@ -93,7 +93,7 @@
       "engineering": 6,
       "primaryRole": "Research",
       "sourceClass": "FICTIONAL_GAME_DESIGN",
-      "note": "Fictional candidate and skill scores; do not portray this character as a real NASA astronaut."
+      "note": "Fictional candidate and skill scores; do not portray this character as a real astronaut."
     },
     {
       "id": "AST-R03",
@@ -104,7 +104,7 @@
       "engineering": 5,
       "primaryRole": "Research",
       "sourceClass": "FICTIONAL_GAME_DESIGN",
-      "note": "Fictional candidate and skill scores; do not portray this character as a real NASA astronaut."
+      "note": "Fictional candidate and skill scores; do not portray this character as a real astronaut."
     },
     {
       "id": "AST-M01",
@@ -115,7 +115,7 @@
       "engineering": 7,
       "primaryRole": "Mixed",
       "sourceClass": "FICTIONAL_GAME_DESIGN",
-      "note": "Fictional candidate and skill scores; do not portray this character as a real NASA astronaut."
+      "note": "Fictional candidate and skill scores; do not portray this character as a real astronaut."
     }
   ]
 }

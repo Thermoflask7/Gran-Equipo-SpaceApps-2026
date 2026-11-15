@@ -9,7 +9,7 @@ using UnityEngine.UI;
 //       sections and a "Back to menu" button on the overlay Canvas of the open scene
 //       (03_Resultados or your Sandbox). If there is one already, it offers to replace it. Then save the scene.
 //   SpaceApps > Results screen > Test: sample game
-//       Play mode only: fills the GameManager with a complete game (Artemis catalog)
+//       Play mode only: fills the GameManager with a complete game (lunar catalog)
 //       and recalculates the screen.
 public static class ResultsScreenBuilder
 {
@@ -182,7 +182,7 @@ public static class ResultsScreenBuilder
         DestinationData mission = AssetDatabase.LoadAssetAtPath<DestinationData>("Assets/_Project/Data/Destinos/MisionArtemis.asset");
         if (mission == null)
         {
-            Debug.LogError("The mission is missing: run SpaceApps -> Import Artemis catalog.");
+            Debug.LogError("The mission is missing: run SpaceApps -> Import mission catalog.");
             return;
         }
         MissionScoringTests.FillExampleGame(GameManager.Instance, mission);

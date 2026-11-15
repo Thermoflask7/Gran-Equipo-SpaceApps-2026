@@ -68,6 +68,7 @@ public class PlanningStation : MonoBehaviour
     float mapAlphaTarget = 1f;
     LaunchSiteSelector launchSites;
     LaunchSiteInfoPanel infoPanel;
+    CalendarWeatherPanel calendarPanel;
 
     /// <summary>The launch site markers on the map (created in Play mode if missing).</summary>
     public LaunchSiteSelector LaunchSites => launchSites;
@@ -163,6 +164,8 @@ public class PlanningStation : MonoBehaviour
             Camera eventCam = dc != null ? dc.GetComponent<Camera>() : Camera.main;
             infoPanel = LaunchSiteInfoPanel.Create(transform, map, Encapsulate(calendar), eventCam);
             launchSites.SelectionChanged += infoPanel.ShowSite;
+            calendarPanel = CalendarWeatherPanel.Create(transform, map, Encapsulate(calendar), eventCam);
+            launchSites.SelectionChanged += calendarPanel.SetSite;
         }
         mapAlpha = 0f;
         mapAlphaTarget = 0f;
@@ -207,6 +210,7 @@ public class PlanningStation : MonoBehaviour
         r.SetPropertyBlock(mapBlock);
         if (launchSites != null) launchSites.SetAlpha(mapAlpha);
         if (infoPanel != null) infoPanel.SetAlpha(mapAlpha);
+        if (calendarPanel != null) calendarPanel.SetAlpha(mapAlpha);
     }
 
     bool IsPlanningHit(Transform hit)

@@ -577,7 +577,7 @@ public class SpaceMartApp : MonoBehaviour
         tmp.alignment = alignment;
         tmp.color = Color.white;
         tmp.raycastTarget = false;
-        tmp.enableWordWrapping = true;
+        tmp.textWrappingMode = TextWrappingModes.Normal;
         tmp.overflowMode = TextOverflowModes.Ellipsis;
         return tmp;
     }

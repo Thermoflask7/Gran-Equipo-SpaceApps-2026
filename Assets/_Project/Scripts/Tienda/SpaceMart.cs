@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 // SpaceMart app (task 8): online shop on the desk computer to buy and sell parts.
 // It lists the Artemis catalog (Data/Piezas/ART-*.asset), spends credits through GameManager
@@ -8,6 +9,7 @@ using UnityEngine;
 // consumables and science. Assembling the rocket (gm.rocketParts) is the job of the rocket model (task 9).
 // The prefab is created with the menu SpaceApps > SpaceMart > Create prefab.
 // The computer desktop (task 7) opens it with SetActive(true); the X button calls Close().
+// The tabs on top filter the list by category (SetFilter), so the catalog is easier to read.
 public class SpaceMart : MonoBehaviour
 {
     [Header("Data")]
@@ -20,6 +22,17 @@ public class SpaceMart : MonoBehaviour
     public TMP_Text moneyText;
     public TMP_Text statsText;
     public TMP_Text feedbackText;
+
+    [Header("Category tabs (same order as Filters)")]
+    public List<Image> filterTabs = new List<Image>();
+
+    // Tab names. "All" shows everything; the rest match FilterOf(type).
+    public static readonly string[] Filters = { "All", "Launcher", "Orion", "Science", "Crew & modules", "Power" };
+
+    static readonly Color TabColor = new Color(0.2f, 0.24f, 0.3f, 1f);
+    static readonly Color TabSelectedColor = new Color(1f, 0.6f, 0f, 1f);
+
+    string currentFilter = "All";
 
     const string OkColor = "#7CFC7C";
     const string BadColor = "#FF6B5B";
@@ -53,6 +66,23 @@ public class SpaceMart : MonoBehaviour
     public void Close()
     {
         gameObject.SetActive(false);
+    }
+
+    // Called by the category tabs (filter = one of Filters)
+    public void SetFilter(string filter)
+    {
+        currentFilter = filter;
+        Refresh();
+    }
+
+    // Tab where each part type appears
+    public static string FilterOf(PartType type)
+    {
+        if (type == PartType.LaunchService) return "Launcher";
+        if (type == PartType.Capsule || type == PartType.ServiceModule || type == PartType.AbortSystem) return "Orion";
+        if (type == PartType.Instrument || type == PartType.Antenna) return "Science";
+        if (type == PartType.SolarPanel || type == PartType.Battery) return "Power";
+        return "Crew & modules"; // Module and anything else
     }
 
     // ---------- Buying and selling ----------
@@ -134,7 +164,16 @@ public class SpaceMart : MonoBehaviour
     {
         GameManager gm = GameManager.Instance;
         if (moneyText != null) moneyText.text = "Credits: " + Credits(gm.money);
-        foreach (SpaceMartItem row in rows) row.Refresh();
+        foreach (SpaceMartItem row in rows)
+        {
+            row.Refresh();
+            bool visible = currentFilter == "All" || FilterOf(row.Part.type) == currentFilter;
+            row.gameObject.SetActive(visible);
+        }
+        for (int i = 0; i < filterTabs.Count && i < Filters.Length; i++)
+        {
+            if (filterTabs[i] != null) filterTabs[i].color = Filters[i] == currentFilter ? TabSelectedColor : TabColor;
+        }
         if (statsText != null) statsText.text = BuildStats(gm.boughtParts, gm.mission);
     }
 

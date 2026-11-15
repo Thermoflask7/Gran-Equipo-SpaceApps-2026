@@ -15,6 +15,8 @@ public class SpaceMartItem : MonoBehaviour
     SpaceMart shop;
     PartData part;
 
+    public PartData Part { get { return part; } }
+
     public void Setup(SpaceMart shop, PartData part)
     {
         this.shop = shop;

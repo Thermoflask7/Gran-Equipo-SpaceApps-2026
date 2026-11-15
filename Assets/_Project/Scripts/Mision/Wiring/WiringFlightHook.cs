@@ -124,7 +124,11 @@ public class WiringFlightHook : MonoBehaviour
     // FlightPhases asks for an Engineering minigame
     void OpenEngineering()
     {
-        bool wiring = faultPending || IsWiringEvent(phases.LastEvent, S) || maintenance == null || !maintenance.isActiveAndEnabled;
+        bool maintenanceReady = maintenance != null && maintenance.isActiveAndEnabled;
+        // Claude-M: the scheduled routine maintenance (MaintenanceFlightHook) always opens maintenance, even if
+        // LastEvent is still a wiring event from an earlier phase
+        bool wiring = !(maintenanceReady && maintenance.RoutinePending)
+            && (faultPending || IsWiringEvent(phases.LastEvent, S) || !maintenanceReady);
         faultPending = false;
         if (!wiring)
         {

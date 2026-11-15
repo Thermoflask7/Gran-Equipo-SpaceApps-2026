@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 // Piloting minigame (task 12), by Claude-M. It is a prefab, not a scene.
 // The pilot runs a sequence of timed commands (QTE): booster separation, MECO, parachutes...
-// In each step a marker sweeps across a gauge ONCE and the pilot presses FIRE (Space or the button)
+// In each step a marker sweeps across a gauge ONCE and the pilot clicks anywhere on the screen (or presses Space)
 // inside the green window. The brighter middle of the window is PERFECT. The window shrinks and the
 // marker speeds up every step. The sequence depends on the flight phase (PilotingSettings.StepsFor):
 // departure = ascent to translunar injection, lunar orbit = orbit burns, return = reentry and parachutes.
@@ -83,7 +83,13 @@ public class PilotingMinigame : MonoBehaviour
     {
         if (initialized) return;
         initialized = true;
-        if (fireButton != null) fireButton.onClick.AddListener(Fire);
+        // The FIRE button is only a visual cue: a click ANYWHERE fires (read in Update on mouse down, so the
+        // timing is the moment of the press, not the release). No onClick listener, so a click never counts twice.
+        if (fireButton != null)
+        {
+            TMP_Text label = fireButton.GetComponentInChildren<TMP_Text>(true);
+            if (label != null) label.text = "FIRE  (click)";
+        }
         if (startButton != null) startButton.onClick.AddListener(StartGame);
         if (continueButton != null) continueButton.onClick.AddListener(Continue);
     }
@@ -134,7 +140,7 @@ public class PilotingMinigame : MonoBehaviour
         if (startButton != null) startButton.gameObject.SetActive(false);
         if (continueButton != null) continueButton.gameObject.SetActive(false);
         if (fireButton != null) fireButton.gameObject.SetActive(true);
-        if (infoLabel != null) infoLabel.text = "Press FIRE (Space) when the marker is inside the green window.";
+        if (infoLabel != null) infoLabel.text = "Click anywhere when the marker is inside the green window.";
 
         if (steps == null || steps.Length == 0)
         {
@@ -145,10 +151,10 @@ public class PilotingMinigame : MonoBehaviour
         BeginStep(0);
     }
 
-    // FIRE: Space or the button. Only the first press of each sweep counts.
+    // FIRE: a click anywhere (or Space / a touch). Only the first press of each sweep counts.
     public void Fire()
     {
-        // Clicking the button selects it; deselect so Space does not also "submit" it
+        // Keep the UI from holding a selected button that Space could "submit"
         if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
         if (state != State.Sweep || pressed) return;
         pressed = true;
@@ -202,7 +208,7 @@ public class PilotingMinigame : MonoBehaviour
                 break;
 
             case State.Sweep:
-                if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
+                if (FirePressedThisFrame())
                 {
                     Fire();
                     break;
@@ -227,6 +233,14 @@ public class PilotingMinigame : MonoBehaviour
                 }
                 break;
         }
+    }
+
+    // Left click anywhere on the screen (main input), a touch (WebGL on a tablet) or Space (optional shortcut)
+    static bool FirePressedThisFrame()
+    {
+        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame) return true;
+        if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame) return true;
+        return Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame;
     }
 
     // marker < 0 = no press (MISSED)
@@ -295,7 +309,7 @@ public class PilotingMinigame : MonoBehaviour
         if (feedbackLabel != null) feedbackLabel.text = "";
         if (infoLabel != null)
             infoLabel.text = "Every command must be sent at the right moment.\n"
-                + "Press FIRE (Space) when the marker crosses the green window. The middle is PERFECT.";
+                + "Click anywhere when the marker crosses the green window. The middle is PERFECT.";
         if (startButton != null) startButton.gameObject.SetActive(true);
         if (continueButton != null) continueButton.gameObject.SetActive(false);
         if (fireButton != null) fireButton.gameObject.SetActive(false);

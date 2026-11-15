@@ -36,7 +36,8 @@ public class MaintenanceFlightHook : MonoBehaviour
         if (minigame != null) minigame.Completed -= OnCompleted;
     }
 
-    void Open()
+    // Public so WiringFlightHook (task 43), which owns the Engineering role when it is in the scene, can open maintenance
+    public void Open()
     {
         open = true;
         minigame.gameObject.SetActive(true); // shows the intro; the player presses "Start"

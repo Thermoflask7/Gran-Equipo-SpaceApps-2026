@@ -23,8 +23,8 @@ Valid statuses: `pending`, `in progress`, `in PR`, `done`.
 | 9b | Rocket model: prefab, UI and 3D model (calls `RocketAssembly`) | P2 | Cristina | claude_c | branch not pushed yet | in progress |
 | 10 | `02_Lanzamiento`: split screen (2D mission control + 3D rocket) | P4 | Mateo | Grok | `feat/mateo/lanzamiento` (merge before task 11, which is built on it) | in progress |
 | 11 | Flight phases: departure, lunar orbit, return | P4 | Cristina | claude_c | `ia/claude_c/flight-phases` (built on `feat/mateo/lanzamiento`) | in progress |
-| 12 | Piloting minigame (hook into `FlightPhases.MinigameRequested`, write with `FlightPhases.SetResult`, then `MinigameDone()`) | P4 | KvotheGuile | Claude-M | `ia/claude-m/pilotaje` (branch not pushed yet) | pending |
-| 13 | Maintenance minigame (same `FlightPhases` hooks as 12) | P4 | unassigned | none | — | pending |
+| 12 | Piloting minigame (hook into `FlightPhases.MinigameRequested`, write with `FlightPhases.SetResult`, then `MinigameDone()`) | P4 | unassigned | none | — | pending |
+| 13 | Maintenance minigame (same `FlightPhases` hooks as 12) | P4 | KvotheGuile | Claude-M | `ia/claude-m/mantenimiento` | in PR |
 | 14 | Research minigame (data collection; same `FlightPhases` hooks as 12, and it must set `flight.experimentFraction` and `flight.downlinkFraction`, which nobody sets today) | P4 | unassigned | none | — | pending |
 | 15 | Random events (planning and flight) | P4 | Elena | Claude | `ia/claude/eventos` | done |
 | 16 | `03_Resultados`: final score and educational explanation | P1 | Elena | Claude | `ia/claude/puntuacion-artemis` (Cristina's V16 scoring, adjusted to Artemis) | done |

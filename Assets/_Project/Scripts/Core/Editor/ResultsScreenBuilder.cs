@@ -29,6 +29,10 @@ public static class ResultsScreenBuilder
             Undo.DestroyObjectImmediate(old.gameObject);
         }
 
+        // The greybox placeholders ("03_Results" title and "Play Again" button) were drawn on top of the
+        // new panel. The panel has its own "Back to menu" button, so they are hidden (Ctrl+Z brings them back).
+        HidePlaceholders(canvas);
+
         // Space background behind everything (only one)
         if (Object.FindAnyObjectByType<SpaceBackground>(FindObjectsInactive.Include) == null)
         {
@@ -150,6 +154,17 @@ public static class ResultsScreenBuilder
 
         Undo.RegisterCreatedObjectUndo(root, "Add results screen");
         Selection.activeGameObject = root;
+    }
+
+    static void HidePlaceholders(Canvas canvas)
+    {
+        foreach (Transform t in canvas.GetComponentsInChildren<Transform>(true))
+        {
+            if (t.name != "Titulo" && t.name != "BotonSiguiente") continue;
+            Undo.RecordObject(t.gameObject, "Hide greybox placeholder");
+            t.gameObject.SetActive(false);
+            Debug.Log("Results screen: hid the greybox placeholder \"" + t.name + "\".");
+        }
     }
 
     // Fills the parent, with offsets from its bottom-left (min) and top-right (max) corners

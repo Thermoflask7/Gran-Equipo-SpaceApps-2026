@@ -20,7 +20,7 @@ public class CurvedScreenMesh : MonoBehaviour
     [SerializeField] float horizontalSagitta = 0f;
 
     [Tooltip("Sagitta vertical (arriba-abajo), en metros. El centro se abomba hacia la camara.")]
-    [SerializeField] float verticalSagitta = 0.025f;
+    [SerializeField] float verticalSagitta = 0.01f;
 
     [SerializeField, Range(2, 64)] int segmentsX = 24;
     [SerializeField, Range(2, 64)] int segmentsY = 18;

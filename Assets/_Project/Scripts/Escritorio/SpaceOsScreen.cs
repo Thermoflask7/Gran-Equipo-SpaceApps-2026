@@ -89,7 +89,6 @@ public class SpaceOsScreen : MonoBehaviour
 
     public void Refresh()
     {
-        ApplyPlacement();
         EnsureTexture();
         ApplyMaterial();
         RenderUiIfEditing();
@@ -97,7 +96,6 @@ public class SpaceOsScreen : MonoBehaviour
 
     void OnEnable()
     {
-        ApplyPlacement();
         EnsureTexture();
         ApplyMaterial();
 #if UNITY_EDITOR

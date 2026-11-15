@@ -117,11 +117,19 @@ public static class PcDeskBuilder
             if (!station.TryGetScreenSurface(cam, out _, out _, out _, out _))
                 Debug.LogWarning("[PcDeskBuilder] No se pudo calcular la superficie de la pantalla; se usa la colocacion por defecto de SpaceOsScreen.");
 
+            // Conserva la pose que el usuario haya ajustado a mano en PC_Screen.
+            Transform oldScreen = FindChild(pc.transform, "PC_Screen");
+            bool keepPose = oldScreen != null;
+            Vector3 keptPos = keepPose ? oldScreen.localPosition : Vector3.zero;
+            Vector3 keptEuler = keepPose ? oldScreen.localEulerAngles : Vector3.zero;
+
             DestroyAllNamed(scene, "PC_Desktop");
             DestroyAllNamed(scene, "PC_Screen");
             DestroyAllNamed(scene, "PC_UICamera");
 
             SpaceOsScreen spaceOs = CreateCurvedScreen(pc, cam, monitorRenderer, submesh, out ComputerDesktop desktop, out DesktopRefs refs);
+            if (keepPose && spaceOs != null)
+                spaceOs.SetPlacement(keptPos, keptEuler, Vector3.zero);
             AssignDesktop(desktop, refs);
             station.SetDesktop(desktop);
             if (spaceOs != null) spaceOs.Refresh();
@@ -275,7 +283,7 @@ public static class PcDeskBuilder
         Undo.AddComponent<MeshCollider>(screenGo);
         var curved = Undo.AddComponent<CurvedScreenMesh>(screenGo);
         curved.HorizontalSagitta = 0f;
-        curved.VerticalSagitta = 0.025f;
+        curved.VerticalSagitta = 0.01f;
         curved.Rebuild();
         if (crtMat != null)
             meshRenderer.sharedMaterial = crtMat;

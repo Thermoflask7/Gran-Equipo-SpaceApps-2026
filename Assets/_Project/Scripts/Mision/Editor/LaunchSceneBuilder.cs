@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEditor;
 using UnityEditor.Events;
@@ -8,20 +9,26 @@ using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-// Menu de Unity: SpaceApps > Armar escena de lanzamiento
-// Arma 02_Lanzamiento (tarea 10) en greybox:
-//   - Dos camaras base con viewport partido: CamaraControlMision (mitad izquierda, solo fondo)
-//     y CamaraCohete (mitad derecha, vista 3D). LaunchScreen mueve CamaraCohete entre tres vistas:
-//     Despegue (acercamiento en el sitio "Despegue", lejos en +X), Viaje (vista general: Tierra, Luna,
-//     cohete y ruta en el origen) y Aterrizaje (acercamiento en el sitio "Amerizaje", lejos en -X).
-//   - Canvas en Screen Space Overlay: control de mision a la izquierda (operadores, pantalla grande,
-//     bitacora), titulo de la vista 3D, boton de prueba "Saltar fase" y panel de fin con "Ver resultados".
-//   - Objeto Lanzamiento con LaunchScreen y todas las referencias conectadas.
-// Se puede volver a correr: borra y recrea solo los objetos que crea (ver Generated). El EventSystem
-// se conserva y se asegura que use InputSystemUIInputModule. Los materiales se guardan en
-// Assets/_Project/Art/Materiales/Lanzamiento.
+// Unity menu: SpaceApps > Build launch scene  (task 10, Mateo; English + safe rebuild by claude_c, audit F09/F12)
+// Builds 02_Lanzamiento in greybox:
+//   - Two base cameras with a split viewport: CamaraControlMision (left half, background only)
+//     and CamaraCohete (right half, 3D view). LaunchScreen moves CamaraCohete between three views:
+//     Liftoff (close-up at the "Despegue" site, far away on +X), Transit (overview: Earth, Moon,
+//     rocket and route at the origin) and Landing (close-up at the "Amerizaje" site, far away on -X).
+//   - Screen Space Overlay canvas: mission control on the left (operators, big screen, log), 3D view
+//     title, test "Skip" button (development builds only) and an end panel with "See results".
+//   - Lanzamiento object with LaunchScreen + FlightPhases (task 11) and every reference connected.
+// It can be run again: it deletes and recreates only the objects it creates (see Generated), and it KEEPS
+//   - every extra component on Lanzamiento (FlightPhases, minigame hooks...) with its inspector values,
+//   - every object someone added under CanvasLanzamiento (minigame prefabs...),
+//   - every other root object and the EventSystem (with InputSystemUIInputModule).
+// GameObject names stay in Spanish until the renaming at the end (task 23).
+// Materials are saved in Assets/_Project/Art/Materiales/Lanzamiento.
 public static class LaunchSceneBuilder
 {
+    // Children of CanvasLanzamiento created by this menu; any other child is kept on rebuild
+    static readonly string[] GeneratedCanvasChildren = { "ControlMision", "FundidoVista3D", "TituloVista3D", "BotonSaltarFase", "PanelFin" };
+
     const string ScenePath = "Assets/_Project/Scenes/" + Scenes.Launch + ".unity";
     const string MaterialFolder = "Assets/_Project/Art/Materiales/Lanzamiento";
 
@@ -42,28 +49,52 @@ public static class LaunchSceneBuilder
     static readonly Color AccentColor = new Color(1f, 0.82f, 0.3f);
     static readonly Color LogColor = new Color(0.55f, 0.95f, 0.6f);
 
-    [MenuItem("SpaceApps/Armar escena de lanzamiento")]
+    [MenuItem("SpaceApps/Build launch scene")]
     static void Build()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
 
         if (TMP_Settings.defaultFontAsset == null)
         {
-            EditorUtility.DisplayDialog("Falta TextMeshPro",
-                "Primero importa los recursos de TextMeshPro: Window > TextMeshPro > Import TMP Essential Resources. Luego vuelve a correr este menú.",
+            EditorUtility.DisplayDialog("TextMeshPro missing",
+                "First import the TextMeshPro resources: Window > TextMeshPro > Import TMP Essential Resources. Then run this menu again.",
                 "OK");
             return;
         }
         if (AssetDatabase.LoadAssetAtPath<SceneAsset>(ScenePath) == null)
         {
-            EditorUtility.DisplayDialog("Escena de lanzamiento",
-                "No existe " + ScenePath + ". Corre primero SpaceApps > Crear escenas greybox.", "OK");
+            EditorUtility.DisplayDialog("Launch scene",
+                ScenePath + " does not exist. Run SpaceApps > Create greybox scenes first.", "OK");
             return;
         }
+        if (!EditorUtility.DisplayDialog("Build launch scene",
+                "This rebuilds the cameras, 3D views and mission control UI of " + Scenes.Launch + " and SAVES the scene.\n\n"
+                + "Kept: FlightPhases and any other component on 'Lanzamiento' (with their values), objects you added under "
+                + "'CanvasLanzamiento' and every other root object.\n\nCommit or back up the scene first.",
+                "Rebuild", "Cancel"))
+            return;
 
         Scene scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+
+        // Keep what other people added (audit F09): the Lanzamiento object itself (with FlightPhases and any
+        // other component) is reused, and extra children of CanvasLanzamiento are parked and moved back.
+        GameObject launchGo = null;
+        Transform holder = new GameObject("__KeptDuringRebuild").transform;
+        List<Transform> keptChildren = new List<Transform>();
         foreach (GameObject go in scene.GetRootGameObjects())
         {
+            if (go.name == "Lanzamiento" && launchGo == null) launchGo = go;
+            else if (go.name == "CanvasLanzamiento")
+            {
+                foreach (Transform child in go.transform)
+                    if (System.Array.IndexOf(GeneratedCanvasChildren, child.name) < 0) keptChildren.Add(child);
+            }
+        }
+        foreach (Transform child in keptChildren) child.SetParent(holder, false);
+
+        foreach (GameObject go in scene.GetRootGameObjects())
+        {
+            if (go == launchGo || go == holder.gameObject) continue;
             if (System.Array.IndexOf(Generated, go.name) >= 0) Object.DestroyImmediate(go);
         }
         EnsureEventSystem(scene);
@@ -164,11 +195,11 @@ public static class LaunchSceneBuilder
         screen.offsetMin = new Vector2(8f, 8f);
         screen.offsetMax = new Vector2(-8f, -8f);
 
-        TextMeshProUGUI title = CreateText(screen, "Titulo", "CONTROL DE MISIÓN · ARTEMIS", 30, TextAlignmentOptions.Center, Color.white);
+        TextMeshProUGUI title = CreateText(screen, "Titulo", "MISSION CONTROL · ARTEMIS", 30, TextAlignmentOptions.Center, Color.white);
         Place(title.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -15f), new Vector2(820f, 45f));
 
-        TextMeshProUGUI phase = CreateText(screen, "Fase", "FASE: SALIDA · DESPEGUE", 60, TextAlignmentOptions.Center, AccentColor);
-        phase.enableAutoSizing = true; // "FASE: ÓRBITA LUNAR · VIAJE" es largo
+        TextMeshProUGUI phase = CreateText(screen, "Fase", "PHASE: DEPARTURE · LIFTOFF", 60, TextAlignmentOptions.Center, AccentColor);
+        phase.enableAutoSizing = true; // "PHASE: LUNAR ORBIT · TRANSIT" is long
         phase.fontSizeMin = 30f;
         phase.fontSizeMax = 60f;
         Place(phase.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -65f), new Vector2(820f, 80f));
@@ -182,19 +213,19 @@ public static class LaunchSceneBuilder
         fill.anchorMax = new Vector2(0f, 1f);
         fill.offsetMin = fill.offsetMax = Vector2.zero;
 
-        TextMeshProUGUI test = CreateText(screen, "AvisoPrueba", "datos de prueba", 20, TextAlignmentOptions.Right, new Color(1f, 1f, 1f, 0.4f));
+        TextMeshProUGUI test = CreateText(screen, "AvisoPrueba", "simulated data", 20, TextAlignmentOptions.Right, new Color(1f, 1f, 1f, 0.4f));
         Place(test.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 8f), new Vector2(300f, 30f));
 
         // Bitacora entre la pantalla y los operadores
-        TextMeshProUGUI logText = CreateText(control.transform, "Bitacora", "<b>Bitácora</b>", 26, TextAlignmentOptions.TopLeft, LogColor);
+        TextMeshProUGUI logText = CreateText(control.transform, "Bitacora", "<b>Mission log</b>", 26, TextAlignmentOptions.TopLeft, LogColor);
         Place(logText.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 290f), new Vector2(860f, 250f));
 
         // Operadores en sus computadoras (vistos de espaldas, mirando la pantalla grande)
         Sprite circle = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Knob.psd");
-        CreateOperator(control.transform, "VUELO", -330f, new Color(0.75f, 0.25f, 0.25f), circle);
-        CreateOperator(control.transform, "TRAYECTORIA", -110f, new Color(0.25f, 0.55f, 0.3f), circle);
-        CreateOperator(control.transform, "SISTEMAS", 110f, new Color(0.3f, 0.35f, 0.75f), circle);
-        CreateOperator(control.transform, "CIENCIA", 330f, new Color(0.65f, 0.45f, 0.75f), circle);
+        CreateOperator(control.transform, "FLIGHT", -330f, new Color(0.75f, 0.25f, 0.25f), circle);
+        CreateOperator(control.transform, "TRAJECTORY", -110f, new Color(0.25f, 0.55f, 0.3f), circle);
+        CreateOperator(control.transform, "SYSTEMS", 110f, new Color(0.3f, 0.35f, 0.75f), circle);
+        CreateOperator(control.transform, "SCIENCE", 330f, new Color(0.65f, 0.45f, 0.75f), circle);
 
         // Mitad derecha: fundido entre vistas, titulo de la vista 3D y boton de prueba
         GameObject fadeGo = new GameObject("FundidoVista3D", typeof(RectTransform), typeof(Image));
@@ -207,11 +238,11 @@ public static class LaunchSceneBuilder
         fade.color = new Color(0f, 0f, 0f, 0f);
         fade.raycastTarget = false;
 
-        TextMeshProUGUI viewTitle = CreateText(root, "TituloVista3D", "Despegue", 32, TextAlignmentOptions.Center, Color.white);
+        TextMeshProUGUI viewTitle = CreateText(root, "TituloVista3D", "Liftoff", 32, TextAlignmentOptions.Center, Color.white);
         Place(viewTitle.rectTransform, new Vector2(0.75f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -30f), new Vector2(900f, 50f));
         viewTitle.raycastTarget = false;
 
-        Button skip = CreateButton(root, "BotonSaltarFase", "Saltar (prueba)", 28);
+        Button skip = CreateButton(root, "BotonSaltarFase", "Skip (test)", 28);
         Place((RectTransform)skip.transform, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-30f, 30f), new Vector2(320f, 70f));
 
         // Panel de fin de mision
@@ -224,15 +255,26 @@ public static class LaunchSceneBuilder
         finish.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.7f);
 
         RectTransform finishBox = Box(finish.transform, "Caja", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(900f, 420f), PanelColor, null);
-        TextMeshProUGUI finishTitle = CreateText(finishBox, "Titulo", "¡Misión completada!", 60, TextAlignmentOptions.Center, AccentColor);
+        TextMeshProUGUI finishTitle = CreateText(finishBox, "Titulo", "Mission complete!", 60, TextAlignmentOptions.Center, AccentColor);
         Place(finishTitle.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -40f), new Vector2(820f, 90f));
-        TextMeshProUGUI finishText = CreateText(finishBox, "Texto", "La tripulación regresó a salvo a la Tierra.", 34, TextAlignmentOptions.Center, Color.white);
+        TextMeshProUGUI finishText = CreateText(finishBox, "Texto", "The crew returned safely to Earth.", 34, TextAlignmentOptions.Center, Color.white);
         Place(finishText.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -150f), new Vector2(820f, 80f));
-        Button results = CreateButton(finishBox, "BotonResultados", "Ver resultados", 44);
+        Button results = CreateButton(finishBox, "BotonResultados", "See results", 44);
         Place((RectTransform)results.transform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 50f), new Vector2(460f, 100f));
 
-        // ---------- LaunchScreen ----------
-        LaunchScreen launch = new GameObject("Lanzamiento").AddComponent<LaunchScreen>();
+        // Objects other people added under the canvas go back on top of the generated UI
+        foreach (Transform child in keptChildren)
+            if (child != null) child.SetParent(root, false);
+        Object.DestroyImmediate(holder.gameObject);
+
+        // ---------- LaunchScreen + FlightPhases (reused if they exist) ----------
+        if (launchGo == null) launchGo = new GameObject("Lanzamiento");
+        LaunchScreen launch = launchGo.GetComponent<LaunchScreen>();
+        if (launch == null) launch = launchGo.AddComponent<LaunchScreen>();
+        FlightPhases phases = launchGo.GetComponent<FlightPhases>();
+        if (phases == null) phases = launchGo.AddComponent<FlightPhases>(); // task 11 is part of the scene now
+        phases.screen = launch;
+        launch.skipButton = skip.gameObject;
         launch.rocket = rocket;
         launch.earth = earth;
         launch.moon = moon;
@@ -258,10 +300,11 @@ public static class LaunchSceneBuilder
         finish.SetActive(false);
 
         EditorUtility.SetDirty(launch);
+        EditorUtility.SetDirty(phases);
         AssetDatabase.SaveAssets();
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene);
-        Debug.Log("Escena de lanzamiento armada en " + Scenes.Launch + ".");
+        Debug.Log("Launch scene built in " + Scenes.Launch + " (FlightPhases kept, " + keptChildren.Count + " extra canvas object(s) kept).");
     }
 
     // ---------- EventSystem ----------

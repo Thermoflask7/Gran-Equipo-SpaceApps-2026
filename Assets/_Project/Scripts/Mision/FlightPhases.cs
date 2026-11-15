@@ -12,13 +12,15 @@ using UnityEngine;
 //     which MissionScoring uses for the final score.
 // A phase does not end until its event and its minigames are done (it turns off LaunchScreen.autoAdvance).
 //
-// For the minigames (tasks 12, 13, 14):
-//   flightPhases.MinigameRequested += role => { if (role == TrainingFocus.Piloting) OpenMyMinigame(); };
+// For the minigames (tasks 12, 13, 14), register one handler per role (in Awake or OnEnable):
+//   flightPhases.RegisterMinigame(TrainingFocus.Piloting, OpenMyMinigame);
 //   // when it ends:
 //   FlightPhases.SetResult(GameManager.Instance.flight, TrainingFocus.Piloting, rawResult0to1);
 //   flightPhases.MinigameDone();
-// The flight is paused (LaunchScreen.paused) while a minigame is open. If no minigame listens to
-// MinigameRequested yet, the flight does not stop: the log says the minigame was skipped.
+// The flight is paused (LaunchScreen.paused) while a minigame is open. A role with no registered handler
+// is skipped safely: the log says so and the flight goes on (audit F06: it can never stay paused forever
+// because of a role nobody handles). MinigameRequested is still fired for every minigame, for UI that only
+// wants to know (it does not pause the flight by itself).
 public class FlightPhases : MonoBehaviour
 {
     [Serializable]
@@ -46,8 +48,9 @@ public class FlightPhases : MonoBehaviour
         new PlannedMinigame { phase = EventPhase.LunarOrbit, role = TrainingFocus.Research, atProgress = 0.5f },
     };
 
-    // A minigame must open (the flight is already paused). Answer with MinigameDone().
+    // A minigame opened (the flight is already paused). Informative only: to handle a role, use RegisterMinigame.
     public event Action<TrainingFocus> MinigameRequested;
+    readonly Dictionary<TrainingFocus, Action> handlers = new Dictionary<TrainingFocus, Action>();
     // A random event happened in the flight (for example, to show it on the big screen).
     public event Action<EventData> EventHappened;
 
@@ -168,7 +171,8 @@ public class FlightPhases : MonoBehaviour
         TrainingFocus role = queue[0];
         queue.RemoveAt(0);
 
-        if (MinigameRequested == null)
+        Action open;
+        if (!handlers.TryGetValue(role, out open) || open == null)
         {
             screen.Log(RoleName(role) + " minigame not available yet: skipped.");
             return;
@@ -177,7 +181,36 @@ public class FlightPhases : MonoBehaviour
         CurrentMinigame = role;
         screen.paused = true;
         screen.Log(RoleName(role) + " minigame.");
-        MinigameRequested(role);
+        if (MinigameRequested != null) MinigameRequested(role);
+        try
+        {
+            open();
+        }
+        catch (Exception ex)
+        {
+            // A broken minigame must not freeze the flight
+            Debug.LogException(ex);
+            screen.Log(RoleName(role) + " minigame failed to open: skipped.");
+            MinigameDone();
+        }
+    }
+
+    // A minigame says it handles this role. Only one handler per role (a second call replaces the first).
+    public void RegisterMinigame(TrainingFocus role, Action open)
+    {
+        if (role == TrainingFocus.None || open == null) return;
+        handlers[role] = open;
+    }
+
+    public void UnregisterMinigame(TrainingFocus role, Action open)
+    {
+        Action current;
+        if (handlers.TryGetValue(role, out current) && current == open) handlers.Remove(role);
+    }
+
+    public bool HasMinigame(TrainingFocus role)
+    {
+        return handlers.ContainsKey(role);
     }
 
     // Called by the minigame when it ends (after writing its result). Resumes the flight.

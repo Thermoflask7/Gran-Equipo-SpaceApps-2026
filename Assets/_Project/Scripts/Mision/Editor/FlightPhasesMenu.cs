@@ -14,7 +14,7 @@ public static class FlightPhasesMenu
         if (screen == null)
         {
             Debug.LogError("Flight phases: the open scene has no LaunchScreen. Open Assets/_Project/Scenes/02_Lanzamiento "
-                + "(or build it with SpaceApps -> Armar escena de lanzamiento) and stop Play mode first.");
+                + "(or build it with SpaceApps -> Build launch scene) and stop Play mode first.");
             return;
         }
         FlightPhases phases = screen.GetComponent<FlightPhases>();

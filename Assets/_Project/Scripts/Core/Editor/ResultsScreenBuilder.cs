@@ -18,12 +18,11 @@ public static class ResultsScreenBuilder
     [MenuItem("SpaceApps/Results screen/Add to open scene")]
     static void AddToScene()
     {
-        Canvas canvas = Object.FindAnyObjectByType<Canvas>();
-        if (canvas == null)
-        {
-            EditorUtility.DisplayDialog("Results screen", "The open scene has no Canvas.", "OK");
+        // Overlay canvas only, never an arbitrary Canvas of the scene (audit F02)
+        Canvas canvas = OverlayCanvasUtil.GetOrCreate();
+        if (Object.FindAnyObjectByType<ResultsScreen>(FindObjectsInactive.Include) != null
+            && !EditorUtility.DisplayDialog("Results screen", "This scene already has a ResultsScreen. Add another one?", "Add", "Cancel"))
             return;
-        }
 
         // Centered panel
         GameObject root = new GameObject("ResultsScreen", typeof(RectTransform), typeof(Image));

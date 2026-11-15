@@ -335,22 +335,8 @@ public static class MaintenanceMinigameBuilder
             prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
         }
 
-        Canvas canvas = Object.FindAnyObjectByType<Canvas>();
-        if (canvas == null)
-        {
-            GameObject canvasGo = new GameObject("Canvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
-            canvas = canvasGo.GetComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            CanvasScaler scaler = canvasGo.GetComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920, 1080);
-            Undo.RegisterCreatedObjectUndo(canvasGo, "Create Canvas");
-        }
-        if (Object.FindAnyObjectByType<EventSystem>() == null)
-        {
-            GameObject es = new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
-            Undo.RegisterCreatedObjectUndo(es, "Create EventSystem");
-        }
+        // Overlay canvas only, never an arbitrary Canvas of the scene (audit F02)
+        Canvas canvas = OverlayCanvasUtil.GetOrCreate();
 
         GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab, canvas.transform);
         Undo.RegisterCreatedObjectUndo(instance, "Add maintenance minigame");

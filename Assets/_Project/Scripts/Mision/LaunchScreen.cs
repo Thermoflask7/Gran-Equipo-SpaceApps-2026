@@ -3,78 +3,85 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-// Escena 02_Lanzamiento (tarea 10): pantalla dividida.
-//   Izquierda (2D): control de mision con operadores y una pantalla grande con la fase y los datos del vuelo.
-//   Derecha (3D): tres vistas (FlightStage):
-//     Liftoff  = la camara sigue al cohete despegando hasta salir de la atmosfera (primera parte de Salida).
-//     Transit  = vista general de la ruta Tierra -> Luna -> Tierra (resto de Salida, Orbita lunar, primera parte de Retorno).
-//     Landing  = la camara sigue a la capsula en la reentrada hasta el amerizaje (ultima parte de Retorno).
-//   Entre vistas hay un fundido corto a negro.
-// Se arma con el menu de Unity: SpaceApps > Armar escena de lanzamiento.
+// Scene 02_Lanzamiento (task 10, Mateo): split screen.
+//   Left (2D): mission control with operators and a big screen with the phase and the flight data.
+//   Right (3D): three views (FlightStage):
+//     Liftoff  = the camera follows the rocket until it leaves the atmosphere (first part of Departure).
+//     Transit  = overall Earth -> Moon -> Earth route (rest of Departure, Lunar orbit, first part of Return).
+//     Landing  = the camera follows the capsule from reentry to splashdown (last part of Return).
+//   There is a short fade to black between views.
+// Built with the Unity menu SpaceApps > Build launch scene.
 //
-// Para la tarea 11 (fases del vuelo) y los minijuegos:
-//   - CurrentPhase / PhaseProgress dicen en que fase va el vuelo (EventPhase.Departure, LunarOrbit, Return).
-//   - PhaseStarted se dispara al empezar cada fase y MissionFinished al terminar el vuelo.
-//   - CurrentStage / StageProgress / StageChanged dicen que vista 3D se esta mostrando.
-//   - paused = true detiene el vuelo (por ejemplo mientras se juega un minijuego).
-//   - autoAdvance = false hace que la fase no avance sola al llegar al 100%: llama NextPhase() cuando toque.
-//   - Log("texto") escribe en la bitacora de control de mision.
-// Los datos de vuelo (altitud, distancia, velocidad, combustible) son de prueba hasta conectar la fisica (tarea 17).
+// For task 11 (flight phases) and the minigames:
+//   - CurrentPhase / PhaseProgress tell the flight phase (EventPhase.Departure, LunarOrbit, Return).
+//   - PhaseStarted fires when each phase starts and MissionFinished when the flight ends.
+//   - CurrentStage / StageProgress / StageChanged tell which 3D view is shown.
+//   - paused = true stops the flight (for example while a minigame is played).
+//   - autoAdvance = false keeps the phase at 100% until someone calls NextPhase().
+//   - Log("text") writes in the mission control log.
+// The HUD flight data (altitude, distance, speed, fuel) are ILLUSTRATIVE values with a realistic shape,
+// not output of RocketPhysics; the HUD labels them as simulated (audit F11). Mission time uses
+// gm.mission.missionDays. Translated to English by claude_c (audit F12).
 public class LaunchScreen : MonoBehaviour
 {
-    [Header("Vista 3D: ruta (vista general)")]
+    [Header("3D view: route (overview)")]
     public Transform rocket;
     public Transform earth;
     public Transform moon;
     public LineRenderer pathLine;
-    [Tooltip("Distancia de la orbita lunar sobre la superficie de la Luna (unidades de la escena)")]
+    [Tooltip("Height of the lunar orbit above the Moon surface (scene units)")]
     public float orbitGap = 0.8f;
 
-    [Header("Vista 3D: camara y fundido")]
+    [Header("3D view: camera and fade")]
     public Camera viewCamera;
     public TMP_Text viewTitleLabel;
     public Image viewFade;
     public float fadeSeconds = 0.5f;
-    [Tooltip("Que tan rapido la camara alcanza al cohete en los acercamientos")]
+    [Tooltip("How fast the camera catches up with the rocket in the close-ups")]
     public float cameraFollow = 4f;
 
-    [Header("Vista 3D: despegue (acercamiento)")]
-    [Tooltip("Centro de la plataforma; la superficie esta en su altura")]
+    [Header("3D view: liftoff (close-up)")]
+    [Tooltip("Center of the pad; the ground is at its height")]
     public Transform liftoffSite;
     public Transform closeRocket;
     public Transform rocketFlame;
-    [Tooltip("Parte de la fase Salida que dura el acercamiento del despegue (0 a 1)")]
+    [Tooltip("Share of the Departure phase used by the liftoff close-up (0 to 1)")]
     [Range(0.1f, 0.9f)] public float liftoffShare = 0.35f;
     public float padHeight = 1f;
     public float climbHeight = 150f;
 
-    [Header("Vista 3D: reentrada y amerizaje (acercamiento)")]
-    [Tooltip("Punto del amerizaje; el nivel del mar esta en su altura")]
+    [Header("3D view: reentry and splashdown (close-up)")]
+    [Tooltip("Splashdown point; sea level is at its height")]
     public Transform landingSite;
     public Transform returnCapsule;
     public Transform reentryGlow;
     public Transform parachute;
-    [Tooltip("Parte de la fase Retorno que dura el acercamiento del aterrizaje (0 a 1)")]
+    [Tooltip("Share of the Return phase used by the landing close-up (0 to 1)")]
     [Range(0.1f, 0.9f)] public float landingShare = 0.5f;
     public float reentryHeight = 150f;
 
-    [Header("Control de mision (UI)")]
+    [Header("Mission control (UI)")]
     public TMP_Text phaseLabel;
     public TMP_Text dataLabel;
     public TMP_Text logLabel;
     public RectTransform progressFill;
     public GameObject finishPanel;
+    [Tooltip("Test 'Skip' button: hidden outside the Editor and development builds")]
+    public GameObject skipButton;
 
-    [Header("Duracion de cada fase (segundos)")]
+    [Header("Duration of each phase (seconds)")]
     public float departureSeconds = 26f;
     public float lunarOrbitSeconds = 15f;
     public float returnSeconds = 20f;
 
-    [Header("Control del vuelo")]
-    [Tooltip("Si esta apagado, la fase se queda en 100% hasta que alguien llame NextPhase()")]
+    [Header("Flight control")]
+    [Tooltip("If off, the phase stays at 100% until someone calls NextPhase()")]
     public bool autoAdvance = true;
-    [Tooltip("Detiene el vuelo (por ejemplo durante un minijuego)")]
+    [Tooltip("Stops the flight (for example during a minigame)")]
     public bool paused;
+
+    // The test Skip button only works in the Editor and in development builds (audit F06)
+    public static bool SkipAllowed { get { return Application.isEditor || Debug.isDebugBuild; } }
 
     public EventPhase CurrentPhase { get; private set; } = EventPhase.Departure;
     public float PhaseProgress { get; private set; } // 0 a 1 dentro de la fase actual
@@ -85,10 +92,10 @@ public class LaunchScreen : MonoBehaviour
     public event Action<FlightStage> StageChanged;
     public event Action MissionFinished;
 
-    const float MissionDays = 10f;      // duracion aproximada de Artemis II
-    const float EarthMoonKm = 384400f;  // distancia media Tierra-Luna
-    const float ParkingOrbitKm = 185f;  // orbita baja al salir de la atmosfera
-    const float ReentryKm = 120f;       // altura de la interfaz de reentrada
+    const float DefaultMissionDays = 12f; // only if there is no mission (MisionArtemis has 12)
+    const float EarthMoonKm = 384400f;  // mean Earth-Moon distance
+    const float ParkingOrbitKm = 185f;  // low orbit after leaving the atmosphere
+    const float ReentryKm = 120f;       // height of the reentry interface
     const int MaxLogLines = 6;
     static readonly Color SkyColor = new Color(0.45f, 0.7f, 0.95f);
 
@@ -112,6 +119,8 @@ public class LaunchScreen : MonoBehaviour
         if (reentryGlow != null) glowScale = reentryGlow.localScale;
         if (parachute != null) chuteScale = parachute.localScale;
         if (finishPanel != null) finishPanel.SetActive(false);
+        if (skipButton == null) skipButton = GameObject.Find("BotonSaltarFase"); // name used by LaunchSceneBuilder
+        if (skipButton != null && !SkipAllowed) skipButton.SetActive(false);
 
         DrawPath();
         StartPhase(EventPhase.Departure);
@@ -143,7 +152,7 @@ public class LaunchScreen : MonoBehaviour
         UpdateHud();
     }
 
-    // ---------- Fases ----------
+    // ---------- Phases ----------
 
     public void NextPhase()
     {
@@ -153,7 +162,7 @@ public class LaunchScreen : MonoBehaviour
         else Finish();
     }
 
-    // Brinca a una fase en particular (Planning no aplica en esta escena)
+    // Jumps to a given phase (Planning does not apply in this scene)
     public void SetPhase(EventPhase phase)
     {
         if (phase == EventPhase.Planning) return;
@@ -163,10 +172,11 @@ public class LaunchScreen : MonoBehaviour
         Refresh(true);
     }
 
-    // Boton de prueba "Saltar": despegue -> viaje -> orbita lunar -> retorno -> aterrizaje -> fin
+    // Test "Skip" button: liftoff -> transit -> lunar orbit -> return -> landing -> end.
+    // Development only: in a release build it does nothing, so gated progression cannot be bypassed.
     public void SkipPhase()
     {
-        if (Finished) return;
+        if (Finished || !SkipAllowed) return;
         if (CurrentStage == FlightStage.Liftoff) PhaseProgress = liftoffShare;
         else if (CurrentPhase == EventPhase.Return && CurrentStage == FlightStage.Transit) PhaseProgress = 1f - landingShare;
         else NextPhase();
@@ -178,12 +188,12 @@ public class LaunchScreen : MonoBehaviour
         if (Finished) return;
         Finished = true;
         PhaseProgress = 1f;
-        Log("Amerizaje confirmado. Tripulación a salvo.");
+        Log("Splashdown confirmed. Crew safe.");
         if (finishPanel != null) finishPanel.SetActive(true);
         if (MissionFinished != null) MissionFinished();
     }
 
-    // Boton "Ver resultados"
+    // "See results" button
     public void GoToResults()
     {
         GameManager.Instance.GoToScene(Scenes.Results);
@@ -193,7 +203,7 @@ public class LaunchScreen : MonoBehaviour
     {
         CurrentPhase = phase;
         PhaseProgress = 0f;
-        Log("Inicia fase: " + PhaseName(phase));
+        Log("Phase started: " + PhaseName(phase));
         if (PhaseStarted != null) PhaseStarted(phase);
     }
 
@@ -206,22 +216,22 @@ public class LaunchScreen : MonoBehaviour
 
     public static string PhaseName(EventPhase phase)
     {
-        if (phase == EventPhase.Departure) return "Salida";
-        if (phase == EventPhase.LunarOrbit) return "Órbita lunar";
-        if (phase == EventPhase.Return) return "Retorno";
-        return "Planeación";
+        if (phase == EventPhase.Departure) return "Departure";
+        if (phase == EventPhase.LunarOrbit) return "Lunar orbit";
+        if (phase == EventPhase.Return) return "Return";
+        return "Planning";
     }
 
-    // ---------- Vistas 3D (FlightStage) ----------
+    // ---------- 3D views (FlightStage) ----------
 
     public static string StageName(FlightStage stage)
     {
-        if (stage == FlightStage.Liftoff) return "Despegue";
-        if (stage == FlightStage.Landing) return "Aterrizaje";
-        return "Viaje";
+        if (stage == FlightStage.Liftoff) return "Liftoff";
+        if (stage == FlightStage.Landing) return "Landing";
+        return "Transit";
     }
 
-    // Que vista toca segun la fase y su progreso
+    // Which view matches the phase and its progress
     public FlightStage StageFor(EventPhase phase, float progress)
     {
         if (phase == EventPhase.Departure && progress < liftoffShare) return FlightStage.Liftoff;
@@ -257,7 +267,7 @@ public class LaunchScreen : MonoBehaviour
         if (stageStarted && stage == CurrentStage) return false;
         stageStarted = true;
         CurrentStage = stage;
-        Log("Vista: " + StageName(stage));
+        Log("View: " + StageName(stage));
         if (viewTitleLabel != null) viewTitleLabel.text = ViewTitle(stage);
         if (StageChanged != null) StageChanged(stage);
         return true;
@@ -265,9 +275,9 @@ public class LaunchScreen : MonoBehaviour
 
     static string ViewTitle(FlightStage stage)
     {
-        if (stage == FlightStage.Liftoff) return "Despegue";
-        if (stage == FlightStage.Landing) return "Reentrada y amerizaje";
-        return "Ruta: Tierra - Luna - Tierra";
+        if (stage == FlightStage.Liftoff) return "Liftoff";
+        if (stage == FlightStage.Landing) return "Reentry and splashdown";
+        return "Route: Earth - Moon - Earth";
     }
 
     // Fundido a negro alrededor del cambio de vista (sin estado: depende solo del tiempo que falta o paso)
@@ -415,7 +425,7 @@ public class LaunchScreen : MonoBehaviour
         log = message + "\n" + log;
         string[] lines = log.Split('\n');
         if (lines.Length > MaxLogLines) log = string.Join("\n", lines, 0, MaxLogLines);
-        if (logLabel != null) logLabel.text = "<b>Bitácora</b>\n" + log;
+        if (logLabel != null) logLabel.text = "<b>Mission log</b>\n" + log;
     }
 
     // ---------- Vista general ----------
@@ -485,21 +495,30 @@ public class LaunchScreen : MonoBehaviour
 
     void UpdateHud()
     {
-        if (phaseLabel != null) phaseLabel.text = "FASE: " + PhaseName(CurrentPhase).ToUpper() + " · " + StageName(CurrentStage).ToUpper();
+        if (phaseLabel != null) phaseLabel.text = "PHASE: " + PhaseName(CurrentPhase).ToUpper() + " · " + StageName(CurrentStage).ToUpper();
         if (progressFill != null) progressFill.anchorMax = new Vector2(PhaseProgress, 1f);
         if (dataLabel == null) return;
 
         string where;
-        if (CurrentStage == FlightStage.Liftoff) where = "Altitud:  " + LiftoffAltitudeKm().ToString("N0") + " km";
-        else if (CurrentStage == FlightStage.Landing) where = "Altitud:  " + LandingAltitudeKm().ToString("N0") + " km";
-        else where = "Distancia a la Tierra:  " + TransitDistanceKm().ToString("N0") + " km";
+        if (CurrentStage == FlightStage.Liftoff) where = "Altitude:  " + LiftoffAltitudeKm().ToString("N0") + " km";
+        else if (CurrentStage == FlightStage.Landing) where = "Altitude:  " + LandingAltitudeKm().ToString("N0") + " km";
+        else where = "Distance to Earth:  " + TransitDistanceKm().ToString("N0") + " km";
 
         float v = FakeVelocity();
         dataLabel.text =
             where + "\n" +
-            "Velocidad:  " + v.ToString(v < 1f ? "0.00" : "0.0") + " km/s\n" +
-            "Combustible:  " + FakeFuel().ToString("0") + " %\n" +
-            "Tiempo de misión:  " + MissionTime();
+            "Speed:  " + v.ToString(v < 1f ? "0.00" : "0.0") + " km/s\n" +
+            "Fuel:  " + FakeFuel().ToString("0") + " %\n" +
+            "Mission time:  " + MissionTime() + "\n" +
+            "<size=60%><alpha=#99>Simulated, illustrative values (not real telemetry)</size>";
+    }
+
+    // Mission length from the chosen mission (MisionArtemis: 12 days), so the HUD matches the folder and the scoring
+    static float MissionDays()
+    {
+        GameManager gm = GameManager.Instance;
+        if (gm != null && gm.mission != null && gm.mission.missionDays > 0) return gm.mission.missionDays;
+        return DefaultMissionDays;
     }
 
     float LiftoffAltitudeKm()
@@ -569,7 +588,7 @@ public class LaunchScreen : MonoBehaviour
     string MissionTime()
     {
         float total = departureSeconds + lunarOrbitSeconds + returnSeconds;
-        float seconds = total > 0f ? flightSeconds / total * MissionDays * 86400f : 0f;
+        float seconds = total > 0f ? flightSeconds / total * MissionDays() * 86400f : 0f;
         int s = Mathf.FloorToInt(seconds);
         int days = s / 86400;
         int hours = (s % 86400) / 3600;

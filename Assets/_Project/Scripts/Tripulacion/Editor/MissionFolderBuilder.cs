@@ -157,27 +157,17 @@ public static class MissionFolderBuilder
             prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
         }
 
-        Canvas canvas = Object.FindAnyObjectByType<Canvas>();
-        if (canvas == null)
-        {
-            GameObject canvasGo = new GameObject("Canvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
-            canvas = canvasGo.GetComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            CanvasScaler scaler = canvasGo.GetComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920, 1080);
-            scaler.matchWidthOrHeight = 0.5f;
-            Undo.RegisterCreatedObjectUndo(canvasGo, "Create Canvas");
-        }
-        if (Object.FindAnyObjectByType<EventSystem>() == null)
-        {
-            GameObject es = new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
-            es.GetComponent<InputSystemUIInputModule>().AssignDefaultActions();
-            Undo.RegisterCreatedObjectUndo(es, "Create EventSystem");
-        }
+        // Overlay canvas only: never the PC monitor canvas (PC_Desktop) of 01_Planeacion (audit F02)
+        Canvas canvas = OverlayCanvasUtil.GetOrCreate();
 
         GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab, canvas.transform);
         Undo.RegisterCreatedObjectUndo(instance, "Add mission folder");
+        // On the desk the folder starts closed: the folder station calls Open() when it is clicked
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == Scenes.Planning)
+        {
+            instance.SetActive(false);
+            Debug.Log("Mission folder added INACTIVE to " + Scenes.Planning + ": the folder station must call MissionFolder.Open().");
+        }
         Selection.activeGameObject = instance;
     }
 

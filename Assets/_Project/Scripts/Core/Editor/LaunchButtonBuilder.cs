@@ -74,12 +74,8 @@ public static class LaunchButtonBuilder
             CreatePrefab();
             prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
         }
-        Canvas canvas = Object.FindAnyObjectByType<Canvas>();
-        if (canvas == null)
-        {
-            EditorUtility.DisplayDialog("Launch button", "The open scene has no Canvas.", "OK");
-            return;
-        }
+        // Overlay canvas only: never the PC monitor canvas (PC_Desktop) of 01_Planeacion (audit F02)
+        Canvas canvas = OverlayCanvasUtil.GetOrCreate();
         GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab, canvas.transform);
         Undo.RegisterCreatedObjectUndo(instance, "Add launch button");
         Selection.activeGameObject = instance;

@@ -35,6 +35,8 @@ Menú → **Planeación** (escritorio) → **Lanzamiento** (salida → órbita l
 - UI solo con uGUI + **TextMeshPro** (`TextMeshProUGUI` / `TMP_Text`). Nada de `UnityEngine.UI.Text` legacy.
 - Entrada solo con el **Input System nuevo** (`UnityEngine.InputSystem`: `Keyboard.current`, `Mouse.current` o Input Actions). Nada de `Input.GetKey`, `Input.GetAxis` ni `Input.mousePosition`: el manejador viejo está apagado en el proyecto y truena. Todo EventSystem lleva `InputSystemUIInputModule`, no `StandaloneInputModule`.
 - Nada de APIs obsoletas de Unity 6: cero warnings `CS0618`. Por ejemplo, `FindAnyObjectByType` / `FindObjectsByType` en vez de `FindObjectOfType` o `FindFirstObjectByType`.
+- Tampoco ajustes de importación obsoletos en los `.meta` (por ejemplo `materialLocation: 0`, External).
+- Todos los mensajes de commit van en **inglés** (por ejemplo `Add PC zoom to desk scene`). Docs, código y UI pueden seguir en español.
 - No modificar escenas, prefabs o scripts de otra persona sin avisarle (evita conflictos de merge).
 
 ## Estructura de carpetas

@@ -70,7 +70,8 @@ public class MissionSelect : MonoBehaviour
         planetImage.raycastTarget = false;
         planet.GetComponent<LayoutElement>().preferredHeight = 170;
 
-        AddText(card.transform, ShortName(mission), 40, FontStyles.Bold, Color.white);
+        AddText(card.transform, MissionName(mission), 46, FontStyles.Bold, Color.white);
+        if (!string.IsNullOrEmpty(mission.missionName)) AddText(card.transform, ShortName(mission), 28, FontStyles.Normal, new Color(0.75f, 0.82f, 0.92f));
         if (mission.locked) AddText(card.transform, "Coming soon", 30, FontStyles.Italic, new Color(0.65f, 0.7f, 0.78f));
         else AddText(card.transform, "Available", 30, FontStyles.Bold, new Color(0.55f, 0.9f, 0.6f));
 
@@ -128,7 +129,7 @@ public class MissionSelect : MonoBehaviour
             return;
         }
         // Only data from the mission asset
-        details.text = "<b>" + selected.destinationName + "</b>\n" + selected.description + "\n\n"
+        details.text = "<b>" + MissionName(selected) + "</b>   <color=#9FB0C3>" + selected.destinationName + "</color>\n" + selected.description + "\n\n"
             + "<color=#8FB8FF>Crew</color> " + selected.crewCount
             + "     <color=#8FB8FF>Duration</color> " + selected.missionDays + " days"
             + "     <color=#8FB8FF>Orion delta-v needed</color> " + selected.requiredDeltaV.ToString("N0") + " m/s"
@@ -143,6 +144,13 @@ public class MissionSelect : MonoBehaviour
         gm.ResetGame();
         gm.mission = selected;
         gm.GoToScene(Scenes.Planning);
+    }
+
+    // "Selene"; missions without a name use their destination
+    static string MissionName(DestinationData m)
+    {
+        if (!string.IsNullOrEmpty(m.missionName)) return m.missionName;
+        return ShortName(m);
     }
 
     // "Crewed lunar orbit (Artemis)" -> "Crewed lunar orbit" on the card; the full name is in the details

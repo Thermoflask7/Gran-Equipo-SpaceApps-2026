@@ -16,7 +16,7 @@ public static class MainMenuBuilder
     static readonly Color BoxColor = new Color(0.05f, 0.07f, 0.14f, 0.95f);
 
     // Placeholder name of the game: change it here and run the menu again
-    const string GameTitle = "Mission to the Moon";
+    const string GameTitle = "Space Mission Simulator";
     const string GameSubtitle = "Plan it. Build it. Fly it.";
 
     const string DestinationsFolder = "Assets/_Project/Data/Destinos/";
@@ -179,7 +179,14 @@ public static class MainMenuBuilder
         MissionSelect select = panel.AddComponent<MissionSelect>();
         select.cardSprite = RoundedSprite;
         select.planetSprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Knob.psd");
-        select.missions.Add(AssetDatabase.LoadAssetAtPath<DestinationData>(DestinationsFolder + "MisionArtemis.asset"));
+        DestinationData moon = AssetDatabase.LoadAssetAtPath<DestinationData>(DestinationsFolder + "MisionArtemis.asset");
+        if (moon != null && string.IsNullOrEmpty(moon.missionName))
+        {
+            moon.missionName = "Selene";
+            EditorUtility.SetDirty(moon);
+            AssetDatabase.SaveAssets();
+        }
+        select.missions.Add(moon);
         select.missions.Add(LockedMission("MissionMars", "Mars", "Crewed mission to Mars."));
         select.missions.Add(LockedMission("MissionEuropa", "Europa", "Mission to Europa, the icy moon of Jupiter."));
 

@@ -5,6 +5,7 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "SpaceApps/Mission", fileName = "NewMission")]
 public class DestinationData : ScriptableObject
 {
+    public string missionName;     // name of the mission in the game, e.g. "Selene" (empty = use destinationName)
     public string destinationName;
     [TextArea] public string description;
     public float launchDeltaV;   // no longer used: the SLS is a complete service (kept so assets do not break)

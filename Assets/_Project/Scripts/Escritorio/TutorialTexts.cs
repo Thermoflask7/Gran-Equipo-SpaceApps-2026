@@ -13,7 +13,7 @@ public static class TutorialTexts
     public const string WelcomeTitle = "Welcome to mission planning, Agent!";
     public const string WelcomeButton = "Start planning";
     // Stamp picture on the welcome paper: Assets/_Project/Resources/Tutorials/TopSecretStamp.png
-    // (public domain CC0 clip art from freesvg.org / OpenClipart, "Top Secret Stamp vector graphics", id 23749)
+    // (made for this game with a small Python/PIL script: red double border, "TOP SECRET", "MISSION PLANNING", worn ink)
     public const string WelcomeStampPath = "Tutorials/TopSecretStamp";
 
     // Welcome body: the mission line + the 4 objectives of LaunchChecklist

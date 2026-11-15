@@ -115,7 +115,7 @@ public class TutorialPopup : MonoBehaviour
         stampImage.texture = texture;
         stampImage.gameObject.SetActive(texture != null);
         if (texture == null) return;
-        float height = 170f; // keeps the image's own proportions
+        float height = 110f; // keeps the image's own proportions
         stampImage.rectTransform.sizeDelta = new Vector2(height * texture.width / Mathf.Max(1, texture.height), height);
     }
 
@@ -258,7 +258,7 @@ public class TutorialPopup : MonoBehaviour
         // Stamp picture (welcome), same corner, a bit tilted
         RectTransform stampPicture = NewRect("StampImage", card);
         stampPicture.anchorMin = stampPicture.anchorMax = Vector2.one;
-        stampPicture.anchoredPosition = new Vector2(-130f, -80f);
+        stampPicture.anchoredPosition = new Vector2(-175f, -85f);
         stampPicture.localRotation = Quaternion.Euler(0f, 0f, 12f);
         popup.stampImage = stampPicture.gameObject.AddComponent<RawImage>();
         popup.stampImage.raycastTarget = false;
@@ -270,7 +270,7 @@ public class TutorialPopup : MonoBehaviour
         title.anchorMax = Vector2.one;
         title.pivot = new Vector2(0.5f, 1f);
         title.offsetMin = new Vector2(60f, -140f);
-        title.offsetMax = new Vector2(-260f, -40f);
+        title.offsetMax = new Vector2(-330f, -40f);
         popup.titleText = AddText(title, "Label", "", 42f, InkColor);
         popup.titleText.fontStyle = FontStyles.Bold;
         popup.titleText.alignment = TextAlignmentOptions.MidlineLeft;

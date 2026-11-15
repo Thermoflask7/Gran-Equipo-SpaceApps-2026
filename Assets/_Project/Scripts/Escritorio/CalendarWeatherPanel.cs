@@ -48,7 +48,8 @@ public class CalendarWeatherPanel : MonoBehaviour
     }
 
     readonly List<Card> cards = new List<Card>();
-    readonly Dictionary<string, LaunchSiteData> runtimeSites = new Dictionary<string, LaunchSiteData>();
+    // Static so GameManager.launchSite stays valid after the planning scene unloads.
+    static readonly Dictionary<string, LaunchSiteData> runtimeSites = new Dictionary<string, LaunchSiteData>();
     static readonly Dictionary<WeatherCondition, Sprite> icons = new Dictionary<WeatherCondition, Sprite>();
 
     CanvasGroup sheetGroup;
@@ -81,7 +82,6 @@ public class CalendarWeatherPanel : MonoBehaviour
     void OnDestroy()
     {
         LaunchWeatherModel.ForecastChanged -= Refresh;
-        foreach (var data in runtimeSites.Values) if (data != null) Destroy(data);
     }
 
     void Build(Transform map, Bounds cal, Camera eventCamera)
@@ -283,7 +283,11 @@ public class CalendarWeatherPanel : MonoBehaviour
         DayWeather[] days = LaunchWeatherModel.GetForecast(site.id);
         data.weatherRiskByDay = new float[days.Length];
         for (int i = 0; i < days.Length; i++) data.weatherRiskByDay[i] = days[i].risk;
-        gm.SetLaunch(data, selectedDay);
+        if (gm.SetLaunch(data, selectedDay))
+        {
+            gm.launchWeather = days[selectedDay].condition;
+            gm.launchWindKnots = days[selectedDay].windKnots;
+        }
     }
 
     /// <summary>Fade with the map. Hidden and not clickable at 0.</summary>

@@ -99,6 +99,9 @@ public class LaunchScreen : MonoBehaviour
     const int MaxLogLines = 6;
     static readonly Color SkyColor = new Color(0.45f, 0.7f, 0.95f);
 
+    /// <summary>1 near the ground, 0 out of the atmosphere (read by LaunchWeatherVisuals).</summary>
+    public float Atmosphere { get; private set; } = 1f;
+
     float flightSeconds;
     string log = "";
     bool stageStarted;
@@ -110,6 +113,8 @@ public class LaunchScreen : MonoBehaviour
 
     void Start()
     {
+        // Weather of the chosen launch day (sky, light, fog); added here so the scene builder does not need it.
+        if (GetComponent<LaunchWeatherVisuals>() == null) gameObject.AddComponent<LaunchWeatherVisuals>();
         if (viewCamera != null)
         {
             overviewPosition = viewCamera.transform.position;
@@ -321,6 +326,7 @@ public class LaunchScreen : MonoBehaviour
         {
             cam.SetPositionAndRotation(overviewPosition, overviewRotation);
             viewCamera.backgroundColor = Color.black;
+            Atmosphere = 0f;
             return;
         }
 
@@ -345,7 +351,8 @@ public class LaunchScreen : MonoBehaviour
         // Cielo azul cerca del suelo, negro fuera de la atmosfera
         float altitude = target.position.y - site.position.y;
         float space = Mathf.Clamp01(altitude / ((up ? climbHeight : reentryHeight) * 0.45f));
-        viewCamera.backgroundColor = Color.Lerp(SkyColor, Color.black, space);
+        Atmosphere = 1f - space;
+        viewCamera.backgroundColor = Color.Lerp(up ? LaunchWeatherVisuals.LiftoffSky : SkyColor, Color.black, space);
     }
 
     // ---------- Despegue ----------

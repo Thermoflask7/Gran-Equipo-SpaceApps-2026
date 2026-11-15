@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7b91087a266cdd4bb176c674752c65e, type: 3}
+  m_Name: PilotingSettings
+  m_EditorClassIdentifier: Assembly-CSharp::PilotingSettings
+  sweepTime: 2.2
+  speedUpPerStep: 0.08
+  returnSpeedMultiplier: 1.2
+  readyTime: 1
+  feedbackTime: 1.2
+  windowWidth: 0.24
+  shrinkPerStep: 0.025
+  minWindowWidth: 0.1
+  perfectFraction: 0.35
+  minWindowCenter: 0.35
+  maxWindowCenter: 0.85
+  edgeScore: 0.6
+  nearMissScore: 0.25
+  departureSteps:
+  - stepName: Throttle down for Max Q
+    description: About 1 minute after liftoff the air pressure on the rocket peaks (Max Q). The engines throttle down to protect the structure.
+  - stepName: Booster separation
+    description: About 2 minutes in, the two solid rocket boosters burn out and are released.
+  - stepName: Core stage cutoff (MECO)
+    description: 'About 8 minutes in, the four core stage engines shut down: the rocket is almost in orbit.'
+  - stepName: Core stage separation
+    description: The empty core stage is released so the upper stage does not carry its dead weight.
+  - stepName: Translunar injection burn
+    description: The upper stage fires to raise Orion's speed to about 10 km/s and send it toward the Moon.
+  lunarOrbitSteps:
+  - stepName: Lunar orbit insertion
+    description: Orion's service module fires against the direction of travel so the Moon's gravity can capture it.
+  - stepName: Orbit trim burn
+    description: A short burn fixes small errors so the orbit stays stable and safe.
+  - stepName: Trans-Earth injection
+    description: The main engine fires again to leave lunar orbit and head home.
+  returnSteps:
+  - stepName: Service module separation
+    description: Before reentry the crew module releases the service module, which burns up in the atmosphere.
+  - stepName: Entry interface
+    description: "Orion hits the atmosphere at about 11 km/s. The heat shield faces forward and reaches about 2,800 \xB0C."
+  - stepName: Drogue parachutes
+    description: At about 7.6 km altitude, two drogue parachutes stabilize and slow the capsule.
+  - stepName: Main parachutes
+    description: At about 2.9 km, three main parachutes slow Orion to about 27 km/h for splashdown in the ocean.

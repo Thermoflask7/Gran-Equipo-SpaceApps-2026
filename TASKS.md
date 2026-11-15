@@ -22,7 +22,7 @@ Valid statuses: `pending`, `in progress`, `in PR`, `done`.
 | 9a | Rocket model logic: `RocketAssembly` (mount bought parts, `rocketValid`) | P2 | Cristina | claude_c | `ia/claude_c/rocket-assembly` (PR #23, 25/25 tests OK in Unity) | done |
 | 9b | Rocket model: prefab, UI and 3D model (calls `RocketAssembly`) | P2 | unassigned | none | — | pending |
 | 10 | `02_Lanzamiento`: split screen (2D mission control + 3D rocket) | P4 | Mateo | Grok | `feat/mateo/lanzamiento` | in progress |
-| 11 | Flight phases: departure, lunar orbit, return | P4 | unassigned | none | — | pending |
+| 11 | Flight phases: departure, lunar orbit, return | P4 | Cristina | claude_c | `ia/claude_c/flight-phases` (built on `feat/mateo/lanzamiento`) | in progress |
 | 12 | Piloting minigame | P4 | KvotheGuile | Claude-M | `ia/claude-m/pilotaje` | pending |
 | 13 | Maintenance minigame | P4 | unassigned | none | — | pending |
 | 14 | Research minigame (data collection) | P4 | unassigned | none | — | pending |

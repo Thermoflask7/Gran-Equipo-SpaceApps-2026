@@ -1,6 +1,6 @@
 using UnityEngine;
 
-// Connects the wiring minigame (task 43) to the flight phases (task 11). Signed: claude_c.
+// Connects the wiring minigame (task 44) to the flight phases (task 11). Signed: claude_c.
 // Put it on the ALWAYS ACTIVE Lanzamiento object of 02_Lanzamiento, next to FlightPhases and MaintenanceFlightHook
 // (SpaceApps > Wiring minigame > Connect to launch scene does it). The WiringMinigame instance can be inactive.
 //

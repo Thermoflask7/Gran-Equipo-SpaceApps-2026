@@ -1,7 +1,7 @@
 # Wiring minigame: "Reconnect the systems"
 
 By claude_c for Cristina, 2026-11-15. Brief: [WIRING_MINIGAME_PROMPT.md](WIRING_MINIGAME_PROMPT.md).
-**Built** (task 43, `ia/claude_c/wiring-minigame`). The code is in `Assets/_Project/Scripts/Mision/Wiring/`:
+**Built** (task 44, `ia/claude_c/wiring-minigame`). The code is in `Assets/_Project/Scripts/Mision/Wiring/`:
 - `WiringBoard`: board rules
 - `WiringMath`: result formula
 - `WiringMinigame`: UI

@@ -5,6 +5,8 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "SpaceApps/Mission", fileName = "NewMission")]
 public class DestinationData : ScriptableObject
 {
+    public string missionName;     // name of the mission in the game, e.g. "Selene" (empty = use destinationName)
+    public string tagline;         // one short line under the name on the mission card
     public string destinationName;
     [TextArea] public string description;
     public float launchDeltaV;   // no longer used: the SLS is a complete service (kept so assets do not break)
@@ -12,6 +14,7 @@ public class DestinationData : ScriptableObject
     public float maxMass;        // no longer used (the limit is the capacity of the chosen SLS)
     public int missionDays;
     public bool locked; // true = shown as "coming soon"
+    public int difficulty = 2; // 1 = easy, 2 = medium, 3 = hard (mission select cards)
 
     [Header("Mass at translunar injection (model AM-19)")]
     public float tliExtraMass = 682f; // kg: mass at translunar injection (26,536) minus mass after it (25,854)

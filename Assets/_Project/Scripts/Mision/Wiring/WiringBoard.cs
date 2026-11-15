@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Rules of the wiring board (task 43), without any UI. Signed: claude_c.
+// Rules of the wiring board (task 44), without any UI. Signed: claude_c.
 // Cells are (x = column, y = row), row 0 at the top. A cable is the list of cells from one socket of its color;
 // it is connected when it ends on the other socket of that color. The board is SOLVED when every color is
 // connected (empty squares are fine).

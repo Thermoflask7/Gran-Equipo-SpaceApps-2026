@@ -4,7 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-// Wiring minigame "Reconnect the systems" (task 43). Signed: claude_c.
+// Wiring minigame "Reconnect the systems" (task 44). Signed: claude_c.
 // Design: Docs/WiringMinigame/WIRING_MINIGAME_DESIGN.md. Among Us wires on a grid: connect each color to its twin;
 // cables cannot cross or go through walls (empty squares are fine).
 // One round = 3 small panels in a row (3, 4 and 5 colors) against one shared timer (40 s).

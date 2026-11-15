@@ -3,7 +3,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// Unity menus of the wiring minigame (task 43). Signed: claude_c.
+// Unity menus of the wiring minigame (task 44). Signed: claude_c.
 //   SpaceApps > Wiring minigame > Create prefab           settings asset + Prefabs/WiringMinigame.prefab (UI is built in code)
 //   SpaceApps > Wiring minigame > Add to open scene       one instance, active, on the overlay canvas (to try it on its own)
 //   SpaceApps > Wiring minigame > Connect to launch scene 02_Lanzamiento: instance (inactive) under CanvasLanzamiento

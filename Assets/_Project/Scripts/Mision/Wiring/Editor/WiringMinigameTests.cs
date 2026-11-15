@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-// Wiring minigame tests (task 43). Signed: claude_c.
+// Wiring minigame tests (task 44). Signed: claude_c.
 // Menu: SpaceApps > Wiring minigame > Tests (edit mode). Pure logic: every board can be solved, the board rules
 // (walls, no crossing, back up, erase, empty squares allowed) and the result formula of the design doc.
 // Dragging with the mouse is checked by playing.

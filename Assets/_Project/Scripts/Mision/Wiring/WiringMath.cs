@@ -1,6 +1,6 @@
 using UnityEngine;
 
-// Pure formulas of the wiring minigame (task 43). Signed: claude_c. No UI and no GameManager: easy to test.
+// Pure formulas of the wiring minigame (task 44). Signed: claude_c. No UI and no GameManager: easy to test.
 public static class WiringMath
 {
     // Progress on ONE board, 0..1: share of its pairs that are connected (all connected = fixed = 1)

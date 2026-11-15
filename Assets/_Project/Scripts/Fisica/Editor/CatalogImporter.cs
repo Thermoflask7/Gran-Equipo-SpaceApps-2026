@@ -157,8 +157,9 @@ public static class CatalogImporter
         DestinationData mission = ScriptableObject.CreateInstance<DestinationData>();
         mission.name = "MisionArtemis"; // same name as the asset so they can be compared
 
-        mission.destinationName = "Crewed lunar orbit (Artemis)";
-        mission.description = "Take 3 astronauts in Orion to an orbit around the Moon (NRHO), collect data and return. Educational mission inspired by Artemis; it is not a real NASA mission.";
+        mission.missionName = "Selene";
+        mission.destinationName = "Crewed lunar orbit"; // no real agency or program names in the game
+        mission.description = "Take 3 astronauts to an orbit around the Moon, collect scientific data and bring them back home safely.";
         mission.requiredDeltaV = 1060f; // 940 nominal (40 correction + 450 capture + 450 departure) + 120 reserve
         mission.missionDays = 12;
         mission.locked = false;

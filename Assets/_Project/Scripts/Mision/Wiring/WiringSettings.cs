@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-// Tuning of the wiring minigame (task 43). Signed: claude_c. Design: Docs/WiringMinigame/WIRING_MINIGAME_DESIGN.md.
+// Tuning of the wiring minigame (task 44). Signed: claude_c. Design: Docs/WiringMinigame/WIRING_MINIGAME_DESIGN.md.
 // Asset: Data/Minigames/WiringSettings.asset (made by SpaceApps > Wiring minigame > Create prefab).
 // One round = boardsPerRound boards in a row (3, 4 and 5 colors) against ONE shared timer.
 // A board is fixed when every color is connected (empty squares are fine); cables cannot cross.

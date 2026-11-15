@@ -6,9 +6,17 @@ using UnityEngine;
 // (a part from the catalog, or the mass / module to remove).
 public static class GateAdvice
 {
+    // Colors of the three parts of each entry (TextMeshPro rich text)
+    const string TitleColor = "#FF8A7A";
+    const string LessonColor = "#9FB0C3";
+    const string FixColor = "#8BE39B";
+
+    // A short title, the real numbers, the lesson and the fix.
+    // Only uses data from RocketPhysics, the mission and the catalog (GameData.parts).
     public static string Explain(string gate, GameManager gm)
     {
-        string problem = ResultsScreen.GateText(gate);
+        string title = ResultsScreen.GateText(gate);
+        string numbers = "";
         string lesson = "";
         string fix = "";
 
@@ -24,31 +32,30 @@ public static class GateAdvice
                     PartData sls = RocketPhysics.LaunchService(parts);
                     float tli = RocketPhysics.TliMass(parts, m);
                     float capacity = sls != null ? sls.payloadCapacity : 0f;
-                    float over = tli - capacity;
-                    if (sls != null)
-                        problem = "Your spacecraft weighed " + Kg(tli) + " at translunar injection, but the " + sls.partName + " carries only " + Kg(capacity) + ".";
-                    lesson = "The launcher sends a fixed mass to the Moon: every module you add uses part of that capacity.";
+                    title = "Too heavy for the launcher";
+                    numbers = Kg(tli) + " to send, the launcher carries " + Kg(capacity);
+                    lesson = "Every module you add uses part of the launcher capacity.";
                     PartData bigger = null;
                     foreach (PartData p in Catalog())
                     {
                         if (p.type == PartType.LaunchService && p.payloadCapacity >= tli && !Has(parts, p)) bigger = p;
                     }
-                    PartData remove = LightestToRemove(parts, over);
-                    if (bigger != null) fix = "the " + bigger.partName + " (" + Kg(bigger.payloadCapacity) + ") would have passed";
-                    if (remove != null) fix += (fix == "" ? "" : ", or ") + "removing the " + remove.partName + " (" + Kg(Mass(remove)) + ") would have passed";
-                    if (fix == "") fix = "a spacecraft " + Kg(over) + " lighter would have passed";
-                    fix += ".";
+                    PartData remove = LightestToRemove(parts, tli - capacity);
+                    if (bigger != null) fix = "use the " + ShortName(bigger) + " (" + Kg(bigger.payloadCapacity) + ")";
+                    if (remove != null) fix += (fix == "" ? "" : ", or ") + "remove " + ShortName(remove) + " (" + Kg(Mass(remove)) + ")";
+                    if (fix == "") fix = "remove " + Kg(tli - capacity) + " of modules";
                     break;
                 }
                 case "CRAFT_DELTA_V":
                 {
                     float dv = RocketPhysics.SpacecraftDeltaV(parts);
-                    problem = "Orion had " + dv.ToString("N0") + " m/s of delta-v, but lunar orbit and the return need " + m.requiredDeltaV.ToString("N0") + " m/s.";
-                    lesson = "dv = Isp x g0 x ln(m0/mf): with the same fuel, every extra kilogram means less delta-v.";
+                    title = "Not enough delta-v";
+                    numbers = dv.ToString("N0") + " of " + m.requiredDeltaV.ToString("N0") + " m/s";
+                    lesson = "dv = Isp x g0 x ln(m0/mf): same fuel + more mass = less delta-v.";
                     PartData esm = FirstOfType(parts, PartType.ServiceModule);
                     if (esm == null || esm.isp <= 0f || esm.fuelMass <= 0f)
                     {
-                        fix = "a service module (it carries Orion's fuel) is required.";
+                        fix = "add a service module (it carries the fuel)";
                         break;
                     }
                     // Heaviest spacecraft that still reaches the required delta-v: m0 / (m0 - fuel) = e^(dv / (Isp g0))
@@ -56,16 +63,17 @@ public static class GateAdvice
                     float maxMass = esm.fuelMass * ratio / (ratio - 1f);
                     float over = RocketPhysics.SpacecraftMass(parts) - maxMass;
                     PartData remove = LightestToRemove(parts, over);
-                    if (remove != null) fix = "removing the " + remove.partName + " (" + Kg(Mass(remove)) + ") would have passed.";
-                    else fix = "a spacecraft " + Kg(over) + " lighter would have passed.";
+                    if (remove != null) fix = "remove " + ShortName(remove) + " (" + Kg(Mass(remove)) + ")";
+                    else fix = "remove " + Kg(over) + " of modules";
                     break;
                 }
                 case "POWER":
                 {
                     float draw = RocketPhysics.PowerConsumption(parts);
                     float net = RocketPhysics.PowerBalance(parts);
-                    problem = "Your modules drew " + Watts(draw) + ", but the solar arrays generated only " + Watts(draw + net) + ".";
-                    lesson = "Every instrument and module needs power: generation must be bigger than the total draw.";
+                    title = "Not enough power";
+                    numbers = Watts(draw) + " used, " + Watts(draw + net) + " generated";
+                    lesson = "Generation must be bigger than the total draw.";
                     PartData add = null;
                     foreach (PartData p in Catalog())
                     {
@@ -76,9 +84,9 @@ public static class GateAdvice
                     {
                         if (p != null && IsOptional(p) && p.powerDraw >= -net && (remove == null || p.powerDraw < remove.powerDraw)) remove = p;
                     }
-                    if (add != null) fix = "adding the " + add.partName + " would have passed.";
-                    else if (remove != null) fix = "removing the " + remove.partName + " (" + Watts(remove.powerDraw) + ") would have passed.";
-                    else fix = "using " + Watts(-net) + " less would have passed.";
+                    if (add != null) fix = "add " + ShortName(add);
+                    else if (remove != null) fix = "remove " + ShortName(remove) + " (" + Watts(remove.powerDraw) + ")";
+                    else fix = "use " + Watts(-net) + " less";
                     break;
                 }
                 case "BATTERY":
@@ -86,8 +94,9 @@ public static class GateAdvice
                     float draw = RocketPhysics.PowerConsumption(parts);
                     float need = draw * RocketPhysics.OutageHours;
                     float have = RocketPhysics.BatteryWh(parts);
-                    problem = "Your battery stores " + have.ToString("N0") + " Wh, but " + RocketPhysics.OutageHours + " h in shadow at " + Watts(draw) + " needs " + need.ToString("N0") + " Wh.";
-                    lesson = "Behind the Moon or in Earth's shadow there is no sunlight: only the batteries power the spacecraft.";
+                    title = "Battery too small";
+                    numbers = have.ToString("N0") + " of " + need.ToString("N0") + " Wh (" + RocketPhysics.OutageHours + " h in shadow)";
+                    lesson = "Without sunlight, only the batteries power the spacecraft.";
                     PartData add = null;
                     foreach (PartData p in Catalog())
                     {
@@ -95,8 +104,8 @@ public static class GateAdvice
                         float gain = p.batteryWh - p.powerDraw * RocketPhysics.OutageHours;
                         if (p.batteryWh > 0f && gain >= need - have && !Has(parts, p)) add = p;
                     }
-                    if (add != null) fix = "a battery module (" + add.partName + ", +" + add.batteryWh.ToString("N0") + " Wh) would have passed.";
-                    else fix = "using less power or carrying " + (need - have).ToString("N0") + " Wh more would have passed.";
+                    if (add != null) fix = "add " + ShortName(add) + " (+" + add.batteryWh.ToString("N0") + " Wh)";
+                    else fix = "add " + (need - have).ToString("N0") + " Wh of battery";
                     break;
                 }
                 case "CONSUMABLES":
@@ -104,73 +113,72 @@ public static class GateAdvice
                     float water = RocketPhysics.WaterMargin(parts, m);
                     float oxygen = RocketPhysics.OxygenMargin(parts, m);
                     float food = RocketPhysics.FoodMargin(parts, m);
-                    problem = "";
-                    fix = "";
-                    if (water < 0f) { problem += "water " + Kg(-water) + " short; "; fix += ReserveFor("water", -water, parts); }
-                    if (oxygen < 0f) { problem += "oxygen " + Kg(-oxygen) + " short; "; fix += ReserveFor("oxygen", -oxygen, parts); }
-                    if (food < 0f) { problem += "food " + Kg(-food) + " short; "; fix += ReserveFor("food", -food, parts); }
-                    problem = "Not enough supplies for " + m.crewCount + " astronauts x " + m.missionDays + " days: " + problem.TrimEnd(' ', ';') + ".";
-                    lesson = "The crew uses water, oxygen and food every day; real missions carry a reserve in case the trip takes longer.";
-                    fix = fix.Trim() + " would have passed.";
+                    title = "Not enough supplies";
+                    if (water < 0f) { numbers += "water -" + Kg(-water) + "   "; fix += ReserveFor("water", -water, parts) + "  "; }
+                    if (oxygen < 0f) { numbers += "oxygen -" + Kg(-oxygen) + "   "; fix += ReserveFor("oxygen", -oxygen, parts) + "  "; }
+                    if (food < 0f) { numbers += "food -" + Kg(-food) + "   "; fix += ReserveFor("food", -food, parts) + "  "; }
+                    numbers = numbers.Trim() + "  (" + m.crewCount + " crew x " + m.missionDays + " days)";
+                    fix = fix.Trim();
+                    lesson = "The crew uses water, oxygen and food every day of the mission.";
                     break;
                 }
                 case "SCIENCE":
                 {
                     float science = RocketPhysics.SciencePoints(parts);
-                    lesson = "Science is the reason for the trip: you need the right instruments and you have to run the experiments.";
+                    title = "Science goal not met";
+                    lesson = "You need the right instruments and you have to run the experiments.";
                     if (science < m.minSciencePoints)
                     {
-                        float missing = m.minSciencePoints - science;
-                        problem = "Your instruments give " + science.ToString("0") + " science points; the mission needs " + m.minSciencePoints.ToString("0") + ".";
+                        numbers = science.ToString("0") + " of " + m.minSciencePoints.ToString("0") + " science points";
                         PartData add = null;
                         foreach (PartData p in Catalog())
                         {
-                            if (p.sciencePoints >= missing && !Has(parts, p) && (add == null || Mass(p) < Mass(add))) add = p;
+                            if (p.sciencePoints >= m.minSciencePoints - science && !Has(parts, p) && (add == null || Mass(p) < Mass(add))) add = p;
                         }
-                        if (add != null) fix = "adding the " + add.partName + " (+" + add.sciencePoints.ToString("0") + " points) would have passed.";
-                        else fix = "more instruments would have passed.";
+                        if (add != null) fix = "add " + ShortName(add) + " (+" + add.sciencePoints.ToString("0") + " points)";
+                        else fix = "add more instruments";
                     }
                     else
                     {
-                        problem = "You carried the instruments, but the experiments were not run.";
-                        fix = "running the experiments in lunar orbit (research minigame) would have passed.";
+                        numbers = "the experiments were not run";
+                        fix = "run the experiments in lunar orbit";
                     }
                     break;
                 }
                 case "NO_DOWNLINK":
                 {
-                    problem = "The science data never reached Earth.";
-                    lesson = "Data only counts when it is sent home: the antenna transmits it during the flight.";
+                    title = "No data sent to Earth";
+                    lesson = "Science only counts when the data reaches home.";
                     PartData antenna = null;
                     foreach (PartData p in Catalog())
                     {
                         if (p.type == PartType.Antenna && !Has(parts, p)) antenna = p;
                     }
-                    if (FirstOfType(parts, PartType.Antenna) == null && antenna != null)
-                        fix = "adding the " + antenna.partName + " and sending the data would have passed.";
-                    else fix = "sending the data to Earth before the return would have passed.";
+                    if (FirstOfType(parts, PartType.Antenna) == null && antenna != null) fix = "add " + ShortName(antenna) + " and send the data";
+                    else fix = "send the data before the return";
                     break;
                 }
                 case "ROCKET_INVALID":
-                    problem = "The rocket was not valid: " + RocketPhysics.ValidationMessage(parts, m);
-                    lesson = "A real rocket must pass every check before it is allowed to launch.";
+                    title = "Rocket not valid";
+                    numbers = RocketPhysics.ValidationMessage(parts, m);
                     break;
                 case "CREW_NOT_READY":
-                    lesson = "Every role needs an astronaut: pilot, engineer and scientist.";
-                    fix = "choosing and training the 3 astronauts in the mission folder would have passed.";
+                    title = "Crew not ready";
+                    fix = "choose and train the 3 astronauts in the mission folder";
                     break;
                 case "DEPARTURE":
                 case "LUNAR_ORBIT":
                 case "RETURN":
-                    lesson = "The flight stages happen in order: if one is not completed, the next ones cannot happen.";
+                    lesson = "The flight stages happen in order.";
                     break;
             }
         }
 
-        string text = "- " + problem;
-        if (lesson != "") text += "\n    Lesson: " + lesson;
-        if (fix != "") text += "\n    Fix: " + Capital(fix);
-        return text;
+        string text = "<b><color=" + TitleColor + ">" + title + "</color></b>";
+        if (numbers != "") text += "   " + numbers;
+        if (lesson != "") text += "\n<size=85%><color=" + LessonColor + ">" + lesson + "</color></size>";
+        if (fix != "") text += "\n<size=85%><color=" + FixColor + "><b>Fix:</b> " + fix + "</color></size>";
+        return text + "\n";
     }
 
     // ---------- Helpers ----------
@@ -193,9 +201,9 @@ public static class GateAdvice
         {
             if (Has(parts, p)) continue;
             float kg = resource == "water" ? p.waterKg : resource == "oxygen" ? p.oxygenKg : p.foodKg;
-            if (kg >= shortKg) return "the " + p.partName + " (+" + Kg(kg) + ")";
+            if (kg >= shortKg) return "add " + ShortName(p) + " (+" + Kg(kg) + ")";
         }
-        return "about " + Kg(shortKg) + " more " + resource;
+        return "add " + Kg(shortKg) + " of " + resource;
     }
 
     // Optional module on the rocket whose removal saves at least minMass kg (the lightest one that is enough)
@@ -235,6 +243,17 @@ public static class GateAdvice
         return null;
     }
 
+    // Catalog names are long: "SLS Block 1B launch service - future-architecture reference" -> "SLS Block 1B launch service"
+    static string ShortName(PartData p)
+    {
+        string name = p.partName;
+        int cut = name.IndexOf(" \u2014 ");
+        if (cut > 0) name = name.Substring(0, cut);
+        cut = name.IndexOf(" (");
+        if (cut > 0) name = name.Substring(0, cut);
+        return name;
+    }
+
     static float Mass(PartData p)
     {
         return p.dryMass + p.fuelMass;
@@ -250,9 +269,4 @@ public static class GateAdvice
         return w.ToString("N0") + " W";
     }
 
-    static string Capital(string s)
-    {
-        if (s.Length == 0) return s;
-        return char.ToUpper(s[0]) + s.Substring(1);
-    }
 }

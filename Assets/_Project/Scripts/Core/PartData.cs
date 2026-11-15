@@ -1,50 +1,50 @@
 using UnityEngine;
 
-// Nuevos tipos siempre al final para no cambiar los numeros guardados en los assets.
-// Catalogo de Cristina (V8.3): LaunchService = SLS Block 1 o 1B (se elige uno, ya trae sus etapas);
-// Module = modulos opcionales de la nave (soporte de vida, reservas, navegacion, blindaje).
-// FuelTank y Engine ya no se usan en la mision Artemis (el lanzador es un servicio completo).
+// New types always go at the end so the numbers saved in the assets do not change.
+// Cristina's catalog (V8.3): LaunchService = SLS Block 1 or 1B (you choose one; it already includes its stages);
+// Module = optional spacecraft modules (life support, reserves, navigation, shielding).
+// FuelTank and Engine are no longer used in the Artemis mission (the launcher is a complete service).
 public enum PartType { Capsule, Engine, FuelTank, SolarPanel, Battery, Antenna, Instrument, ServiceModule, AbortSystem, LaunchService, Module }
 
-// Una pieza que se compra en la tienda. Los valores reales vienen del catalogo de Cristina
-// (menu SpaceApps -> Importar catalogo Artemis).
-[CreateAssetMenu(menuName = "SpaceApps/Pieza", fileName = "NuevaPieza")]
+// A part bought in the shop. The real values come from Cristina's catalog
+// (menu SpaceApps -> Import Artemis catalog).
+[CreateAssetMenu(menuName = "SpaceApps/Part", fileName = "NewPart")]
 public class PartData : ScriptableObject
 {
-    public string catalogId; // id del catalogo, por ejemplo ART-CM-ORION
+    public string catalogId; // catalog id, for example ART-CM-ORION
     public string partName;
     public PartType type;
     [TextArea] public string description;
     public Sprite icon;
 
-    [Header("Costo")]
-    public float price; // creditos del juego (presupuesto inicial 3,400)
+    [Header("Cost")]
+    public float price; // game credits (starting budget 3,400)
 
-    [Header("Masa (kg)")]
+    [Header("Mass (kg)")]
     public float dryMass;
-    public float fuelMass; // propelente del modulo de servicio despues de la translunar
+    public float fuelMass; // service module propellant after translunar injection
 
-    [Header("Motor")]
-    public float isp;    // segundos (modulo de servicio)
+    [Header("Engine")]
+    public float isp;    // seconds (service module)
     public float thrust; // kN
 
-    [Header("Lanzador")]
-    public float payloadCapacity; // kg que el SLS lleva a la translunar (solo LaunchService)
+    [Header("Launcher")]
+    public float payloadCapacity; // kg the SLS carries to translunar injection (LaunchService only)
 
-    [Header("Energia")]
-    public float power;     // W que GENERA (paneles del modulo de servicio)
-    public float powerDraw; // W que CONSUME
-    public float batteryWh; // Wh que guarda
+    [Header("Power")]
+    public float power;     // W it GENERATES (service module solar arrays)
+    public float powerDraw; // W it CONSUMES
+    public float batteryWh; // Wh it stores
 
-    [Header("Tripulacion")]
-    public int crewCapacity;   // astronautas (capsula)
-    public int maxMissionDays; // dias que aguanta (capsula)
-    public float waterKg;      // reservas extra
+    [Header("Crew")]
+    public int crewCapacity;   // astronauts (capsule)
+    public int maxMissionDays; // days it can last (capsule)
+    public float waterKg;      // extra reserves
     public float oxygenKg;
     public float foodKg;
 
-    [Header("Ciencia")]
+    [Header("Science")]
     public float sciencePoints;
-    public float dataRateBps;        // velocidad de bajada de datos (antenas)
-    public float experimentDataBits; // datos que produce el instrumento
+    public float dataRateBps;        // data downlink rate (antennas)
+    public float experimentDataBits; // data produced by the instrument
 }

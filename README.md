@@ -1,23 +1,23 @@
-# Space Apps 2026 – Juego de diseño de misiones
+# Space Apps 2026 – Mission design game
 
-Contexto completo del proyecto en [AGENTS.md](AGENTS.md).
+Full project context in [AGENTS.md](AGENTS.md).
 
-## Setup para cada integrante (una sola vez)
-1. Instalar **Unity Hub** y la **misma versión exacta** de Unity que el proyecto (ver `ProjectSettings/ProjectVersion.txt`).
-   Al instalarla, marcar el módulo **WebGL Build Support**.
-2. Instalar Git (o GitHub Desktop) y clonar este repo.
-3. En Unity Hub: *Add → Add project from disk* → seleccionar la carpeta del repo. La primera vez tarda (genera `Library/`).
-4. Crear tu escena de pruebas en `Assets/_Project/Scenes/_Sandbox/TuNombre.unity`.
+## Setup for each team member (only once)
+1. Install **Unity Hub** and the **exact same version** of Unity as the project (see `ProjectSettings/ProjectVersion.txt`).
+   When installing it, check the **WebGL Build Support** module.
+2. Install Git (or GitHub Desktop) and clone this repo.
+3. In Unity Hub: *Add → Add project from disk* → select the repo folder. The first time takes a while (it generates `Library/`).
+4. Create your test scene in `Assets/_Project/Scenes/_Sandbox/YourName.unity`.
 
-## Reglas de Git
-- Antes de empezar: **pull**. Commits chicos y seguido. Antes de push: **pull** otra vez.
-- Solo editas tus escenas y carpetas (ver tabla en AGENTS.md). Si necesitas algo de otro, avisa por el chat.
-- Nunca subir `Library/`, `Temp/`, `Logs/`, `UserSettings/` (ya están en `.gitignore`).
-- Siempre subir los `.meta` junto con su archivo.
-- Ningún archivo de más de 50 MB.
-- Si hay conflicto en una escena o prefab: **no lo resuelvas a mano**, avisa a P1.
+## Git rules
+- Before starting: **pull**. Small, frequent commits. Before pushing: **pull** again.
+- Only edit your own scenes and folders (see the table in AGENTS.md). If you need something from someone else, ask in the chat.
+- Never push `Library/`, `Temp/`, `Logs/`, `UserSettings/` (they are already in `.gitignore`).
+- Always push the `.meta` files together with their file.
+- No file larger than 50 MB.
+- If there is a conflict in a scene or prefab: **do not resolve it by hand**, tell P1.
 
-## Usar IA en el proyecto
-- **Claude Code**: lee `CLAUDE.md` automáticamente (que importa `AGENTS.md`).
-- **Copilot / Cursor / Codex / otros**: leen `AGENTS.md`.
-- **Chat (claude.ai, ChatGPT)**: pega o sube `AGENTS.md` al inicio de la conversación.
+## Using AI in the project
+- **Claude Code**: reads `CLAUDE.md` automatically (which imports `AGENTS.md`).
+- **Copilot / Cursor / Codex / others**: read `AGENTS.md`.
+- **Chat (claude.ai, ChatGPT)**: paste or upload `AGENTS.md` at the start of the conversation.

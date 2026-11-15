@@ -2,14 +2,14 @@ using System.Text;
 using TMPro;
 using UnityEngine;
 
-// Pantalla de 03_Resultados (tarea 16): calcula el puntaje final V16 una sola vez,
-// lo guarda en GameManager y muestra el desglose con una explicacion de cada decision.
-// Menu: SpaceApps -> Pantalla de resultados -> Agregar a la escena abierta.
+// 03_Resultados screen (task 16): calculates the final V16 score only once,
+// stores it in GameManager and shows the breakdown with an explanation of each decision.
+// Menu: SpaceApps -> Results screen -> Add to open scene.
 public class ResultsScreen : MonoBehaviour
 {
-    public TMP_Text title;   // "Mision exitosa", "Mision fallida"...
-    public TMP_Text score;   // el numero grande
-    public TMP_Text report;  // desglose y lecciones
+    public TMP_Text title;   // "Mission accomplished", "Mission failed"...
+    public TMP_Text score;   // the big number
+    public TMP_Text report;  // breakdown and lessons
 
     void Start()
     {
@@ -26,10 +26,10 @@ public class ResultsScreen : MonoBehaviour
 
     static string TitleFor(ScoreResult r)
     {
-        if (r.status == "SUCCESS") return "¡Mision exitosa!";
-        if (r.status == "FAILURE") return "Mision fallida";
-        if (r.status == "PENDING") return "Mision en curso";
-        return "Resultado no valido";
+        if (r.status == "SUCCESS") return "Mission accomplished!";
+        if (r.status == "FAILURE") return "Mission failed";
+        if (r.status == "PENDING") return "Mission in progress";
+        return "Invalid result";
     }
 
     public static string BuildReport(ScoreResult r, GameManager gm)
@@ -37,61 +37,61 @@ public class ResultsScreen : MonoBehaviour
         StringBuilder sb = new StringBuilder();
         if (r.problem != "")
         {
-            sb.AppendLine("No se pudo calcular el puntaje: " + r.problem);
+            sb.AppendLine("The score could not be calculated: " + r.problem);
             return sb.ToString();
         }
 
-        // Dos puntajes separados: el de diagnostico (para aprender) y el oficial (solo si la mision se gana)
-        sb.AppendLine("Puntaje para aprender: " + r.total.ToString("0.0") + " / 100");
-        if (r.status == "SUCCESS") sb.AppendLine("Puntaje oficial: " + r.competitive.ToString("0.0") + " / 100");
-        else if (r.status == "FAILURE") sb.AppendLine("Puntaje oficial: 0 (la mision fallo)");
-        else sb.AppendLine("Puntaje oficial: pendiente (el vuelo no ha terminado)");
+        // Two separate scores: the diagnostic one (for learning) and the official one (only if the mission is won)
+        sb.AppendLine("Learning score: " + r.total.ToString("0.0") + " / 100");
+        if (r.status == "SUCCESS") sb.AppendLine("Official score: " + r.competitive.ToString("0.0") + " / 100");
+        else if (r.status == "FAILURE") sb.AppendLine("Official score: 0 (the mission failed)");
+        else sb.AppendLine("Official score: pending (the flight has not finished)");
         sb.AppendLine();
 
         if (r.status == "FAILURE")
         {
-            sb.AppendLine("<b>Que salio mal</b>");
+            sb.AppendLine("<b>What went wrong</b>");
             foreach (string gate in r.failedGates) sb.AppendLine("- " + GateText(gate));
             sb.AppendLine();
         }
 
-        sb.AppendLine("<b>Planeacion: " + r.planning.ToString("0.0") + " / 45</b>");
-        Line(sb, "Ingenieria de la nave", r.engineering, 24f);
-        Line(sb, "  Capacidad del SLS", r.deliveryPoints, 7f);
-        Line(sb, "  Delta-v de Orion", r.craftDvPoints, 7f);
-        Line(sb, "  Generacion electrica", r.powerPoints, 3f);
-        Line(sb, "  Baterias", r.batteryPoints, 3f);
-        Line(sb, "  Agua, oxigeno y comida", r.consumablePoints, 4f);
-        Line(sb, "Ahorro del presupuesto", r.budgetPoints, 7f);
-        Line(sb, "Entrenamiento de la tripulacion", r.trainingPoints, 8f);
-        Line(sb, "Sitio y fecha (clima)", r.weatherPoints, 6f);
-        if (r.planningEvents != 0f) sb.AppendLine("  Eventos: " + r.planningEvents.ToString("+0;-0"));
+        sb.AppendLine("<b>Planning: " + r.planning.ToString("0.0") + " / 45</b>");
+        Line(sb, "Spacecraft engineering", r.engineering, 24f);
+        Line(sb, "  SLS capacity", r.deliveryPoints, 7f);
+        Line(sb, "  Orion delta-v", r.craftDvPoints, 7f);
+        Line(sb, "  Power generation", r.powerPoints, 3f);
+        Line(sb, "  Batteries", r.batteryPoints, 3f);
+        Line(sb, "  Water, oxygen and food", r.consumablePoints, 4f);
+        Line(sb, "Budget savings", r.budgetPoints, 7f);
+        Line(sb, "Crew training", r.trainingPoints, 8f);
+        Line(sb, "Site and date (weather)", r.weatherPoints, 6f);
+        if (r.planningEvents != 0f) sb.AppendLine("  Events: " + r.planningEvents.ToString("+0;-0"));
 
         sb.AppendLine();
-        sb.AppendLine("<b>Mision: " + r.mission.ToString("0.0") + " / 55</b>");
-        Line(sb, "Etapas del vuelo", r.milestonePoints, 24f);
-        Line(sb, "Minijuegos", r.minigamePoints, 21f);
-        Line(sb, "Ciencia", r.sciencePoints, 10f);
-        if (r.missionEvents != 0f) sb.AppendLine("  Eventos: " + r.missionEvents.ToString("+0;-0"));
+        sb.AppendLine("<b>Mission: " + r.mission.ToString("0.0") + " / 55</b>");
+        Line(sb, "Flight stages", r.milestonePoints, 24f);
+        Line(sb, "Minigames", r.minigamePoints, 21f);
+        Line(sb, "Science", r.sciencePoints, 10f);
+        if (r.missionEvents != 0f) sb.AppendLine("  Events: " + r.missionEvents.ToString("+0;-0"));
 
         sb.AppendLine();
-        sb.AppendLine("<b>Lo que aprendiste</b>");
+        sb.AppendLine("<b>What you learned</b>");
         if (r.deliveryPoints < 3.5f)
-            sb.AppendLine("- Tu nave iba muy justa de masa para el SLS. Cada kilo extra necesita mas combustible y un cohete mas grande.");
+            sb.AppendLine("- Your spacecraft was very close to the SLS mass limit. Every extra kilogram needs more fuel and a bigger rocket.");
         if (r.craftDvPoints < 3.5f)
-            sb.AppendLine("- Poco delta-v de sobra en Orion: dv = Isp x g0 x ln(m0/mf). Si la nave pesa mas, el mismo combustible rinde menos.");
+            sb.AppendLine("- Little spare delta-v on Orion: dv = Isp x g0 x ln(m0/mf). If the spacecraft is heavier, the same fuel goes less far.");
         if (r.powerPoints + r.batteryPoints < 3f)
-            sb.AppendLine("- La energia iba al limite. Detras de la Luna no hay sol: las baterias deben aguantar el consumo.");
+            sb.AppendLine("- Power was at the limit. Behind the Moon there is no sunlight: the batteries must cover the power draw.");
         if (r.consumablePoints < 2f)
-            sb.AppendLine("- Agua, oxigeno y comida iban muy justos. Las misiones llevan reservas por si el viaje se alarga.");
+            sb.AppendLine("- Water, oxygen and food were very tight. Missions carry reserves in case the trip takes longer.");
         if (r.budgetPoints < 3.5f)
-            sb.AppendLine("- Gastaste casi todo el presupuesto. Las misiones reales guardan dinero para imprevistos.");
+            sb.AppendLine("- You spent almost the whole budget. Real missions keep money for the unexpected.");
         if (r.trainingPoints < 6f)
-            sb.AppendLine("- Entrena a cada astronauta en su propio rol: asi rinden mas en los minijuegos y evitan problemas.");
+            sb.AppendLine("- Train each astronaut in their own role: that way they perform better in the minigames and avoid problems.");
         if (r.weatherPoints < 4f)
-            sb.AppendLine("- Lanzaste con mal clima. El viento y las tormentas aumentan el riesgo en la salida.");
+            sb.AppendLine("- You launched in bad weather. Wind and storms increase the risk during departure.");
         if (r.sciencePoints < 7f)
-            sb.AppendLine("- Comprar instrumentos no basta: hay que hacer los experimentos y mandar los datos a la Tierra.");
+            sb.AppendLine("- Buying instruments is not enough: you have to run the experiments and send the data to Earth.");
         if (gm != null)
         {
             foreach (EventData e in gm.eventsHappened)
@@ -99,7 +99,7 @@ public class ResultsScreen : MonoBehaviour
                 if (e != null && !string.IsNullOrEmpty(e.lesson)) sb.AppendLine("- " + e.eventName + ": " + e.lesson);
             }
         }
-        if (r.status == "SUCCESS" && r.total >= 90f) sb.AppendLine("- ¡Excelente! Tomaste decisiones muy parecidas a las de un equipo de mision real.");
+        if (r.status == "SUCCESS" && r.total >= 90f) sb.AppendLine("- Excellent! Your decisions were very close to those of a real mission team.");
 
         return sb.ToString();
     }
@@ -109,23 +109,23 @@ public class ResultsScreen : MonoBehaviour
         sb.AppendLine("  " + label + ": " + points.ToString("0.0") + " / " + max.ToString("0"));
     }
 
-    // Texto en espanol de cada condicion obligatoria que fallo
+    // Text for each mandatory condition that failed
     public static string GateText(string gate)
     {
         switch (gate)
         {
-            case "ROCKET_INVALID": return "El cohete no era valido para la mision.";
-            case "CREW_NOT_READY": return "La tripulacion no estaba completa o entrenada.";
-            case "DELIVERY": return "El SLS no podia llevar tanta masa a la translunar.";
-            case "CRAFT_DELTA_V": return "Orion no tenia suficiente delta-v para entrar a orbita lunar y regresar.";
-            case "POWER": return "Los modulos consumian mas energia de la que generaban los paneles.";
-            case "BATTERY": return "La bateria no aguantaba los periodos sin sol.";
-            case "CONSUMABLES": return "No alcanzaba el agua, el oxigeno o la comida para toda la mision.";
-            case "DEPARTURE": return "La salida no se completo.";
-            case "LUNAR_ORBIT": return "No se llego a la orbita lunar.";
-            case "RETURN": return "La tripulacion no regreso a salvo.";
-            case "SCIENCE": return "No se cumplio la meta de ciencia.";
-            case "NO_DOWNLINK": return "No se mandaron los datos de ciencia a la Tierra.";
+            case "ROCKET_INVALID": return "The rocket was not valid for the mission.";
+            case "CREW_NOT_READY": return "The crew was not complete or trained.";
+            case "DELIVERY": return "The SLS could not carry that much mass to translunar injection.";
+            case "CRAFT_DELTA_V": return "Orion did not have enough delta-v to enter lunar orbit and return.";
+            case "POWER": return "The modules drew more power than the solar arrays generated.";
+            case "BATTERY": return "The battery could not last through the periods without sunlight.";
+            case "CONSUMABLES": return "There was not enough water, oxygen or food for the whole mission.";
+            case "DEPARTURE": return "The departure was not completed.";
+            case "LUNAR_ORBIT": return "Lunar orbit was not reached.";
+            case "RETURN": return "The crew did not return safely.";
+            case "SCIENCE": return "The science goal was not met.";
+            case "NO_DOWNLINK": return "The science data was not sent to Earth.";
         }
         return gate;
     }

@@ -2,20 +2,20 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-// Pruebas de RocketPhysics dentro de Unity (tarea 17), con los 9 escenarios de referencia de la
-// mision V13 de Cristina (SpaceMission_Mision_Artemis_V13.json -> reference_test_scenarios).
-// Menu: SpaceApps -> Pruebas de fisica. Escribe en la consola cada prueba con OK o FALLA.
-// Primero importa el catalogo (crea/actualiza los assets de Data/Piezas y la mision) y luego
-// prueba con esos mismos assets, asi tambien se revisa que los datos esten bien.
+// RocketPhysics tests inside Unity (task 17), with the 9 reference scenarios of
+// Cristina's mission V13 (SpaceMission_Mision_Artemis_V13.json -> reference_test_scenarios).
+// Menu: SpaceApps -> Physics tests. Writes each test to the console with OK or FAIL.
+// It first imports the catalog (creates/updates the Data/Piezas assets and the mission) and then
+// tests with those same assets, so it also checks that the data is right.
 public static class RocketPhysicsTests
 {
-    const float Budget = 3400f; // creditos iniciales (catalogo de Cristina)
+    const float Budget = 3400f; // starting credits (Cristina's catalog)
 
     static int passed;
     static int failed;
     static DestinationData baseMission;
 
-    [MenuItem("SpaceApps/Pruebas de fisica")]
+    [MenuItem("SpaceApps/Physics tests")]
     public static void RunAll()
     {
         passed = 0;
@@ -25,7 +25,7 @@ public static class RocketPhysicsTests
         baseMission = AssetDatabase.LoadAssetAtPath<DestinationData>("Assets/_Project/Data/Destinos/MisionArtemis.asset");
         if (baseMission == null || Part("ART-CM-ORION") == null)
         {
-            Debug.LogError("No se pudo importar el catalogo: no se corrieron las pruebas.");
+            Debug.LogError("The catalog could not be imported: the tests were not run.");
             return;
         }
         DestinationData mission12 = Mission(12);
@@ -33,69 +33,69 @@ public static class RocketPhysicsTests
 
         // 1. PASS_BLOCK1_OBSERVATION
         List<PartData> p1 = Parts("ART-SLS-BLOCK1", "ART-COMMS-DS", "ART-SCI-LUNAR", "ART-SCI-RAD");
-        Near("1 Block 1 observacion: masa en translunar", RocketPhysics.TliMass(p1, mission12), 26660f);
-        Near("1 Block 1 observacion: margen del SLS", RocketPhysics.DeliveryMargin(p1, mission12), 340f);
-        Near("1 Block 1 observacion: dv de la nave", RocketPhysics.SpacecraftDeltaV(p1), 1103.27f);
-        Near("1 Block 1 observacion: sobran 460 creditos", Budget - RocketPhysics.TotalPrice(p1), 460f);
-        Near("1 Block 1 observacion: 48 puntos de ciencia", RocketPhysics.SciencePoints(p1), 48f);
-        Valid("1 Block 1 observacion: valida", p1, mission12);
+        Near("1 Block 1 observation: mass at translunar injection", RocketPhysics.TliMass(p1, mission12), 26660f);
+        Near("1 Block 1 observation: SLS margin", RocketPhysics.DeliveryMargin(p1, mission12), 340f);
+        Near("1 Block 1 observation: spacecraft dv", RocketPhysics.SpacecraftDeltaV(p1), 1103.27f);
+        Near("1 Block 1 observation: 460 credits left", Budget - RocketPhysics.TotalPrice(p1), 460f);
+        Near("1 Block 1 observation: 48 science points", RocketPhysics.SciencePoints(p1), 48f);
+        Valid("1 Block 1 observation: valid", p1, mission12);
 
         // 2. PASS_BLOCK1B_HEAVY_SCIENCE
         List<PartData> p2 = Parts("ART-SLS-BLOCK1B", "ART-COMMS-DS", "ART-SCI-HEAVY");
-        Near("2 Block 1B ciencia pesada: masa en translunar", RocketPhysics.TliMass(p2, mission12), 27201f);
-        Near("2 Block 1B ciencia pesada: dv de la nave", RocketPhysics.SpacecraftDeltaV(p2), 1076.34f);
-        Near("2 Block 1B ciencia pesada: sobran 5 creditos", Budget - RocketPhysics.TotalPrice(p2), 5f);
-        Valid("2 Block 1B ciencia pesada: valida", p2, mission12);
+        Near("2 Block 1B heavy science: mass at translunar injection", RocketPhysics.TliMass(p2, mission12), 27201f);
+        Near("2 Block 1B heavy science: spacecraft dv", RocketPhysics.SpacecraftDeltaV(p2), 1076.34f);
+        Near("2 Block 1B heavy science: 5 credits left", Budget - RocketPhysics.TotalPrice(p2), 5f);
+        Valid("2 Block 1B heavy science: valid", p2, mission12);
 
         // 3. PASS_BLOCK1_EXTENDED_15_DAYS
         List<PartData> p3 = Parts("ART-SLS-BLOCK1", "ART-COMMS-DS", "ART-SCI-LUNAR", "ART-SCI-RAD",
             "ART-CREW-RES-WATER", "ART-CREW-RES-OXYGEN", "ART-CREW-RES-FOOD");
-        Near("3 Block 1 de 15 dias con reservas: masa en translunar", RocketPhysics.TliMass(p3, mission15), 26756f);
-        Near("3 Block 1 de 15 dias con reservas: dv de la nave", RocketPhysics.SpacecraftDeltaV(p3), 1098.40f);
-        Valid("3 Block 1 de 15 dias con reservas: valida", p3, mission15);
+        Near("3 Block 1, 15 days with reserves: mass at translunar injection", RocketPhysics.TliMass(p3, mission15), 26756f);
+        Near("3 Block 1, 15 days with reserves: spacecraft dv", RocketPhysics.SpacecraftDeltaV(p3), 1098.40f);
+        Valid("3 Block 1, 15 days with reserves: valid", p3, mission15);
 
-        // 4. FAIL_LOW_POST_TLI_PROPELLANT (modulo de servicio con 7,400 kg en vez de 7,800)
+        // 4. FAIL_LOW_POST_TLI_PROPELLANT (service module with 7,400 kg instead of 7,800)
         PartData lowFuelService = Object.Instantiate(Part("ART-ESM-ORION"));
         lowFuelService.fuelMass = 7400f;
         List<PartData> p4 = Parts("ART-SLS-BLOCK1", "ART-COMMS-DS", "ART-SCI-LUNAR", "ART-SCI-RAD");
-        p4[1] = lowFuelService; // indice 1 = modulo de servicio
-        Near("4 poco propelente: masa en translunar", RocketPhysics.TliMass(p4, mission12), 26260f);
-        Near("4 poco propelente: dv de la nave", RocketPhysics.SpacecraftDeltaV(p4), 1055.32f);
-        Fails("4 poco propelente: no llega", p4, mission12, "orbita lunar");
+        p4[1] = lowFuelService; // index 1 = service module
+        Near("4 low propellant: mass at translunar injection", RocketPhysics.TliMass(p4, mission12), 26260f);
+        Near("4 low propellant: spacecraft dv", RocketPhysics.SpacecraftDeltaV(p4), 1055.32f);
+        Fails("4 low propellant: does not make it", p4, mission12, "lunar orbit");
 
         // 5. FAIL_BLOCK1_EXCEEDS_TLI_MASS
         List<PartData> p5 = Parts("ART-SLS-BLOCK1", "ART-COMMS-DS", "ART-SCI-HEAVY");
-        Near("5 Block 1 con ciencia pesada: masa en translunar", RocketPhysics.TliMass(p5, mission12), 27201f);
-        Fails("5 Block 1 con ciencia pesada: no cabe", p5, mission12, "Demasiado pesado");
+        Near("5 Block 1 with heavy science: mass at translunar injection", RocketPhysics.TliMass(p5, mission12), 27201f);
+        Fails("5 Block 1 with heavy science: does not fit", p5, mission12, "Too heavy");
 
         // 6. FAIL_NO_DATA_DOWNLINK
         List<PartData> p6 = Parts("ART-SLS-BLOCK1", "ART-SCI-LUNAR", "ART-SCI-RAD");
-        Near("6 sin antena: dv de la nave", RocketPhysics.SpacecraftDeltaV(p6), 1106.60f);
-        Fails("6 sin antena: no se bajan los datos", p6, mission12, "antena");
+        Near("6 no antenna: spacecraft dv", RocketPhysics.SpacecraftDeltaV(p6), 1106.60f);
+        Fails("6 no antenna: the data is not downlinked", p6, mission12, "antenna");
 
-        // 7. FAIL_BUDGET_BLOCK1B_INSTRUMENTS (el presupuesto lo revisa GameManager al comprar)
+        // 7. FAIL_BUDGET_BLOCK1B_INSTRUMENTS (the budget is checked by GameManager when buying)
         List<PartData> p7 = Parts("ART-SLS-BLOCK1B", "ART-COMMS-DS", "ART-SCI-HEAVY", "ART-CREW-RES-FOOD");
-        Near("7 Block 1B con comida extra: cuesta 3,450 creditos", RocketPhysics.TotalPrice(p7), 3450f);
-        Check("7 Block 1B con comida extra: no alcanza el presupuesto", RocketPhysics.TotalPrice(p7) > Budget);
+        Near("7 Block 1B with extra food: costs 3,450 credits", RocketPhysics.TotalPrice(p7), 3450f);
+        Check("7 Block 1B with extra food: over budget", RocketPhysics.TotalPrice(p7) > Budget);
 
         // 8. FAIL_LOW_SCIENCE_POINTS
         List<PartData> p8 = Parts("ART-SLS-BLOCK1", "ART-COMMS-DS", "ART-SCI-LUNAR");
-        Near("8 poca ciencia: dv de la nave", RocketPhysics.SpacecraftDeltaV(p8), 1103.99f);
-        Fails("8 poca ciencia: 28 de 40 puntos", p8, mission12, "Poca ciencia");
+        Near("8 low science: spacecraft dv", RocketPhysics.SpacecraftDeltaV(p8), 1103.99f);
+        Fails("8 low science: 28 of 40 points", p8, mission12, "Not enough science");
 
         // 9. FAIL_LONGER_MISSION_WITHOUT_CREW_RESERVES
-        Fails("9 15 dias sin reservas: falta agua", p1, mission15, "agua");
-        Check("9 15 dias sin reservas: falta oxigeno y comida",
+        Fails("9 15 days without reserves: not enough water", p1, mission15, "water");
+        Check("9 15 days without reserves: not enough oxygen and food",
             RocketPhysics.OxygenMargin(p1, mission15) < 0f && RocketPhysics.FoodMargin(p1, mission15) < 0f);
 
-        // Reglas de armado
-        Fails("10 sin lanzador", Parts("ART-COMMS-DS", "ART-SCI-LUNAR", "ART-SCI-RAD"), mission12, "Elige un lanzador");
-        Fails("11 dos lanzadores", Parts("ART-SLS-BLOCK1", "ART-SLS-BLOCK1B", "ART-COMMS-DS", "ART-SCI-LUNAR", "ART-SCI-RAD"), mission12, "Solo puedes usar");
+        // Assembly rules
+        Fails("10 no launcher", Parts("ART-COMMS-DS", "ART-SCI-LUNAR", "ART-SCI-RAD"), mission12, "Choose a launcher");
+        Fails("11 two launchers", Parts("ART-SLS-BLOCK1", "ART-SLS-BLOCK1B", "ART-COMMS-DS", "ART-SCI-LUNAR", "ART-SCI-RAD"), mission12, "You can only use");
         List<PartData> noEscape = Parts("ART-SLS-BLOCK1", "ART-COMMS-DS", "ART-SCI-LUNAR", "ART-SCI-RAD");
         noEscape.Remove(Part("ART-LAS-ORION"));
-        Fails("12 sin torre de escape", noEscape, mission12, "torre de escape");
+        Fails("12 no abort tower", noEscape, mission12, "abort tower");
 
-        string summary = "Pruebas de fisica: " + passed + " OK, " + failed + " FALLA";
+        string summary = "Physics tests: " + passed + " OK, " + failed + " FAIL";
         if (failed == 0) Debug.Log(summary);
         else Debug.LogError(summary);
     }
@@ -105,7 +105,7 @@ public static class RocketPhysicsTests
         return AssetDatabase.LoadAssetAtPath<PartData>("Assets/_Project/Data/Piezas/" + id + ".asset");
     }
 
-    // Orion obligatoria (capsula, modulo de servicio, torre de escape) + las piezas que se pasen.
+    // Mandatory Orion (capsule, service module, abort tower) + the parts passed in.
     static List<PartData> Parts(params string[] ids)
     {
         List<PartData> list = new List<PartData> { Part("ART-CM-ORION"), Part("ART-ESM-ORION"), Part("ART-LAS-ORION") };
@@ -113,7 +113,7 @@ public static class RocketPhysicsTests
         return list;
     }
 
-    // Copia de la mision importada con otra duracion (no modifica el asset).
+    // Copy of the imported mission with a different duration (does not modify the asset).
     static DestinationData Mission(int days)
     {
         DestinationData m = Object.Instantiate(baseMission);
@@ -130,7 +130,7 @@ public static class RocketPhysicsTests
     static void Fails(string name, List<PartData> parts, DestinationData mission, string expected)
     {
         string message = RocketPhysics.ValidationMessage(parts, mission);
-        Report(name, message.Contains(expected), "mensaje: \"" + message + "\"");
+        Report(name, message.Contains(expected), "message: \"" + message + "\"");
     }
 
     static void Check(string name, bool ok)
@@ -138,15 +138,15 @@ public static class RocketPhysicsTests
         Report(name, ok, "");
     }
 
-    // Tolerancia de 0.5 (float de Unity contra los valores de Cristina).
+    // Tolerance of 0.5 (Unity float against Cristina's values).
     static void Near(string name, float actual, float expected)
     {
-        Report(name + ": " + actual.ToString("0.00"), Mathf.Abs(actual - expected) <= 0.5f, "esperado " + expected.ToString("0.00"));
+        Report(name + ": " + actual.ToString("0.00"), Mathf.Abs(actual - expected) <= 0.5f, "expected " + expected.ToString("0.00"));
     }
 
     static void Report(string name, bool ok, string detail)
     {
         if (ok) { passed++; Debug.Log("OK     " + name); }
-        else { failed++; Debug.LogError("FALLA  " + name + "  " + detail); }
+        else { failed++; Debug.LogError("FAIL   " + name + "  " + detail); }
     }
 }

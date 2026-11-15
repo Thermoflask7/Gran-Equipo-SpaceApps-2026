@@ -1,32 +1,32 @@
-// Lo que paso en el vuelo (02_Lanzamiento). Lo llenan las fases y los minijuegos (P4)
-// y lo lee la pantalla de Resultados para calcular el puntaje V16 de Cristina.
-// Vive en GameManager.flight y se reinicia con ResetGame().
+// What happened during the flight (02_Lanzamiento). Filled in by the phases and the minigames (P4)
+// and read by the Results screen to calculate Cristina's V16 score.
+// Lives in GameManager.flight and is reset with ResetGame().
 //
-// Uso desde el vuelo:
-//   GameManager.Instance.flight.departureDone = true;       // al terminar la salida
-//   GameManager.Instance.flight.pilotingResult = 0.8f;      // resultado CRUDO del minijuego (0 a 1),
-//                                                           // SIN multiplicar por SkillMultiplier
-//   GameManager.Instance.flight.flightFinished = true;      // al acabar el vuelo (bien o mal)
+// Use from the flight:
+//   GameManager.Instance.flight.departureDone = true;       // when the departure ends
+//   GameManager.Instance.flight.pilotingResult = 0.8f;      // RAW minigame result (0 to 1),
+//                                                           // NOT multiplied by SkillMultiplier
+//   GameManager.Instance.flight.flightFinished = true;      // when the flight ends (well or badly)
 [System.Serializable]
 public class MissionResults
 {
-    public bool launched;        // el boton de lanzamiento se presiono con CanLaunch() en true
-    public float moneyAtLaunch;  // dinero al lanzar (lo pone LaunchButton). El ahorro se califica con esto
-    public bool flightFinished;  // el vuelo ya termino (con exito o no). Mientras sea false el resultado es "pendiente"
+    public bool launched;        // the launch button was pressed with CanLaunch() true
+    public float moneyAtLaunch;  // money at launch (set by LaunchButton). Savings are graded with this
+    public bool flightFinished;  // the flight has ended (successfully or not). While false the result is "pending"
 
-    // Hitos del vuelo (en orden)
-    public bool departureDone;   // salida exitosa
-    public bool lunarOrbitDone;  // llego a orbita lunar
-    public bool safeReturnDone;  // regreso seguro con la tripulacion
+    // Flight milestones (in order)
+    public bool departureDone;   // successful departure
+    public bool lunarOrbitDone;  // reached lunar orbit
+    public bool safeReturnDone;  // safe return with the crew
 
-    // Resultado crudo de cada minijuego, de 0 a 1. -1 = no se jugo (cuenta como 0)
+    // Raw result of each minigame, from 0 to 1. -1 = not played (counts as 0)
     public float pilotingResult = -1f;
     public float repairResult = -1f;
     public float researchResult = -1f;
 
-    // Ciencia del vuelo, de 0 a 1. -1 = no se hizo (cuenta como 0)
-    public float experimentFraction = -1f; // experimentos hechos / experimentos planeados
-    public float downlinkFraction = -1f;   // datos mandados a la Tierra / datos planeados (no puede ser mayor que experimentFraction)
+    // Flight science, from 0 to 1. -1 = not done (counts as 0)
+    public float experimentFraction = -1f; // experiments done / experiments planned
+    public float downlinkFraction = -1f;   // data sent to Earth / data planned (cannot be greater than experimentFraction)
 
     public void Reset()
     {

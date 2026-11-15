@@ -1,10 +1,10 @@
 using UnityEngine;
 
-// Menu principal (00_Menu). Va en el Canvas. Los botones llaman a estos metodos.
-// Se arma solo con el menu de Unity: SpaceApps > Armar menu principal.
+// Main menu (00_Menu). Goes on the Canvas. The buttons call these methods.
+// It is built automatically with the Unity menu: SpaceApps > Build main menu.
 public class MainMenu : MonoBehaviour
 {
-    [Tooltip("Paneles que se abren encima del menu (Ajustes, Space Apps). Empiezan ocultos.")]
+    [Tooltip("Panels that open on top of the menu (Settings, Space Apps). They start hidden.")]
     public GameObject[] panels;
 
     void Start()
@@ -13,7 +13,7 @@ public class MainMenu : MonoBehaviour
         HidePanels();
     }
 
-    // Iniciar juego: pasa a la etapa de planeacion
+    // Start game: moves to the planning stage
     public void Play()
     {
         GameManager.Instance.ResetGame();
@@ -35,8 +35,8 @@ public class MainMenu : MonoBehaviour
         }
     }
 
-    // Salir: en el editor detiene el Play. En WebGL el navegador no deja cerrar la pestana,
-    // asi que ahi no hace nada (Application.Quit se ignora).
+    // Quit: in the editor it stops Play mode. In WebGL the browser does not allow closing the tab,
+    // so there it does nothing (Application.Quit is ignored).
     public void Quit()
     {
 #if UNITY_EDITOR

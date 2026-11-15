@@ -1,2 +1,2 @@
 @AGENTS.md
-Protocolo entre las dos IAs: @AI_COLLAB.md
+Protocol between the AIs: @AI_COLLAB.md

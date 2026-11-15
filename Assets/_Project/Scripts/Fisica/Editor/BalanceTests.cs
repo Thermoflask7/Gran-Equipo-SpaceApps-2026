@@ -2,15 +2,15 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-// Pruebas de balanceo (P5) con las piezas reales del catalogo Artemis.
-// Menu: SpaceApps -> Pruebas de balanceo. Escribe en la consola cada prueba con OK o FALLA.
+// Balance tests (P5) with the real parts of the Artemis catalog.
+// Menu: SpaceApps -> Balance tests. Writes each test to the console with OK or FAIL.
 //
-// Recorre todas las combinaciones: 1 lanzador (Block 1 o 1B) + Orion (capsula, modulo de servicio,
-// torre de escape) + hasta una unidad de cada uno de los 11 modulos opcionales = 2 x 2^11 = 4,096.
-// Para cada una revisa por separado presupuesto, masa, delta-v, consumibles, energia, bateria,
-// ciencia y comunicaciones, y compara con la enumeracion de P5 (Docs/P5/balance.py).
-// Las cuentas cambian si cambian el catalogo, la mision o los 3,400 creditos: si eso es a proposito,
-// hay que actualizar los valores esperados (y avisar al equipo del efecto en el balanceo).
+// Goes through every combination: 1 launcher (Block 1 or 1B) + Orion (capsule, service module,
+// abort tower) + up to one unit of each of the 11 optional modules = 2 x 2^11 = 4,096.
+// For each one it separately checks budget, mass, delta-v, consumables, power, battery,
+// science and communications, and compares with P5's enumeration (Docs/P5/balance.py).
+// The counts change if the catalog, the mission or the 3,400 credits change: if that is intentional,
+// the expected values must be updated (and the team told about the effect on the balance).
 public static class BalanceTests
 {
     const float Budget = 3400f;
@@ -26,7 +26,7 @@ public static class BalanceTests
     static int passed;
     static int failed;
 
-    [MenuItem("SpaceApps/Pruebas de balanceo")]
+    [MenuItem("SpaceApps/Balance tests")]
     public static void RunAll()
     {
         passed = 0;
@@ -36,11 +36,11 @@ public static class BalanceTests
         DestinationData baseMission = AssetDatabase.LoadAssetAtPath<DestinationData>("Assets/_Project/Data/Destinos/MisionArtemis.asset");
         if (baseMission == null || Part("ART-CM-ORION") == null)
         {
-            Debug.LogError("No se pudo importar el catalogo: no se corrieron las pruebas.");
+            Debug.LogError("The catalog could not be imported: the tests were not run.");
             return;
         }
 
-        // Valores esperados de la enumeracion de P5 (12 y 15 dias, 3,400 creditos, sin repetir piezas)
+        // Expected values from P5's enumeration (12 and 15 days, 3,400 credits, no repeated parts)
         Enumerate(Mission(baseMission, 12), 78, 2940f, 1,
             new Dictionary<string, int> { { "BUDGET", 2401 }, { "MASS", 1202 }, { "DELTA_V", 622 }, { "CONSUMABLES", 0 },
                 { "POWER", 0 }, { "BATTERY", 0 }, { "SCIENCE", 1536 }, { "DOWNLINK", 1792 } });
@@ -51,17 +51,17 @@ public static class BalanceTests
         StrategyTests(Mission(baseMission, 12), Mission(baseMission, 15));
         EdgeCases(baseMission);
 
-        string summary = "Pruebas de balanceo: " + passed + " OK, " + failed + " FALLA";
+        string summary = "Balance tests: " + passed + " OK, " + failed + " FAIL";
         if (failed == 0) Debug.Log(summary);
         else Debug.LogError(summary);
     }
 
-    // ---------- Enumeracion ----------
+    // ---------- Enumeration ----------
 
     static void Enumerate(DestinationData mission, int expectedViable, float expectedCheapest, int expectedBlock1BViable,
         Dictionary<string, int> expectedFails)
     {
-        string tag = mission.missionDays + " dias";
+        string tag = mission.missionDays + " days";
         Dictionary<string, int> fails = new Dictionary<string, int>();
         foreach (string c in Categories) fails[c] = 0;
         int total = 0;
@@ -82,7 +82,7 @@ public static class BalanceTests
                 maxLoad = Mathf.Max(maxLoad, RocketPhysics.PowerConsumption(parts));
 
                 bool ok = problems.Count == 0;
-                // ValidationMessage + presupuesto deben dar lo mismo que las revisiones por separado
+                // ValidationMessage + budget must give the same result as the separate checks
                 bool physicsOk = RocketPhysics.IsRocketValid(parts, mission) && RocketPhysics.TotalPrice(parts) <= Budget;
                 if (ok != physicsOk) mismatches++;
 
@@ -93,17 +93,17 @@ public static class BalanceTests
             }
         }
 
-        Check(tag + ": 4,096 combinaciones", total == 4096);
-        Check(tag + ": " + expectedViable + " viables (salieron " + viable + ")", viable == expectedViable);
-        Near(tag + ": la viable mas barata", cheapest, expectedCheapest);
-        Check(tag + ": " + expectedBlock1BViable + " viables con Block 1B (salieron " + block1BViable + ")", block1BViable == expectedBlock1BViable);
-        Check(tag + ": RocketPhysics.ValidationMessage coincide con las revisiones por separado (" + mismatches + " distintas)", mismatches == 0);
+        Check(tag + ": 4,096 combinations", total == 4096);
+        Check(tag + ": " + expectedViable + " viable (got " + viable + ")", viable == expectedViable);
+        Near(tag + ": cheapest viable", cheapest, expectedCheapest);
+        Check(tag + ": " + expectedBlock1BViable + " viable with Block 1B (got " + block1BViable + ")", block1BViable == expectedBlock1BViable);
+        Check(tag + ": RocketPhysics.ValidationMessage matches the separate checks (" + mismatches + " different)", mismatches == 0);
         foreach (string c in Categories)
-            Check(tag + ": fallan por " + c + " = " + expectedFails[c] + " (salieron " + fails[c] + ")", fails[c] == expectedFails[c]);
-        Debug.Log(tag + ": consumo maximo posible de la nave = " + maxLoad + " W (genera 11,000 W; la energia no limita con el catalogo actual).");
+            Check(tag + ": fail on " + c + " = " + expectedFails[c] + " (got " + fails[c] + ")", fails[c] == expectedFails[c]);
+        Debug.Log(tag + ": maximum possible spacecraft power draw = " + maxLoad + " W (it generates 11,000 W; power is not a limit with the current catalog).");
     }
 
-    // Revisa cada requisito por separado (pueden fallar varios a la vez).
+    // Checks each requirement separately (several can fail at once).
     static List<string> Problems(List<PartData> parts, DestinationData mission)
     {
         List<string> list = new List<string>();
@@ -129,48 +129,48 @@ public static class BalanceTests
         return parts;
     }
 
-    // ---------- Estrategias distintas que deben seguir siendo viables ----------
+    // ---------- Different strategies that must stay viable ----------
 
     static void StrategyTests(DestinationData mission12, DestinationData mission15)
     {
-        Viable("Estrategia economica: Block 1 + antena + 2 instrumentos chicos (12 dias)",
+        Viable("Budget strategy: Block 1 + antenna + 2 small instruments (12 days)",
             Parts("ART-SLS-BLOCK1", "ART-COMMS-DS", "ART-SCI-LUNAR", "ART-SCI-RAD"), mission12);
-        Viable("Estrategia de ciencia pesada: Block 1B + antena + instrumento pesado (12 dias)",
+        Viable("Heavy science strategy: Block 1B + antenna + heavy instrument (12 days)",
             Parts("ART-SLS-BLOCK1B", "ART-COMMS-DS", "ART-SCI-HEAVY"), mission12);
-        Viable("Estrategia de mision larga: Block 1 + reservas de agua, oxigeno y comida (15 dias)",
+        Viable("Long mission strategy: Block 1 + water, oxygen and food reserves (15 days)",
             Parts("ART-SLS-BLOCK1", "ART-COMMS-DS", "ART-SCI-LUNAR", "ART-SCI-RAD",
                 "ART-CREW-RES-WATER", "ART-CREW-RES-OXYGEN", "ART-CREW-RES-FOOD"), mission15);
-        Viable("Estrategia segura: Block 1 + navegacion lunar + reserva de comida (12 dias)",
+        Viable("Safe strategy: Block 1 + lunar navigation + food reserve (12 days)",
             Parts("ART-SLS-BLOCK1", "ART-COMMS-DS", "ART-SCI-LUNAR", "ART-SCI-RAD", "ART-NAV-LUNAR", "ART-CREW-RES-FOOD"), mission12);
     }
 
-    // ---------- Casos limite ----------
+    // ---------- Edge cases ----------
 
     static void EdgeCases(DestinationData baseMission)
     {
         DestinationData mission12 = Mission(baseMission, 12);
         List<PartData> good = Parts("ART-SLS-BLOCK1", "ART-COMMS-DS", "ART-SCI-LUNAR", "ART-SCI-RAD");
 
-        Rejected("Sin mision asignada", good, null, "No hay mision");
+        Rejected("No mission assigned", good, null, "No mission");
 
         DestinationData badMission = Mission(baseMission, 12);
         badMission.requiredDeltaV = 0f;
-        Rejected("Mision sin delta-v requerido", good, badMission, "delta-v requerido");
+        Rejected("Mission without required delta-v", good, badMission, "required delta-v");
         badMission = Mission(baseMission, 12);
         badMission.baseWaterKg = -10f;
-        Rejected("Mision con agua negativa", good, badMission, "valor negativo");
+        Rejected("Mission with negative water", good, badMission, "negative value");
 
         List<PartData> negativeMass = Parts("ART-SLS-BLOCK1", "ART-COMMS-DS", "ART-SCI-LUNAR", "ART-SCI-RAD");
         PartData antenna = Object.Instantiate(Part("ART-COMMS-DS"));
         antenna.dryMass = -65f;
         negativeMass[4] = antenna;
-        Rejected("Pieza con masa negativa", negativeMass, mission12, "negativo");
+        Rejected("Part with negative mass", negativeMass, mission12, "negative");
 
         List<PartData> negativePower = Parts("ART-SLS-BLOCK1", "ART-COMMS-DS", "ART-SCI-LUNAR", "ART-SCI-RAD");
         PartData antenna2 = Object.Instantiate(Part("ART-COMMS-DS"));
-        antenna2.powerDraw = -5000f; // consumo negativo = energia gratis
+        antenna2.powerDraw = -5000f; // negative draw = free power
         negativePower[4] = antenna2;
-        Rejected("Pieza con consumo negativo", negativePower, mission12, "negativo");
+        Rejected("Part with negative power draw", negativePower, mission12, "negative");
 
         List<PartData> noData = Parts("ART-SLS-BLOCK1", "ART-COMMS-DS", "ART-SCI-LUNAR", "ART-SCI-RAD");
         PartData lunar = Object.Instantiate(Part("ART-SCI-LUNAR"));
@@ -179,22 +179,22 @@ public static class BalanceTests
         rad.experimentDataBits = 0f;
         noData[5] = lunar;
         noData[6] = rad;
-        Rejected("Instrumentos con ciencia pero sin datos (0 s de transmision no cuenta como exito)", noData, mission12, "no generan datos");
+        Rejected("Instruments with science but no data (0 s of downlink does not count as success)", noData, mission12, "do not generate data");
 
-        Rejected("Dos unidades de SCI-RAD (con repetidas seria la mas barata: 2,875 creditos)",
-            Parts("ART-SLS-BLOCK1", "ART-COMMS-DS", "ART-SCI-RAD", "ART-SCI-RAD"), mission12, "una unidad");
-        Rejected("Dos reservas de agua", Parts("ART-SLS-BLOCK1", "ART-COMMS-DS", "ART-SCI-LUNAR", "ART-SCI-RAD",
-            "ART-CREW-RES-WATER", "ART-CREW-RES-WATER"), mission12, "una unidad");
+        Rejected("Two units of SCI-RAD (with repeats it would be the cheapest: 2,875 credits)",
+            Parts("ART-SLS-BLOCK1", "ART-COMMS-DS", "ART-SCI-RAD", "ART-SCI-RAD"), mission12, "one unit");
+        Rejected("Two water reserves", Parts("ART-SLS-BLOCK1", "ART-COMMS-DS", "ART-SCI-LUNAR", "ART-SCI-RAD",
+            "ART-CREW-RES-WATER", "ART-CREW-RES-WATER"), mission12, "one unit");
     }
 
-    // ---------- Ayudantes ----------
+    // ---------- Helpers ----------
 
     static PartData Part(string id)
     {
         return AssetDatabase.LoadAssetAtPath<PartData>(PartsFolder + id + ".asset");
     }
 
-    // Orion (capsula, modulo de servicio, torre de escape) despues del lanzador + las piezas que se pidan
+    // Orion (capsule, service module, abort tower) after the launcher + the requested parts
     static List<PartData> Parts(string launcher, params string[] ids)
     {
         List<PartData> list = new List<PartData> { Part(launcher), Part("ART-CM-ORION"), Part("ART-ESM-ORION"), Part("ART-LAS-ORION") };
@@ -213,13 +213,13 @@ public static class BalanceTests
     {
         string message = RocketPhysics.ValidationMessage(parts, mission);
         float price = RocketPhysics.TotalPrice(parts);
-        Report(name + " (" + price + " creditos)", message == "" && price <= Budget, message);
+        Report(name + " (" + price + " credits)", message == "" && price <= Budget, message);
     }
 
     static void Rejected(string name, List<PartData> parts, DestinationData mission, string expected)
     {
         string message = RocketPhysics.ValidationMessage(parts, mission);
-        Report(name + ": se rechaza", message.Contains(expected), "mensaje: \"" + message + "\"");
+        Report(name + ": rejected", message.Contains(expected), "message: \"" + message + "\"");
     }
 
     static void Check(string name, bool ok)
@@ -229,7 +229,7 @@ public static class BalanceTests
 
     static void Near(string name, float actual, float expected)
     {
-        Report(name + " = " + expected, Mathf.Abs(actual - expected) < 0.5f, "salio " + actual);
+        Report(name + " = " + expected, Mathf.Abs(actual - expected) < 0.5f, "got " + actual);
     }
 
     static void Report(string name, bool ok, string detail)
@@ -242,7 +242,7 @@ public static class BalanceTests
         else
         {
             failed++;
-            Debug.LogError("FALLA  " + name + "  " + detail);
+            Debug.LogError("FAIL   " + name + "  " + detail);
         }
     }
 }

@@ -2,14 +2,14 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-// Boton de lanzamiento del escritorio. Esta bloqueado hasta que GameManager.CanLaunch()
-// sea true (las 4 tareas del GDD). Al hacer clic pasa a 02_Lanzamiento.
+// Launch button on the desk. It stays locked until GameManager.CanLaunch()
+// is true (the 4 GDD tasks). Clicking it moves to 02_Lanzamiento.
 [RequireComponent(typeof(Button))]
 public class LaunchButton : MonoBehaviour
 {
-    public TMP_Text label; // texto del boton (opcional)
-    public string readyText = "¡LANZAR!";
-    public string lockedText = "Bloqueado";
+    public TMP_Text label; // button text (optional)
+    public string readyText = "LAUNCH!";
+    public string lockedText = "Locked";
 
     Button button;
 
@@ -35,8 +35,8 @@ public class LaunchButton : MonoBehaviour
     public void Launch()
     {
         if (!GameManager.Instance.CanLaunch()) return;
-        GameManager.Instance.flight.launched = true; // Resultados revisa que se lanzo con las 4 tareas
-        GameManager.Instance.flight.moneyAtLaunch = GameManager.Instance.money; // el ahorro se califica al lanzar
+        GameManager.Instance.flight.launched = true; // Results checks that it launched with the 4 tasks done
+        GameManager.Instance.flight.moneyAtLaunch = GameManager.Instance.money; // savings are graded at launch
         GameManager.Instance.GoToScene(Scenes.Launch);
     }
 }

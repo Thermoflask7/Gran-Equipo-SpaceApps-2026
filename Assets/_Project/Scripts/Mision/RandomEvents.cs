@@ -1,31 +1,31 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Eventos aleatorios de la planeacion y del vuelo (tarea 15).
-// Uso tipico (por ejemplo al iniciar una fase del vuelo):
+// Random events during planning and the flight (task 15).
+// Typical use (for example when a flight phase starts):
 //   EventData e = RandomEvents.RollAndApply(events, EventPhase.Departure);
 //   if (e != null)
 //   {
-//       // mostrar e.eventName y e.description
-//       // si e.minigameRole != TrainingFocus.None, abrir ese minijuego
+//       // show e.eventName and e.description
+//       // if e.minigameRole != TrainingFocus.None, open that minigame
 //   }
 public static class RandomEvents
 {
-    // Probabilidad del evento tomando en cuenta lo que se decidio en la planeacion.
+    // Probability of the event, taking into account what was decided during planning.
     public static float ChanceOf(EventData e)
     {
         GameManager gm = GameManager.Instance;
         float chance = e.probability;
 
-        // Clima: con mal clima los eventos malos son mas probables (hasta el doble) y los buenos menos.
+        // Weather: with bad weather, bad events are more likely (up to double) and good ones less likely.
         if (e.weatherSensitive)
         {
             if (e.isGood) chance *= 1f - gm.weatherRisk;
             else chance *= 1f + gm.weatherRisk;
         }
 
-        // Tripulacion: si el evento malo cae en un rol, un astronauta habil y bien entrenado lo evita.
-        // Habilidad 1 -> la mitad de probabilidad, habilidad 0 -> 1.5 veces.
+        // Crew: if the bad event falls on a role, a skilled and well-trained astronaut prevents it.
+        // Skill 1 -> half the probability, skill 0 -> 1.5 times.
         if (!e.isGood && e.minigameRole != TrainingFocus.None)
         {
             float skill = gm.SkillMultiplier(AstronautFor(e.minigameRole), e.minigameRole);
@@ -35,9 +35,9 @@ public static class RandomEvents
         return Mathf.Clamp01(chance);
     }
 
-    // Tira los eventos de una fase. Cada evento tira su propia probabilidad;
-    // si salen varios se queda uno al azar. No repite eventos que ya pasaron.
-    // Regresa null si no pasa nada. NO aplica el evento (para eso Apply o RollAndApply).
+    // Rolls the events of a phase. Each event rolls its own probability;
+    // if several come up, one is kept at random. It does not repeat events that already happened.
+    // Returns null if nothing happens. It does NOT apply the event (use Apply or RollAndApply for that).
     public static EventData Roll(List<EventData> events, EventPhase phase)
     {
         List<EventData> hits = new List<EventData>();
@@ -52,7 +52,7 @@ public static class RandomEvents
         return hits[Random.Range(0, hits.Count)];
     }
 
-    // Aplica dinero y puntaje del evento y lo guarda en GameManager.eventsHappened.
+    // Applies the event's money and score and stores it in GameManager.eventsHappened.
     public static void Apply(EventData e)
     {
         if (e == null) return;
@@ -74,7 +74,7 @@ public static class RandomEvents
         return e;
     }
 
-    // Eventos de una fase que ya pasaron, en orden. Sirve para el folder y para Resultados.
+    // Events of a phase that already happened, in order. Useful for the folder and for Results.
     public static List<EventData> HappenedIn(EventPhase phase)
     {
         List<EventData> list = new List<EventData>();
@@ -85,7 +85,7 @@ public static class RandomEvents
         return list;
     }
 
-    // Astronauta de la tripulacion que cubre un rol.
+    // Crew astronaut who covers a role.
     public static AstronautData AstronautFor(TrainingFocus role)
     {
         GameManager gm = GameManager.Instance;

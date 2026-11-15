@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80234876fe1a8b644a706efc0edab593, type: 3}
   m_Name: MisionArtemis
   m_EditorClassIdentifier: Assembly-CSharp::DestinationData
-  destinationName: Orbita lunar tripulada (Artemis)
-  description: Lleva a 4 astronautas en Orion a una orbita alrededor de la Luna (NRHO), recolecta datos y regresa. Mision educativa inspirada en Artemis, no es una mision real de la NASA.
+  destinationName: Crewed lunar orbit (Artemis)
+  description: Take 4 astronauts in Orion to an orbit around the Moon (NRHO), collect data and return. Educational mission inspired by Artemis; it is not a real NASA mission.
   launchDeltaV: 0
   requiredDeltaV: 1060
   maxMass: 0

@@ -15,7 +15,7 @@ Valid statuses: `pending`, `in progress`, `in PR`, `done`.
 | 2 | `01_Planeacion`: base desk, camera and navigation between stations | P1 | asdidkf/Mateo | Grok | `pantalla-escritorio` (desk camera and PC zoom already in `main`, PR #24; navigation to the other stations pending) | in progress |
 | 3 | Launch button + task checklist | P1 | Elena | Claude | `ia/claude/boton-lanzamiento` | done |
 | 4 | Folder: mission + updates from events | P3 | Elena | Claude | `ia/claude/folder-mission` (PR #26) | done |
-| 5 | Folder: astronaut profiles + training | P3 | unassigned | none | — | pending |
+| 5 | Folder: astronaut profiles + training | P3 | Elena | Claude | `ia/claude/folder-crew` | in PR |
 | 6 | Globe + calendar (site, weather, wind) | P3 | Mateo | Grok | `feat/mateo/globo-calendario` | in progress |
 | 7 | Computer: app desktop, settings and shut down | P2 | Mateo | Grok | `pantalla-escritorio` (PR #24: SpaceOS desktop, Settings and Shut down) | done |
 | 8 | Computer: SpaceMart app (buy parts) | P2 | Elena (logic), Mateo (SpaceOS window) | Claude, Grok | `ia/claude/spacemart` (PR #18) + `ia/claude/spacemart-filters` (PR #22) + SpaceOS front-end `SpaceMartApp` (PR #24) | done |

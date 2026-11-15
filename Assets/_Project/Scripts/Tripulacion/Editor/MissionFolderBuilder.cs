@@ -9,7 +9,8 @@ using UnityEngine.UI;
 // Unity menus for the mission folder (task 4):
 //   SpaceApps > Mission folder > Create prefab
 //       Creates Assets/_Project/Prefabs/MissionFolder.prefab: a manila folder with page 1
-//       (briefing, launch checklist and mission updates) and buttons to change page.
+//       (briefing, launch checklist and mission updates), page 2 (crew: astronaut profiles
+//       and training, task 5) and buttons to change page.
 //   SpaceApps > Mission folder > Add to open scene
 //       Puts the prefab inside the Canvas of the open scene (creates a Canvas and an EventSystem if missing).
 //       It is added ACTIVE so it can be tested; on the desk the station must leave it inactive
@@ -132,6 +133,9 @@ public static class MissionFolderBuilder
         scrollRect.movementType = ScrollRect.MovementType.Clamped;
         scrollRect.scrollSensitivity = 30;
 
+        // Page 2: crew (task 5)
+        folder.pages.Add(CreateCrewPage(paper.transform));
+
         // Data
         folder.mission = AssetDatabase.LoadAssetAtPath<DestinationData>(MissionPath);
         if (folder.mission == null)
@@ -217,6 +221,129 @@ public static class MissionFolderBuilder
         MissionFolder folder = Object.FindAnyObjectByType<MissionFolder>(FindObjectsInactive.Include);
         if (folder == null) Debug.LogWarning("Mission folder: there is no MissionFolder in the scene. Use SpaceApps > Mission folder > Add to open scene.");
         return folder;
+    }
+
+    // ---------- Page 2: crew (task 5) ----------
+
+    static GameObject CreateCrewPage(Transform pages)
+    {
+        GameObject page = NewUI("Page 2 - Crew", pages);
+        Stretch((RectTransform)page.transform, Vector2.zero, Vector2.one, new Vector2(30, 25), new Vector2(-30, -25));
+        CrewPage crew = page.AddComponent<CrewPage>();
+
+        // Left column: candidates list (one button per candidate, made at runtime from the template)
+        TextMeshProUGUI listHeading = CreateHeading(page.transform, "CandidatesHeading", "Candidates");
+        Stretch(listHeading.rectTransform, new Vector2(0, 1), new Vector2(0.3f, 1), new Vector2(0, -50), Vector2.zero);
+
+        GameObject scroll = NewUI("Candidates", page.transform, typeof(Image), typeof(ScrollRect));
+        Stretch((RectTransform)scroll.transform, Vector2.zero, new Vector2(0.3f, 1), Vector2.zero, new Vector2(0, -60));
+        scroll.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.05f);
+
+        GameObject viewport = NewUI("Viewport", scroll.transform, typeof(Image), typeof(RectMask2D));
+        Stretch((RectTransform)viewport.transform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        viewport.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.01f);
+
+        GameObject content = NewUI("Content", viewport.transform, typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
+        RectTransform contentRt = (RectTransform)content.transform;
+        contentRt.anchorMin = new Vector2(0, 1);
+        contentRt.anchorMax = Vector2.one;
+        contentRt.pivot = new Vector2(0.5f, 1);
+        contentRt.sizeDelta = Vector2.zero;
+        VerticalLayoutGroup layout = content.GetComponent<VerticalLayoutGroup>();
+        layout.padding = new RectOffset(10, 10, 10, 10);
+        layout.spacing = 8;
+        layout.childControlWidth = true;
+        layout.childControlHeight = false;
+        layout.childForceExpandWidth = true;
+        layout.childForceExpandHeight = false;
+        content.GetComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        Button template = CreateButton(content.transform, "CandidateTemplate", "Name", TabColor, InkColor);
+        ((RectTransform)template.transform).sizeDelta = new Vector2(0, 52);
+        TextMeshProUGUI templateText = template.GetComponentInChildren<TextMeshProUGUI>();
+        templateText.fontSize = 24;
+        templateText.fontStyle = FontStyles.Normal;
+        templateText.alignment = TextAlignmentOptions.MidlineLeft;
+        templateText.margin = new Vector4(12, 0, 8, 0);
+        template.gameObject.SetActive(false);
+        crew.listContent = content.transform;
+        crew.candidateTemplate = template;
+
+        ScrollRect scrollRect = scroll.GetComponent<ScrollRect>();
+        scrollRect.viewport = (RectTransform)viewport.transform;
+        scrollRect.content = contentRt;
+        scrollRect.horizontal = false;
+        scrollRect.vertical = true;
+        scrollRect.movementType = ScrollRect.MovementType.Clamped;
+        scrollRect.scrollSensitivity = 30;
+
+        // Middle column: profile of the selected candidate
+        TextMeshProUGUI profileHeading = CreateHeading(page.transform, "ProfileHeading", "Profile");
+        Stretch(profileHeading.rectTransform, new Vector2(0.33f, 1), new Vector2(0.63f, 1), new Vector2(0, -50), Vector2.zero);
+
+        GameObject portrait = NewUI("Portrait", page.transform, typeof(Image));
+        Stretch((RectTransform)portrait.transform, new Vector2(0.63f, 1), new Vector2(0.63f, 1), new Vector2(-110, -175), new Vector2(0, -65));
+        portrait.GetComponent<Image>().preserveAspect = true;
+        portrait.SetActive(false); // shown only when the astronaut has a portrait
+        crew.portraitImage = portrait.GetComponent<Image>();
+
+        TextMeshProUGUI astronautName = CreateText(page.transform, "Name", "", 32, InkColor);
+        astronautName.fontStyle = FontStyles.Bold;
+        astronautName.alignment = TextAlignmentOptions.TopLeft;
+        Stretch(astronautName.rectTransform, new Vector2(0.33f, 1), new Vector2(0.63f, 1), new Vector2(0, -110), new Vector2(-120, -65));
+        crew.nameText = astronautName;
+
+        TextMeshProUGUI bio = CreateText(page.transform, "Bio", "", 24, InkColor);
+        bio.alignment = TextAlignmentOptions.TopLeft;
+        Stretch(bio.rectTransform, new Vector2(0.33f, 0.3f), new Vector2(0.63f, 1), Vector2.zero, new Vector2(0, -185));
+        crew.bioText = bio;
+
+        for (int slot = 0; slot < 3; slot++)
+        {
+            Button assign = CreateButton(page.transform, "Make " + CrewPage.RoleNames[slot], "Make " + CrewPage.RoleNames[slot].ToLower(), TabColor, InkColor);
+            Stretch((RectTransform)assign.transform, new Vector2(0.33f, 0.2f - slot * 0.1f), new Vector2(0.63f, 0.28f - slot * 0.1f), Vector2.zero, Vector2.zero);
+            assign.GetComponentInChildren<TextMeshProUGUI>().fontSize = 26;
+            crew.assignButtons[slot] = assign;
+        }
+
+        // Right column: the 3 crew slots with their training
+        TextMeshProUGUI crewHeading = CreateHeading(page.transform, "CrewHeading", "Crew and training");
+        Stretch(crewHeading.rectTransform, new Vector2(0.66f, 1), Vector2.one, new Vector2(0, -50), Vector2.zero);
+
+        string[] focusLabels = { "Piloting", "Engineering", "Research" };
+        for (int slot = 0; slot < 3; slot++)
+        {
+            float top = 0.88f - slot * 0.25f;
+            GameObject box = NewUI(CrewPage.RoleNames[slot] + " slot", page.transform, typeof(Image));
+            Stretch((RectTransform)box.transform, new Vector2(0.66f, top - 0.23f), new Vector2(1, top), Vector2.zero, Vector2.zero);
+            box.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.06f);
+
+            TextMeshProUGUI role = CreateText(box.transform, "Role", CrewPage.RoleNames[slot].ToUpper(), 22, HeadingColor);
+            role.fontStyle = FontStyles.Bold;
+            role.alignment = TextAlignmentOptions.TopLeft;
+            Stretch(role.rectTransform, new Vector2(0, 0.7f), Vector2.one, new Vector2(12, 0), new Vector2(-12, -6));
+
+            TextMeshProUGUI slotName = CreateText(box.transform, "Astronaut", "", 26, InkColor);
+            slotName.alignment = TextAlignmentOptions.MidlineLeft;
+            Stretch(slotName.rectTransform, new Vector2(0, 0.42f), new Vector2(1, 0.72f), new Vector2(12, 0), new Vector2(-12, 0));
+            crew.slotNames[slot] = slotName;
+
+            for (int f = 0; f < 3; f++)
+            {
+                Button train = CreateButton(box.transform, "Train " + focusLabels[f], focusLabels[f], TabColor, InkColor);
+                Stretch((RectTransform)train.transform, new Vector2(f / 3f, 0), new Vector2((f + 1) / 3f, 0.4f), new Vector2(6, 8), new Vector2(-6, 0));
+                train.GetComponentInChildren<TextMeshProUGUI>().fontSize = 20;
+                crew.trainingButtons[slot * 3 + f] = train;
+            }
+        }
+
+        TextMeshProUGUI tip = CreateText(page.transform, "Tip", "", 20, InkColor);
+        tip.fontStyle = FontStyles.Italic;
+        tip.alignment = TextAlignmentOptions.TopLeft;
+        Stretch(tip.rectTransform, new Vector2(0.66f, 0), new Vector2(1, 0.13f), Vector2.zero, Vector2.zero);
+        crew.tipText = tip;
+
+        return page;
     }
 
     // ---------- UI helpers ----------

@@ -57,6 +57,10 @@ public class GameManager : MonoBehaviour
     public float missionScore;
     public List<EventData> eventsHappened = new List<EventData>();
 
+    [Header("Desk tutorials (DeskTutorials / TutorialPopup)")]
+    public bool welcomeSeen;                                   // the welcome message was shown in this game
+    public List<string> tutorialsSeen = new List<string>();    // ids of the station tutorials already shown
+
     [Header("Flight (filled in by the phases and minigames, read by Results)")]
     public MissionResults flight = new MissionResults();
 
@@ -101,6 +105,8 @@ public class GameManager : MonoBehaviour
         planningScore = 0f;
         missionScore = 0f;
         eventsHappened.Clear();
+        welcomeSeen = false;
+        tutorialsSeen.Clear();
         flight.Reset();
     }
 

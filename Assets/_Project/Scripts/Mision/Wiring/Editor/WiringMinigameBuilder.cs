@@ -1,14 +1,14 @@
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// Unity menus of the wiring minigame (task 43). Signed: claude_c.
+// Unity menus of the wiring minigame (task 44). Signed: claude_c.
 //   SpaceApps > Wiring minigame > Create prefab           settings asset + Prefabs/WiringMinigame.prefab (UI is built in code)
 //   SpaceApps > Wiring minigame > Add to open scene       one instance, active, on the overlay canvas (to try it on its own)
 //   SpaceApps > Wiring minigame > Connect to launch scene 02_Lanzamiento: instance (inactive) under CanvasLanzamiento
 //                                                         + WiringFlightHook on Lanzamiento, linked. Then save the scene.
-//   SpaceApps > Wiring minigame > Test: open next level   (Play) opens the minigame with levels 1, 2, 3...
+//   SpaceApps > Wiring minigame > Test: open next round   (Play) opens the minigame with round 1, 2, 3... (3 panels each)
 public static class WiringMinigameBuilder
 {
     const string PrefabPath = "Assets/_Project/Prefabs/WiringMinigame.prefab";
@@ -116,7 +116,7 @@ public static class WiringMinigameBuilder
         return !Application.isPlaying;
     }
 
-    [MenuItem("SpaceApps/Wiring minigame/Test: open next level")]
+    [MenuItem("SpaceApps/Wiring minigame/Test: open next round")]
     static void TestOpen()
     {
         WiringMinigame minigame = Object.FindAnyObjectByType<WiringMinigame>(FindObjectsInactive.Include);
@@ -125,10 +125,8 @@ public static class WiringMinigameBuilder
             Debug.LogWarning("Wiring minigame: none in the scene. Use SpaceApps > Wiring minigame > Add to open scene, then Play.");
             return;
         }
-        WiringSettings s = minigame.settings != null ? minigame.settings : WiringSettings.Default;
-        int count = Mathf.Max(1, s.levels.Count);
         minigame.gameObject.SetActive(false);
-        minigame.SetLevel(testLevel % count);
+        minigame.SetRound(testLevel);
         minigame.SetContext("Test");
         minigame.Completed -= LogResult;
         minigame.Completed += LogResult;
@@ -136,7 +134,7 @@ public static class WiringMinigameBuilder
         testLevel++;
     }
 
-    [MenuItem("SpaceApps/Wiring minigame/Test: open next level", true)]
+    [MenuItem("SpaceApps/Wiring minigame/Test: open next round", true)]
     static bool PlayModeOnly()
     {
         return Application.isPlaying;

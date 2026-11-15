@@ -1,12 +1,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Rules of the wiring board (task 43), without any UI. Signed: claude_c.
+// Rules of the wiring board (task 44), without any UI. Signed: claude_c.
 // Cells are (x = column, y = row), row 0 at the top. A cable is the list of cells from one socket of its color;
-// it is connected when it ends on the other socket of that color.
+// it is connected when it ends on the other socket of that color. The board is SOLVED when every color is
+// connected (empty squares are fine).
 //   Begin(cell)  press on a socket (erases that cable and starts it again there) or on a cable (cuts it there and goes on).
 //   DragTo(cell) moves the cable end toward the cell, one cell at a time (up, down, left or right).
-//                Dragging back over your own cable shortens it. Walls, other sockets and other cables block it.
+//                Dragging back over your own cable shortens it. Walls, other sockets and other cables block it
+//                (cables never cross).
 //   End()        releases the mouse (the cable stays on the board).
 //   Erase(color) / EraseAt(cell) remove a cable.
 public class WiringBoard
@@ -160,6 +162,7 @@ public class WiringBoard
         }
     }
 
+    // Every pair connected (empty squares are fine)
     public bool Solved { get { return ConnectedCount == PairCount; } }
 
     // ---------- Drawing ----------
@@ -271,7 +274,7 @@ public class WiringBoard
 
     // ---------- Helpers ----------
 
-    // Number of ways to connect every pair at once (capped). Used by the tests to prove a level can be solved.
+    // Number of ways to connect every pair at once (capped). Used by the tests to prove a board can be solved.
     public int CountSolutions(int cap)
     {
         bool[,] used = new bool[Width, Height];

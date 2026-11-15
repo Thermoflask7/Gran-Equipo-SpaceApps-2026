@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-// Mouse input of the wiring board (task 43). Signed: claude_c.
+// Mouse input of the wiring board (task 44). Signed: claude_c.
 // Created by WiringMinigame on the board area. Uses uGUI pointer events (works with InputSystemUIInputModule):
 // left button press / drag / release draws a cable, right click erases the cable under the mouse.
 public class WiringBoardInput : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler

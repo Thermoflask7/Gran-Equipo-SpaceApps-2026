@@ -1,9 +1,10 @@
 using UnityEditor;
 using UnityEngine;
 
-// Wiring minigame tests (task 43). Signed: claude_c.
-// Menu: SpaceApps > Wiring minigame > Tests (edit mode). Pure logic: the levels can be solved, the board rules
-// (walls, no crossing, back up, erase) and the result formula of the design doc. Dragging with the mouse is checked by playing.
+// Wiring minigame tests (task 44). Signed: claude_c.
+// Menu: SpaceApps > Wiring minigame > Tests (edit mode). Pure logic: every board can be solved, the board rules
+// (walls, no crossing, back up, erase, empty squares allowed) and the result formula of the design doc.
+// Dragging with the mouse is checked by playing.
 public static class WiringMinigameTests
 {
     static int passed;
@@ -15,7 +16,7 @@ public static class WiringMinigameTests
         passed = 0;
         failed = 0;
 
-        Levels();
+        Boards();
         Rules();
         Formula();
         Hook();
@@ -25,33 +26,26 @@ public static class WiringMinigameTests
         else Debug.LogError(summary);
     }
 
-    static void Levels()
+    static void Boards()
     {
-        int[] expectedSolutions = { 16, 4, 2 }; // checked with an independent solver when the levels were designed
-        var levels = WiringSettings.DefaultLevels();
-        Check("3 default levels", levels.Count == 3);
-        for (int i = 0; i < levels.Count; i++)
+        var boards = WiringSettings.DefaultBoards();
+        WiringSettings s = WiringSettings.Default;
+        Check("6 default boards (two rounds of 3)", boards.Count == 6 && s.boardsPerRound == 3);
+        Check("Round time is 40 s or less", s.roundSeconds <= 40f);
+        for (int i = 0; i < boards.Count; i++)
         {
             string error;
-            WiringBoard b = WiringBoard.Parse(levels[i].grid, out error);
-            Check("Level " + (i + 1) + " parses (" + error + ")", b != null);
+            WiringBoard b = WiringBoard.Parse(boards[i].grid, out error);
+            string name = "Board " + (i + 1) + " '" + boards[i].levelName + "'";
+            Check(name + " parses (" + error + ")", b != null);
             if (b == null) continue;
-            Check("Level " + (i + 1) + " has 3 to 5 pairs", b.PairCount >= 3 && b.PairCount <= 5);
-            int n = b.CountSolutions(1000);
-            Check("Level " + (i + 1) + " is solvable (" + n + " solutions)", n > 0);
-            Check("Level " + (i + 1) + " has " + expectedSolutions[i] + " solutions", n == expectedSolutions[i]);
+            int colors = 3 + i % 3; // each round: 3, then 4, then 5 colors
+            Check(name + " has " + colors + " colors", b.PairCount == colors);
+            Check(name + " can be solved", b.CountSolutions(1) > 0);
+            Check(name + " starts unsolved", !b.Solved && b.ConnectedCount == 0);
         }
 
-        // The sketch level: all "1" sockets on the top edge; blue 2 top-right, green 2 bottom-left, yellow 2 bottom-right
         string err;
-        WiringBoard sketch = WiringBoard.Parse(levels[0].grid, out err);
-        if (sketch != null)
-        {
-            Check("Sketch: blue top-right corner", Has(sketch, 'B', new Vector2Int(6, 0)));
-            Check("Sketch: green bottom-left", Has(sketch, 'G', new Vector2Int(0, 6)));
-            Check("Sketch: yellow bottom-right", Has(sketch, 'Y', new Vector2Int(6, 6)));
-        }
-
         Check("Bad grid: one socket only", WiringBoard.Parse("B . .\n. . .", out err) == null);
         Check("Bad grid: uneven rows", WiringBoard.Parse("B . B\n. .", out err) == null);
         Check("Bad grid: unknown cell", WiringBoard.Parse("B x B", out err) == null);
@@ -89,7 +83,7 @@ public static class WiringMinigameTests
             b.DragTo(new Vector2Int(0, 0)) && b.LastBlocked == new Vector2Int(0, 0) && b.PathOf('G').Count == 2);
         b.Begin(new Vector2Int(0, 2));
         b.DragTo(new Vector2Int(3, 2));
-        Check("Green connected along the bottom: solved", b.IsConnected('G') && b.Solved);
+        Check("All connected = solved, even with an empty square (0,1)", b.Solved && b.CableAt(new Vector2Int(0, 1)) == WiringBoard.None);
         b.End();
 
         b.Begin(new Vector2Int(2, 1)); // press in the middle of blue: cut there and go on
@@ -108,26 +102,24 @@ public static class WiringMinigameTests
     static void Formula()
     {
         WiringSettings s = WiringSettings.Default;
-        Near("Solved in 20 s = 1.00", WiringMath.Raw(3, 3, true, 20f, s), 1f);
-        Near("Solved in 10 s = 1.00 (capped)", WiringMath.Raw(3, 3, true, 10f, s), 1f);
-        Near("Solved at 35 s = 0.88", WiringMath.Raw(3, 3, true, 35f, s), 0.88f);
-        Near("Solved at 45 s = 0.80", WiringMath.Raw(3, 3, true, 45f, s), 0.8f);
-        Near("2 of 3 = 0.53", WiringMath.Raw(2, 3, false, 45f, s), 0.8f * 2f / 3f);
-        Near("3 of 4 = 0.60", WiringMath.Raw(3, 4, false, 45f, s), 0.6f);
-        Near("1 of 3 = 0.27", WiringMath.Raw(1, 3, false, 45f, s), 0.8f / 3f);
-        Near("Nothing = 0", WiringMath.Raw(0, 3, false, 45f, s), 0f);
-        Near("No pairs = 0", WiringMath.Raw(0, 0, false, 0f, s), 0f);
-        Check("Never above 1", WiringMath.Raw(9, 3, true, -5f, s) <= 1f);
+        Near("Board all connected = 1", WiringMath.BoardProgress(4, 4), 1f);
+        Near("Board 2 of 4 connected = 0.5", WiringMath.BoardProgress(2, 4), 0.5f);
+        Near("Board nothing connected = 0", WiringMath.BoardProgress(0, 3), 0f);
 
-        Check("Stars: unsolved 0", WiringMath.Stars(false, 5f, s) == 0);
-        Check("Stars: 18 s = 3", WiringMath.Stars(true, 18f, s) == 3);
-        Check("Stars: 30 s = 2", WiringMath.Stars(true, 30f, s) == 2);
-        Check("Stars: 44 s = 1", WiringMath.Stars(true, 44f, s) == 1);
+        Near("All 3 fixed in 20 s = 1.00", WiringMath.Raw(new[] { 1f, 1f, 1f }, true, 20f, s), 1f);
+        Near("All 3 fixed at 30 s = 0.925", WiringMath.Raw(new[] { 1f, 1f, 1f }, true, 30f, s), 0.925f);
+        Near("All 3 fixed at 40 s = 0.85", WiringMath.Raw(new[] { 1f, 1f, 1f }, true, 40f, s), 0.85f);
+        Near("2 fixed + half of the third = 0.708", WiringMath.Raw(new[] { 1f, 1f, 0.5f }, false, 40f, s), 0.85f * 2.5f / 3f);
+        Near("1 fixed, nothing else = 0.283", WiringMath.Raw(new[] { 1f, 0f, 0f }, false, 40f, s), 0.85f / 3f);
+        Near("Nothing = 0", WiringMath.Raw(new[] { 0f, 0f, 0f }, false, 40f, s), 0f);
+        Check("Never above 1", WiringMath.Raw(new[] { 1f, 1f, 1f }, true, -5f, s) <= 1f);
 
-        Check("Level order: first = 0", WiringMath.LevelIndex(0, 3) == 0);
-        Check("Level order: after 1 solved = 1", WiringMath.LevelIndex(1, 3) == 1);
-        Check("Level order: last repeats", WiringMath.LevelIndex(7, 3) == 2);
-        Check("Level order: no levels = 0", WiringMath.LevelIndex(2, 0) == 0);
+        Check("Stars = panels fixed", WiringMath.Stars(2, 3) == 2 && WiringMath.Stars(0, 3) == 0 && WiringMath.Stars(5, 3) == 3);
+
+        Check("Round 0 = boards 0, 1, 2", WiringMath.BoardIndex(0, 0, 3, 6) == 0 && WiringMath.BoardIndex(0, 2, 3, 6) == 2);
+        Check("Round 1 = boards 3, 4, 5", WiringMath.BoardIndex(1, 0, 3, 6) == 3 && WiringMath.BoardIndex(1, 2, 3, 6) == 5);
+        Check("Round 2 wraps to board 0", WiringMath.BoardIndex(2, 0, 3, 6) == 0);
+        Check("No boards = 0", WiringMath.BoardIndex(2, 1, 3, 0) == 0);
 
         // Task 31: a Minor wiring fault never aborts, even with raw 0 and no skill
         MissionFailureRules.Outcome o = MissionFailureRules.Judge(TrainingFocus.Engineering, EventPhase.Return, 0f, 0f,
@@ -147,12 +139,6 @@ public static class WiringMinigameTests
         Check("Other events open maintenance", !WiringFlightHook.IsWiringEvent(e, s));
         Check("No event = not a wiring event", !WiringFlightHook.IsWiringEvent(null, s));
         Object.DestroyImmediate(e);
-    }
-
-    static bool Has(WiringBoard b, char color, Vector2Int cell)
-    {
-        foreach (Vector2Int c in b.SocketsOf(color)) if (c == cell) return true;
-        return false;
     }
 
     static void Near(string name, float actual, float expected)

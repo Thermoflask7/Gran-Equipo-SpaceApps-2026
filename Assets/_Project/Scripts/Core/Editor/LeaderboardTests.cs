@@ -59,6 +59,30 @@ public static class LeaderboardTests
         }
     }
 
+    // Play mode in 03_Resultados: plays a sample turn for a 2-player session ("Tester A", "Tester B") and SAVES it
+    // in the real leaderboard, to see the Leaderboard sections and the "Next player" button. Clear saved afterwards.
+    [MenuItem("SpaceApps/Leaderboard/Test: 2-player results turn")]
+    static void TestResultsTurn()
+    {
+        ResultsScreen screen = Object.FindAnyObjectByType<ResultsScreen>();
+        if (screen == null)
+        {
+            Debug.LogWarning("Leaderboard test: open 03_Resultados and press Play first.");
+            return;
+        }
+        GameManager gm = GameManager.Instance;
+        if (!gm.session.IsStarted || !gm.session.HasNextPlayer) gm.session.Start(new List<string> { "Tester A", "Tester B" });
+        ResultsSample.Fill(gm, Random.value > 0.5f);
+        screen.useTestValues = false;
+        screen.Show();
+    }
+
+    [MenuItem("SpaceApps/Leaderboard/Test: 2-player results turn", true)]
+    static bool PlayModeOnly()
+    {
+        return Application.isPlaying;
+    }
+
     static void Ordering()
     {
         Check("first entry is rank 0", Leaderboard.Add(Entry("A", 0f, 40f)) == 0);

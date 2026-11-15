@@ -35,7 +35,7 @@ Valid statuses: `pending`, `in progress`, `in PR`, `done`.
 | 21 | (Optional) Tech tree as a computer app | P2 | unassigned | none | — | pending |
 | 22 | Translate the repo to English: docs, UI, menus, messages and comments | All | Elena | Claude | `ia/claude/english` | done |
 | 23 | Rename the Spanish folders, scenes and assets to English (after the open branches are merged) | P1 | unassigned | none | — | pending |
-| 24 | `01_Planeacion`: put the stations on the desk (folder, rocket model, globe + calendar, launch button + checklist) and open each one from its 3D object | P1 | unassigned | none | — | pending |
+| 24 | `01_Planeacion`: put the stations on the desk (folder, rocket model, globe + calendar, launch button + checklist) and open each one from its 3D object | P1 (folder part: Cristina) | claude_c (folder) | `ia/claude_c/folder-station` (folder: `FolderStation` on `notepad`, menu **SpaceApps → Desk → Add folder station**; rocket model, globe and launch button still open) | in progress |
 | 25 | `03_Resultados`: add the Results panel (**SpaceApps → Results screen**) to the scene and test it at the end of the loop | P1 | unassigned | none | — | pending |
 | 26 | Locked missions (Mars, Europa) shown as "coming soon" (`DestinationData.locked`) | P1 | unassigned | none | — | pending |
 | 27 | Audio: music and sound effects, using the volumes in `SpaceOsSettings` | All | unassigned | none | — | pending |

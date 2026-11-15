@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02c84cfb3b3946b2ab0051b9ab6b70eb, type: 3}
+  m_Name: WiringSettings
+  m_EditorClassIdentifier: Assembly-CSharp::WiringSettings
+  roundSeconds: 40
+  fastSeconds: 20
+  boardsPerRound: 3
+  progressWeight: 0.85
+  faultAtProgress: 0.7
+  wiringEvents:
+  - EV-DE-02
+  - Unstable telemetry signal
+  howToPlay: Connect each color to its twin. Cables can't cross!
+  lesson: Real spacecraft give every system its own path, and important ones get a backup path, so one broken wire can't turn everything off.
+  stepClip: {fileID: 0}
+  blockedClip: {fileID: 0}
+  connectClip: {fileID: 0}
+  solvedClip: {fileID: 0}
+  boards:
+  - levelName: Power on
+    grid: ". G . . .\n. Y . Y .\n. . . . .\n. B . G B\n. . . . ."
+  - levelName: Data line
+    grid: "P . . . G\n. . . . B\nB Y P G .\n. . . Y .\n. . . . ."
+  - levelName: Full panel
+    grid: "B . R Y G\n. R P . .\n. P . . .\n. Y . . .\n. B G . ."
+  - levelName: Comms check
+    grid: ". . B . .\n. Y . G B\n. . . . .\n. . . Y .\n. . . G ."
+  - levelName: Backup bus
+    grid: ". . . . .\n. . G B .\n. . . . .\n. G Y P Y\n. . B . P"
+  - levelName: Heater loop
+    grid: "P . R . .\nY . P R .\n. . . . .\n. . . G Y\n. G B . B"

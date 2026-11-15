@@ -44,6 +44,9 @@ public static class ResultsScreenBuilder
         report.alignment = TextAlignmentOptions.TopLeft;
         report.textWrappingMode = TextWrappingModes.Normal;
         report.overflowMode = TextOverflowModes.Truncate;
+        report.enableAutoSizing = true; // task 35: long failure reports shrink to fit
+        report.fontSizeMin = 14;
+        report.fontSizeMax = 26;
         Place(report.rectTransform, new Vector2(0, -520), new Vector2(1400, 560));
 
         GameObject buttonGo = new GameObject("MenuButton", typeof(RectTransform), typeof(Image), typeof(Button));
@@ -81,6 +84,21 @@ public static class ResultsScreenBuilder
         ResultsScreen screen = Object.FindAnyObjectByType<ResultsScreen>();
         if (screen != null) screen.Show();
         Debug.Log("Test: sample game loaded. Score = " + GameManager.Instance.TotalScore().ToString("0.00"));
+    }
+
+    [MenuItem("SpaceApps/Results screen/Test: failing sample game")]
+    static void FailingGame()
+    {
+        ResultsSample.Fill(GameManager.Instance, false);
+        ResultsScreen screen = Object.FindAnyObjectByType<ResultsScreen>();
+        if (screen != null) screen.Show();
+        Debug.Log("Test: failing sample game loaded (overloaded spacecraft, no data sent).");
+    }
+
+    [MenuItem("SpaceApps/Results screen/Test: failing sample game", true)]
+    static bool FailingOnlyInPlayMode()
+    {
+        return Application.isPlaying;
     }
 
     [MenuItem("SpaceApps/Results screen/Test: sample game", true)]

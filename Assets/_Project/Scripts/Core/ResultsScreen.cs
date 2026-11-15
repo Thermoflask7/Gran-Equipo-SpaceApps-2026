@@ -11,6 +11,10 @@ public class ResultsScreen : MonoBehaviour
     public TMP_Text score;   // the big number
     public TMP_Text report;  // breakdown and lessons
 
+    // Scene played on its own (no rocket, never launched): fill a sample game so the screen can be tested
+    public bool useTestValues = true;
+    public bool failingTestValues = false; // true = sample with several failed gates (task 35)
+
     void Start()
     {
         Show();
@@ -18,6 +22,13 @@ public class ResultsScreen : MonoBehaviour
 
     public void Show()
     {
+        GameManager gm = GameManager.Instance;
+        if (useTestValues && !gm.flight.launched && gm.rocketParts.Count == 0)
+        {
+            ResultsSample.Fill(gm, !failingTestValues);
+            Debug.Log("ResultsScreen: no game was played, showing test values.");
+        }
+
         ScoreResult r = MissionScoring.SaveFinalScore();
         if (title != null) title.text = TitleFor(r);
         if (score != null) score.text = r.total.ToString("0") + " / 100";
@@ -59,7 +70,7 @@ public class ResultsScreen : MonoBehaviour
             {
                 // With an in-flight failure, the missing milestones are a consequence, already explained above
                 if (!string.IsNullOrEmpty(r.failureReason) && (gate == "DEPARTURE" || gate == "LUNAR_ORBIT" || gate == "RETURN")) continue;
-                sb.AppendLine("- " + GateText(gate));
+                sb.AppendLine(GateAdvice.Explain(gate, gm)); // task 35: problem, lesson and fix
             }
             sb.AppendLine();
         }

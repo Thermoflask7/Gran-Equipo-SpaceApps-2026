@@ -48,6 +48,8 @@ public class GameManager : MonoBehaviour
     public LaunchSiteData launchSite;
     public int launchDay = -1;    // day chosen in the calendar (-1 = not chosen)
     public float weatherRisk;     // 0 to 1, for the chosen site and day
+    public WeatherCondition launchWeather = WeatherCondition.Sunny; // sky on the chosen day (launch scene visuals)
+    public float launchWindKnots; // wind on the chosen day
 
     [Header("Score and events")]
     public float planningScore;
@@ -92,6 +94,8 @@ public class GameManager : MonoBehaviour
         launchSite = null;
         launchDay = -1;
         weatherRisk = 0f;
+        launchWeather = WeatherCondition.Sunny;
+        launchWindKnots = 0f;
         planningScore = 0f;
         missionScore = 0f;
         eventsHappened.Clear();

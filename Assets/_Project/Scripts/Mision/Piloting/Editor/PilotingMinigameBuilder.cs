@@ -11,8 +11,8 @@ using UnityEngine.UI;
 //   SpaceApps > Piloting minigame > Add to open scene
 //       Puts the prefab in the open scene's overlay canvas (creates it and an EventSystem if missing).
 //       To test it alone: open your Sandbox scene, use this menu and press Play.
-//   SpaceApps > Piloting minigame > Add flight hook to open scene
-//       Adds PilotingFlightHook to the object that has FlightPhases (02_Lanzamiento). Save the scene after.
+//   SpaceApps > Piloting minigame > Connect to launch scene  (PilotingFlightHookBuilder)
+//       Hooks the minigame into 02_Lanzamiento under CanvasLanzamiento. Save the scene after.
 //
 // Layout (1920x1080 reference screen): one centered 1200 x 780 panel.
 public static class PilotingMinigameBuilder
@@ -143,24 +143,6 @@ public static class PilotingMinigameBuilder
         GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab, canvas.transform);
         Undo.RegisterCreatedObjectUndo(instance, "Add piloting minigame");
         Selection.activeGameObject = instance;
-    }
-
-    [MenuItem("SpaceApps/Piloting minigame/Add flight hook to open scene")]
-    static void AddFlightHook()
-    {
-        FlightPhases phases = Object.FindAnyObjectByType<FlightPhases>(FindObjectsInactive.Include);
-        if (phases == null)
-        {
-            EditorUtility.DisplayDialog("Piloting flight hook",
-                "There is no FlightPhases in the open scene. Open 02_Lanzamiento and run SpaceApps > Flight phases > Add to open scene first.", "OK");
-            return;
-        }
-        if (phases.GetComponent<PilotingFlightHook>() == null)
-            Undo.AddComponent<PilotingFlightHook>(phases.gameObject);
-        if (Object.FindAnyObjectByType<PilotingMinigame>(FindObjectsInactive.Include) == null)
-            AddToScene();
-        Selection.activeGameObject = phases.gameObject;
-        Debug.Log("PilotingFlightHook is on " + phases.gameObject.name + ". Save the scene.");
     }
 
     // ---------- Helpers ----------

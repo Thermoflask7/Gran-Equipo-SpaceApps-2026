@@ -12,13 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80234876fe1a8b644a706efc0edab593, type: 3}
   m_Name: MisionArtemis
   m_EditorClassIdentifier: Assembly-CSharp::DestinationData
-  destinationName: Crewed lunar orbit (Artemis)
-  description: Take 3 astronauts in Orion to an orbit around the Moon (NRHO), collect data and return. Educational mission inspired by Artemis; it is not a real NASA mission.
+  missionName: Selene
+  tagline: Orbit the Moon with 3 astronauts
+  destinationName: Crewed lunar orbit
+  description: Take 3 astronauts to an orbit around the Moon, collect scientific data and bring them back home safely.
   launchDeltaV: 0
   requiredDeltaV: 1060
   maxMass: 0
   missionDays: 12
   locked: 0
+  difficulty: 2
   tliExtraMass: 682
   crewCount: 3
   waterPerPersonDay: 2.5

@@ -177,8 +177,8 @@ public class ResultsScreen : MonoBehaviour
     {
         StringBuilder sb = new StringBuilder();
         Row(sb, "Spacecraft engineering", r.engineering, 24f, false);
-        Row(sb, "SLS capacity", r.deliveryPoints, 7f, true);
-        Row(sb, "Orion delta-v", r.craftDvPoints, 7f, true);
+        Row(sb, "Launcher capacity", r.deliveryPoints, 7f, true);
+        Row(sb, "Spacecraft delta-v", r.craftDvPoints, 7f, true);
         Row(sb, "Power generation", r.powerPoints, 3f, true);
         Row(sb, "Batteries", r.batteryPoints, 3f, true);
         Row(sb, "Water, oxygen and food", r.consumablePoints, 4f, true);
@@ -239,8 +239,8 @@ public class ResultsScreen : MonoBehaviour
 
         sb.AppendLine("<b>Planning: " + r.planning.ToString("0.0") + " / 45</b>");
         Line(sb, "Spacecraft engineering", r.engineering, 24f);
-        Line(sb, "  SLS capacity", r.deliveryPoints, 7f);
-        Line(sb, "  Orion delta-v", r.craftDvPoints, 7f);
+        Line(sb, "  Launcher capacity", r.deliveryPoints, 7f);
+        Line(sb, "  Spacecraft delta-v", r.craftDvPoints, 7f);
         Line(sb, "  Power generation", r.powerPoints, 3f);
         Line(sb, "  Batteries", r.batteryPoints, 3f);
         Line(sb, "  Water, oxygen and food", r.consumablePoints, 4f);
@@ -268,9 +268,9 @@ public class ResultsScreen : MonoBehaviour
     {
         List<string> list = new List<string>();
         if (r.deliveryPoints < 3.5f)
-            list.Add("Your spacecraft was very close to the SLS mass limit. Every extra kilogram needs more fuel and a bigger rocket.");
+            list.Add("Your spacecraft was very close to the launcher mass limit. Every extra kilogram needs more fuel and a bigger rocket.");
         if (r.craftDvPoints < 3.5f)
-            list.Add("Little spare delta-v on Orion: dv = Isp x g0 x ln(m0/mf). If the spacecraft is heavier, the same fuel goes less far.");
+            list.Add("Little spare delta-v on the spacecraft: dv = Isp x g0 x ln(m0/mf). If the spacecraft is heavier, the same fuel goes less far.");
         if (r.powerPoints + r.batteryPoints < 3f)
             list.Add("Power was at the limit. Behind the Moon there is no sunlight: the batteries must cover the power draw.");
         if (r.consumablePoints < 2f)
@@ -307,8 +307,8 @@ public class ResultsScreen : MonoBehaviour
         {
             case "ROCKET_INVALID": return "The rocket was not valid for the mission.";
             case "CREW_NOT_READY": return "The crew was not complete or trained.";
-            case "DELIVERY": return "The SLS could not carry that much mass to translunar injection.";
-            case "CRAFT_DELTA_V": return "Orion did not have enough delta-v to enter lunar orbit and return.";
+            case "DELIVERY": return "The launcher could not carry that much mass toward the Moon.";
+            case "CRAFT_DELTA_V": return "The spacecraft did not have enough delta-v to enter lunar orbit and return.";
             case "POWER": return "The modules drew more power than the solar arrays generated.";
             case "BATTERY": return "The battery could not last through the periods without sunlight.";
             case "CONSUMABLES": return "There was not enough water, oxygen or food for the whole mission.";

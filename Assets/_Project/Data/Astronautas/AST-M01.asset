@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc8c89cd30f7dbc4e836729cb0331949, type: 3}
   m_Name: AST-M01
   m_EditorClassIdentifier: Assembly-CSharp::AstronautData
-  astronautName: "Alex Tremblay"
+  astronautName: "Samir Haddad"
   portrait: {fileID: 0}
   bio: Mission specialist with balanced skills who can support any team.
   research: 7

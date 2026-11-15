@@ -9,7 +9,7 @@
   "astronauts": [
     {
       "id": "AST-P01",
-      "astronautName": "Amara Okafor",
+      "astronautName": "Lucía Aranda",
       "bio": "Orbital maneuvering specialist who prioritizes flight procedures and independent cross-checks.",
       "research": 3,
       "piloting": 9,
@@ -31,7 +31,7 @@
     },
     {
       "id": "AST-P03",
-      "astronautName": "Ingrid Solberg",
+      "astronautName": "Amara Okafor",
       "bio": "Methodical navigator with strong problem-solving and trajectory-analysis skills.",
       "research": 5,
       "piloting": 7,
@@ -64,7 +64,7 @@
     },
     {
       "id": "AST-E03",
-      "astronautName": "Leila Haddad",
+      "astronautName": "Ingrid Solberg",
       "bio": "Versatile instrumentation and operations engineer.",
       "research": 6,
       "piloting": 5,
@@ -75,7 +75,7 @@
     },
     {
       "id": "AST-R01",
-      "astronautName": "Mei Chen",
+      "astronautName": "Renata León",
       "bio": "Lunar-observation researcher who carefully documents measurements.",
       "research": 9,
       "piloting": 4,
@@ -108,7 +108,7 @@
     },
     {
       "id": "AST-M01",
-      "astronautName": "Alex Tremblay",
+      "astronautName": "Samir Haddad",
       "bio": "Mission specialist with balanced skills who can support any team.",
       "research": 7,
       "piloting": 7,

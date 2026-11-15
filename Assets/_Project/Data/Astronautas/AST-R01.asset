@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc8c89cd30f7dbc4e836729cb0331949, type: 3}
   m_Name: AST-R01
   m_EditorClassIdentifier: Assembly-CSharp::AstronautData
-  astronautName: "Mei Chen"
+  astronautName: "Renata León"
   portrait: {fileID: 0}
   bio: Lunar-observation researcher who carefully documents measurements.
   research: 9

@@ -27,6 +27,7 @@ public static class PcDeskBuilder
         public TextMeshProUGUI comingSoonText;
         public Button comingSoonCloseButton;
         public TextMeshProUGUI clockText;
+        public GameObject screenOff;
     }
 
     [MenuItem("SpaceApps/Armar PC del escritorio")]
@@ -110,8 +111,14 @@ public static class PcDeskBuilder
             station.PlaceZoomTarget(cam);
             LogZoom(station, cam);
 
+            if (!station.TryGetScreenSurface(cam, out Vector3 frontCenter, out Vector3 outward, out Vector3 up, out Vector2 size))
+            {
+                EditorUtility.DisplayDialog("Armar PC del escritorio", "No se pudo calcular la superficie de la pantalla del monitor.", "OK");
+                return;
+            }
+
             DestroyAllNamed(scene, "PC_Desktop");
-            ComputerDesktop desktop = CreateDesktop(out DesktopRefs refs);
+            ComputerDesktop desktop = CreateDesktop(cam, pc, frontCenter, outward, up, size, out DesktopRefs refs);
             AssignDesktop(desktop, refs);
             station.SetDesktop(desktop);
             EditorUtility.SetDirty(station);
@@ -121,7 +128,7 @@ public static class PcDeskBuilder
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
             Selection.activeGameObject = pc;
-            Debug.Log("[PcDeskBuilder] Listo. PC del escritorio armada y escena 01_Planeacion guardada.");
+            Debug.Log("[PcDeskBuilder] Listo. SpaceOS montado en la pantalla del monitor (World Space). size " + size + " frontCenter " + frontCenter + ".");
         }
         finally
         {
@@ -240,22 +247,32 @@ public static class PcDeskBuilder
         return null;
     }
 
-    static ComputerDesktop CreateDesktop(out DesktopRefs refs)
+    static ComputerDesktop CreateDesktop(Camera cam, GameObject pc, Vector3 frontCenter, Vector3 outward, Vector3 up, Vector2 size, out DesktopRefs refs)
     {
         var canvasGo = new GameObject("PC_Desktop", typeof(RectTransform));
         Undo.RegisterCreatedObjectUndo(canvasGo, "Create PC_Desktop");
+        Undo.SetTransformParent(canvasGo.transform, pc.transform, "Parent PC_Desktop");
+
 
         var canvas = Undo.AddComponent<Canvas>(canvasGo);
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.sortingOrder = 10;
+        canvas.renderMode = RenderMode.WorldSpace;
+        canvas.worldCamera = cam;
+        canvas.sortingOrder = 0;
+
+        // La pose va DESPUES de pasar a WorldSpace: en Overlay el Canvas controla su RectTransform.
+        var canvasRt = (RectTransform)canvasGo.transform;
+        canvasRt.pivot = new Vector2(0.5f, 0.5f);
+        canvasRt.sizeDelta = new Vector2(1080f * size.x / size.y, 1080f);
+        canvasRt.position = frontCenter + outward * PcStation.ScreenCanvasOffset;
+        canvasRt.rotation = Quaternion.LookRotation(-outward, up);
+        canvasRt.localScale = Vector3.one * (size.y / 1080f) / Mathf.Max(0.0001f, pc.transform.lossyScale.y);
 
         var scaler = Undo.AddComponent<CanvasScaler>(canvasGo);
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-        scaler.referenceResolution = new Vector2(1920f, 1080f);
-        scaler.matchWidthOrHeight = 1f;
+        scaler.dynamicPixelsPerUnit = 10f;
+        scaler.referencePixelsPerUnit = 100f;
 
         Undo.AddComponent<GraphicRaycaster>(canvasGo);
+        Undo.AddComponent<CanvasGroup>(canvasGo);
         var desktop = Undo.AddComponent<ComputerDesktop>(canvasGo);
         canvasGo.SetActive(true);
 
@@ -263,16 +280,7 @@ public static class PcDeskBuilder
         Stretch(root, 0f, 0f, 0f, 0f);
 
         RectTransform pantalla = CreateImage("Pantalla", root, new Color(0.03f, 0.06f, 0.16f, 1f));
-        pantalla.anchorMin = new Vector2(0.5f, 0f);
-        pantalla.anchorMax = new Vector2(0.5f, 1f);
-        pantalla.pivot = new Vector2(0.5f, 0.5f);
-        pantalla.anchoredPosition = Vector2.zero;
-        pantalla.offsetMin = Vector2.zero;
-        pantalla.offsetMax = Vector2.zero;
-        pantalla.sizeDelta = new Vector2(1440f, 0f);
-        var fitter = Undo.AddComponent<AspectRatioFitter>(pantalla.gameObject);
-        fitter.aspectMode = AspectRatioFitter.AspectMode.HeightControlsWidth;
-        fitter.aspectRatio = 1.3333f;
+        Stretch(pantalla, 0f, 0f, 0f, 0f);
 
         RectTransform barra = CreateImage("Barra", pantalla, new Color(0f, 0f, 0f, 0.6f));
         barra.anchorMin = new Vector2(0f, 0f);
@@ -289,8 +297,8 @@ public static class PcDeskBuilder
         apps.anchorMin = Vector2.zero;
         apps.anchorMax = Vector2.one;
         apps.pivot = new Vector2(0.5f, 0.5f);
-        apps.offsetMin = new Vector2(60f, 60f);
-        apps.offsetMax = new Vector2(-60f, -60f);
+        apps.offsetMin = new Vector2(60f, 80f);
+        apps.offsetMax = new Vector2(-60f, -110f);
         var grid = Undo.AddComponent<GridLayoutGroup>(apps.gameObject);
         grid.cellSize = new Vector2(180f, 200f);
         grid.spacing = new Vector2(40f, 40f);
@@ -320,14 +328,19 @@ public static class PcDeskBuilder
         CreateText("Etiqueta", close.transform, "Cerrar", 28f, TextAlignmentOptions.Center);
         soon.gameObject.SetActive(false);
 
-        Button back = CreateButton("Volver", root, new Color(0.15f, 0.15f, 0.2f, 0.9f));
+        Button back = CreateButton("Volver", pantalla, new Color(0.15f, 0.15f, 0.2f, 0.9f));
         var backRt = (RectTransform)back.transform;
         backRt.anchorMin = new Vector2(0f, 1f);
         backRt.anchorMax = new Vector2(0f, 1f);
         backRt.pivot = new Vector2(0f, 1f);
-        backRt.anchoredPosition = new Vector2(30f, -30f);
-        backRt.sizeDelta = new Vector2(220f, 70f);
-        CreateText("Etiqueta", back.transform, "< Volver", 32f, TextAlignmentOptions.Center);
+        backRt.anchoredPosition = new Vector2(24f, -24f);
+        backRt.sizeDelta = new Vector2(200f, 64f);
+        CreateText("Etiqueta", back.transform, "< Volver", 30f, TextAlignmentOptions.Center);
+
+        RectTransform apagada = CreateImage("Apagada", pantalla, new Color(0f, 0f, 0f, 1f));
+        Stretch(apagada, 0f, 0f, 0f, 0f);
+        apagada.SetAsLastSibling();
+        apagada.gameObject.SetActive(false);
 
         refs = new DesktopRefs
         {
@@ -337,7 +350,8 @@ public static class PcDeskBuilder
             comingSoonPanel = soon.gameObject,
             comingSoonText = soonText,
             comingSoonCloseButton = close,
-            clockText = clock
+            clockText = clock,
+            screenOff = apagada.gameObject
         };
         return desktop;
     }
@@ -352,6 +366,7 @@ public static class PcDeskBuilder
         SetRef(so, "comingSoonText", refs.comingSoonText);
         SetRef(so, "comingSoonCloseButton", refs.comingSoonCloseButton);
         SetRef(so, "clockText", refs.clockText);
+        SetRef(so, "screenOff", refs.screenOff);
         so.ApplyModifiedProperties();
     }
 

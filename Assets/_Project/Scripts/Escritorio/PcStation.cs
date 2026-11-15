@@ -27,6 +27,9 @@ public class PcStation : MonoBehaviour
     public UnityEvent onOpened;
     public UnityEvent onClosed;
 
+    /// <summary>Separacion (m) entre el frente de la pantalla y el Canvas, para evitar z-fighting.</summary>
+    public const float ScreenCanvasOffset = 0.003f;
+
     public bool IsOpen { get; private set; }
     public Transform ZoomTarget => zoomTarget;
 
@@ -129,7 +132,8 @@ public class PcStation : MonoBehaviour
         if (cam == null) return false;
 
         Vector3 center, normal, up;
-        if (!TryGetScreenFrame(out center, out normal, out up, out screenHeight))
+        float depth = 0f;
+        if (!TryGetScreenFrame(out center, out normal, out up, out screenHeight, out _, out depth))
         {
             // Respaldo: bounds de todos los renderers de la PC, mirando desde la camara.
             var rs = GetComponentsInChildren<Renderer>();
@@ -146,6 +150,8 @@ public class PcStation : MonoBehaviour
 
         // Que la normal apunte hacia donde esta la camara.
         if (Vector3.Dot(normal, cam.transform.position - center) < 0f) normal = -normal;
+        // Encuadra el frente de la pantalla (donde va el Canvas de SpaceOS), no el centro del mesh.
+        center += normal * (depth * 0.5f + ScreenCanvasOffset);
 
         float halfFov = cam.fieldOfView * 0.5f * Mathf.Deg2Rad;
         float distance = (screenHeight * 0.5f * heightFill) / Mathf.Tan(halfFov);
@@ -154,9 +160,25 @@ public class PcStation : MonoBehaviour
         return true;
     }
 
-    bool TryGetScreenFrame(out Vector3 center, out Vector3 normal, out Vector3 up, out float height)
+    /// <summary>
+    /// Superficie de la pantalla del monitor en mundo: centro del frente (ya adelantado la mitad
+    /// del grosor del submesh), normal hacia afuera (del lado de la camara), arriba, y tamano en metros.
+    /// La usa el builder para montar el Canvas World Space de SpaceOS sobre la pantalla.
+    /// </summary>
+    public bool TryGetScreenSurface(Camera cam, out Vector3 frontCenter, out Vector3 outward, out Vector3 up, out Vector2 size)
     {
-        center = normal = up = default; height = 0f;
+        frontCenter = outward = up = default; size = default;
+        if (!TryGetScreenFrame(out Vector3 center, out outward, out up, out float height, out float width, out float depth)) return false;
+        if (cam != null && Vector3.Dot(outward, cam.transform.position - center) < 0f) outward = -outward;
+        else if (cam == null && Vector3.Dot(outward, -transform.forward) < 0f) outward = -outward;
+        frontCenter = center + outward * (depth * 0.5f);
+        size = new Vector2(width, height);
+        return true;
+    }
+
+    bool TryGetScreenFrame(out Vector3 center, out Vector3 normal, out Vector3 up, out float height, out float width, out float depth)
+    {
+        center = normal = up = default; height = width = depth = 0f;
         if (screenRenderer == null) return false;
         var mf = screenRenderer.GetComponent<MeshFilter>();
         if (mf == null || mf.sharedMesh == null || screenSubmesh < 0 || screenSubmesh >= mf.sharedMesh.subMeshCount) return false;
@@ -178,6 +200,8 @@ public class PcStation : MonoBehaviour
         up = axes[hAxis].normalized;
         if (Vector3.Dot(up, Vector3.up) < 0f) up = -up;
         height = size[hAxis];
+        width = size[hAxis == a ? b2 : a];
+        depth = size[thin];
         return height > 0.001f;
     }
 }

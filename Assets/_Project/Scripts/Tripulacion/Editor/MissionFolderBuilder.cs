@@ -325,8 +325,14 @@ public static class MissionFolderBuilder
 
             TextMeshProUGUI slotName = CreateText(box.transform, "Astronaut", "", 26, InkColor);
             slotName.alignment = TextAlignmentOptions.MidlineLeft;
-            Stretch(slotName.rectTransform, new Vector2(0, 0.42f), new Vector2(1, 0.72f), new Vector2(12, 0), new Vector2(-12, 0));
+            Stretch(slotName.rectTransform, new Vector2(0, 0.42f), new Vector2(1, 0.72f), new Vector2(12, 0), new Vector2(-64, 0));
             crew.slotNames[slot] = slotName;
+
+            // "X" takes the astronaut out of the slot
+            Button remove = CreateButton(box.transform, "Remove", "X", new Color(0.8f, 0.2f, 0.15f, 1f), Color.white);
+            Place((RectTransform)remove.transform, new Vector2(1, 1), new Vector2(-8, -8), new Vector2(48, 48));
+            remove.GetComponentInChildren<TextMeshProUGUI>().fontSize = 24;
+            crew.removeButtons[slot] = remove;
 
             for (int f = 0; f < 3; f++)
             {

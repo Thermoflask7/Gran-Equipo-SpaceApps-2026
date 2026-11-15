@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc8c89cd30f7dbc4e836729cb0331949, type: 3}
   m_Name: AST-P03
   m_EditorClassIdentifier: Assembly-CSharp::AstronautData
-  astronautName: Maya Torres
+  astronautName: "Amara Okafor"
   portrait: {fileID: 0}
   bio: Methodical navigator with strong problem-solving and trajectory-analysis skills.
   research: 5

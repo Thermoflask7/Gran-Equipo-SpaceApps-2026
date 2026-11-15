@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc8c89cd30f7dbc4e836729cb0331949, type: 3}
   m_Name: AST-P02
   m_EditorClassIdentifier: Assembly-CSharp::AstronautData
-  astronautName: Daniel Ibarra
+  astronautName: "Kenji Watanabe"
   portrait: {fileID: 0}
   bio: Test pilot with fictional navigation experience who performs well under pressure.
   research: 4

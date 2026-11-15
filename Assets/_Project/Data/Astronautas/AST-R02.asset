@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc8c89cd30f7dbc4e836729cb0331949, type: 3}
   m_Name: AST-R02
   m_EditorClassIdentifier: Assembly-CSharp::AstronautData
-  astronautName: Noah Salcedo
+  astronautName: "Jonas Becker"
   portrait: {fileID: 0}
   bio: Data analyst and researcher focused on radiation observations.
   research: 8

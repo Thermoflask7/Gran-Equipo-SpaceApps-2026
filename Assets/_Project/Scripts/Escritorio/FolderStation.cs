@@ -14,10 +14,12 @@ public class FolderStation : MonoBehaviour
     [Tooltip("Full-screen folder UI. Empty = the MissionFolder in the scene (it can be inactive).")]
     public MissionFolder folder;
 
-    [Tooltip("Camera pose when focused. Empty = created above the folder, looking down at it.")]
+    [Tooltip("Camera pose when focused. Empty = created in front of the folder, tilted down at it.")]
     public Transform zoomTarget;
-    [Tooltip("Height of the automatic zoom pose above the folder (m)")]
-    public float zoomHeight = 0.55f;
+    [Tooltip("Distance of the automatic zoom pose from the folder center (m)")]
+    public float zoomDistance = 0.6f;
+    [Tooltip("How much the automatic pose looks down (degrees, 20 to 80). 90 would be straight down.")]
+    public float zoomPitch = 55f;
     public float maxClickDistance = 50f;
 
     public UnityEvent onOpened;
@@ -133,7 +135,8 @@ public class FolderStation : MonoBehaviour
         onClosed.Invoke();
     }
 
-    // Camera pose above the folder, slightly towards the desk camera, looking at its center
+    // Camera pose in front of and above the folder (on the desk camera's side), tilted down by zoomPitch,
+    // with world up as up: the view only moves closer and tilts, it never rolls or flips.
     void EnsureZoomTarget(Vector3 cameraPosition)
     {
         if (zoomTarget != null) return;
@@ -148,10 +151,12 @@ public class FolderStation : MonoBehaviour
         Vector3 toCamera = Vector3.ProjectOnPlane(cameraPosition - center, Vector3.up);
         toCamera = toCamera.sqrMagnitude > 1e-6f ? toCamera.normalized : -transform.forward;
 
+        float pitch = Mathf.Clamp(zoomPitch, 20f, 80f) * Mathf.Deg2Rad;
+        Vector3 offset = toCamera * Mathf.Cos(pitch) + Vector3.up * Mathf.Sin(pitch); // unit vector from folder to camera
         GameObject go = new GameObject("Folder_ZoomTarget");
         go.transform.SetParent(transform, true);
-        go.transform.position = center + Vector3.up * zoomHeight + toCamera * (zoomHeight * 0.35f);
-        go.transform.rotation = Quaternion.LookRotation(center - go.transform.position, toCamera);
+        go.transform.position = center + offset * zoomDistance;
+        go.transform.rotation = Quaternion.LookRotation(-offset, Vector3.up);
         zoomTarget = go.transform;
     }
 }

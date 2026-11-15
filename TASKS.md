@@ -19,7 +19,7 @@ Valid statuses: `pending`, `in progress`, `in PR`, `done`.
 | 6 | Globe + calendar (site, weather, wind) | P3 | unassigned | none | — | pending |
 | 7 | Computer: app desktop, settings and shut down | P2 | unassigned | none | — | pending |
 | 8 | Computer: SpaceMart app (buy parts) | P2 | Elena | Claude | `ia/claude/spacemart` | in progress |
-| 9 | Rocket model: assembly with purchased parts | P2 | unassigned | none | — | pending |
+| 9 | Rocket model: assembly with purchased parts | P2 | Cristina (logic only; the prefab/UI is still unassigned) | claude_c | `ia/claude_c/rocket-assembly` (logic: `RocketAssembly`) | in progress |
 | 10 | `02_Lanzamiento`: split screen (2D mission control + 3D rocket) | P4 | Mateo | Grok | `feat/mateo/lanzamiento` | in progress |
 | 11 | Flight phases: departure, lunar orbit, return | P4 | unassigned | none | — | pending |
 | 12 | Piloting minigame | P4 | KvotheGuile | Claude-M | `ia/claude-m/pilotaje` | pending |

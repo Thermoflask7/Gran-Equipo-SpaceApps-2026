@@ -1854,7 +1854,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: < Volver
+  m_text: < Back
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -2926,6 +2926,7 @@ MonoBehaviour:
   mapHeightOffset: 0.05
   mapWallOffset: 0.01
   mapFadeDuration: 1
+  mapTint: {r: 0.86, g: 0.92, b: 0.86, a: 1}
   zoomFill: 1.15
   maxClickDistance: 50
   debugClicks: 1
@@ -3851,7 +3852,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Cerrar
+  m_text: Close
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -4971,7 +4972,7 @@ MonoBehaviour:
       m_PersistentCalls:
         m_Calls: []
   - id: apagar
-    label: Apagar
+    label: Shut Down
     color: {r: 0.85, g: 0.2, b: 0.2, a: 1}
     interactable: 1
     comingSoonMessage: Proximamente

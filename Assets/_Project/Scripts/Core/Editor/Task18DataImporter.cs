@@ -135,6 +135,7 @@ public static class Task18DataImporter
         Debug.Log("P5: imported " + a.astronauts.Length + " astronauts, "
             + e.events.Length + " events and " + selectable + " site(s)."
             + " Rocket parts and mission data were not changed.");
+        GameDataBuilder.Rebuild(); // so the game can find the new assets at runtime
     }
 
     static T Read<T>(string path) where T : class

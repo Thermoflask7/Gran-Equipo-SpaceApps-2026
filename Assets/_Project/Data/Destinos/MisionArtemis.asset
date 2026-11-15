@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80234876fe1a8b644a706efc0edab593, type: 3}
+  m_Name: MisionArtemis
+  m_EditorClassIdentifier: Assembly-CSharp::DestinationData
+  destinationName: Crewed lunar orbit (Artemis)
+  description: Take 3 astronauts in Orion to an orbit around the Moon (NRHO), collect data and return. Educational mission inspired by Artemis; it is not a real NASA mission.
+  launchDeltaV: 0
+  requiredDeltaV: 1060
+  maxMass: 0
+  missionDays: 12
+  locked: 0
+  tliExtraMass: 682
+  crewCount: 3
+  waterPerPersonDay: 2.5
+  oxygenPerPersonDay: 0.84
+  foodPerPersonDay: 0.75
+  baseWaterKg: 101.25
+  baseOxygenKg: 35.25
+  baseFoodKg: 33
+  minSciencePoints: 40
+  maxDownlinkSeconds: 3600

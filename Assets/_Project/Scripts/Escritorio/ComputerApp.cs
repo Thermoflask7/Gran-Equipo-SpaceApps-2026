@@ -5,7 +5,7 @@ using UnityEngine.Events;
 /// <summary>
 /// Una "app" del escritorio de la PC. Las tareas 7 (SpaceMart), 8 y 21 (tech tree)
 /// se conectan con ComputerDesktop.RegisterApp(id, ...) o agregando listeners a onOpen.
-/// Si una app no tiene ningun listener, se muestra el panel "Proximamente".
+/// If an app has no listeners, the "Coming soon" panel is shown.
 /// </summary>
 [Serializable]
 public class ComputerApp
@@ -14,7 +14,7 @@ public class ComputerApp
     public string label;
     public Color color = Color.gray;
     public bool interactable = true;
-    [TextArea] public string comingSoonMessage = "Proximamente";
+    [TextArea] public string comingSoonMessage = "Coming soon";
     public UnityEvent onOpen = new UnityEvent();
 
     [NonSerialized] int runtimeListeners;

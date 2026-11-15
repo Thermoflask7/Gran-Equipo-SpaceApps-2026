@@ -10,96 +10,96 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b2f8d04c7a1e4b9d8c3f6a0e5d1b7943, type: 3}
-  m_Name: SpaceMartCatalog
-  m_EditorClassIdentifier: Assembly-CSharp::SpaceMartCatalog
+  m_Name: SpaceOsShopCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::SpaceOsShopCatalog
   items:
   - id: cohete_atlas
     name: Atlas-C
     category: 0
     price: 12
-    spec: Cohete ligero de 1 etapa
+    spec: Light 1-stage rocket
     color: {r: 0.80, g: 0.50, b: 0.22, a: 1}
   - id: cohete_saturno
-    name: Saturno-L
+    name: Saturn-L
     category: 0
     price: 45
-    spec: Cohete medio de 2 etapas
+    spec: Medium 2-stage rocket
     color: {r: 0.85, g: 0.60, b: 0.30, a: 1}
   - id: cohete_artemis
     name: Artemis Heavy
     category: 0
     price: 90
-    spec: Cohete pesado de 3 etapas
+    spec: Heavy 3-stage rocket
     color: {r: 0.95, g: 0.70, b: 0.35, a: 1}
   - id: motor_merlin
-    name: Motor Merlin-G
+    name: Merlin-G Engine
     category: 1
     price: 8
-    spec: Isp 310 s, empuje medio
+    spec: Isp 310 s, medium thrust
     color: {r: 0.55, g: 0.55, b: 0.60, a: 1}
   - id: motor_rs_lunar
-    name: Motor RS-Lunar
+    name: RS-Lunar Engine
     category: 1
     price: 18
-    spec: Isp 450 s, criogenico
+    spec: Isp 450 s, cryogenic
     color: {r: 0.40, g: 0.65, b: 0.85, a: 1}
   - id: motor_ionico
-    name: Motor Ionico X
+    name: Ionic Engine X
     category: 1
     price: 22
-    spec: Isp 3000 s, bajo empuje
+    spec: Isp 3000 s, low thrust
     color: {r: 0.45, g: 0.80, b: 0.90, a: 1}
   - id: fuel_rp1
-    name: Queroseno RP-1
+    name: RP-1 Kerosene
     category: 2
     price: 2
-    spec: Denso y barato, 20 t
+    spec: Dense and cheap, 20 t
     color: {r: 0.70, g: 0.35, b: 0.15, a: 1}
   - id: fuel_lh2
-    name: Hidrogeno LH2
+    name: LH2 Hydrogen
     category: 2
     price: 5
-    spec: Alto Isp, 12 t
+    spec: High Isp, 12 t
     color: {r: 0.55, g: 0.75, b: 1.00, a: 1}
   - id: fuel_lch4
-    name: Metano LCH4
+    name: LCH4 Methane
     category: 2
     price: 3.5
-    spec: Equilibrado, 16 t
+    spec: Balanced, 16 t
     color: {r: 0.45, g: 0.85, b: 0.55, a: 1}
   - id: mod_orion
-    name: Capsula Orion-S
+    name: Orion-S Capsule
     category: 3
     price: 25
-    spec: Tripulacion 3, reentrada
+    spec: Crew of 3, reentry
     color: {r: 0.85, g: 0.85, b: 0.90, a: 1}
   - id: mod_servicio
-    name: Modulo de servicio
+    name: Service module
     category: 3
     price: 14
-    spec: Energia y propulsion
+    spec: Power and propulsion
     color: {r: 0.60, g: 0.62, b: 0.70, a: 1}
   - id: mod_habitat
-    name: Habitat lunar breve
+    name: Short lunar habitat
     category: 3
     price: 30
-    spec: Estadia de 7 dias
+    spec: 7-day stay
     color: {r: 0.70, g: 0.55, b: 0.40, a: 1}
   - id: ins_camara
-    name: Camara de cartografia
+    name: Mapping camera
     category: 4
     price: 4
-    spec: Imagenes de alta resolucion
+    spec: High-resolution imagery
     color: {r: 0.35, g: 0.70, b: 0.55, a: 1}
   - id: ins_espectro
-    name: Espectrometro
+    name: Spectrometer
     category: 4
     price: 6
-    spec: Analisis de regolito
+    spec: Regolith analysis
     color: {r: 0.55, g: 0.40, b: 0.80, a: 1}
   - id: ins_antena
-    name: Antena de alta ganancia
+    name: High-gain antenna
     category: 4
     price: 3
-    spec: Enlace de espacio profundo
+    spec: Deep-space link
     color: {r: 0.90, g: 0.85, b: 0.40, a: 1}

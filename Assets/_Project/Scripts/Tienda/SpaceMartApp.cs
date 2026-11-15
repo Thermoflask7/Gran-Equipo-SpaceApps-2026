@@ -10,10 +10,10 @@ using UnityEngine.UI;
 /// </summary>
 public class SpaceMartApp : MonoBehaviour
 {
-    [SerializeField] SpaceMartCatalog catalog;
+    [SerializeField] SpaceOsShopCatalog catalog;
 
     ComputerDesktop desktop;
-    SpaceMartCatalog runtimeCatalog;
+    SpaceOsShopCatalog runtimeCatalog;
     bool ownsCatalog;
     bool ready;
 
@@ -31,16 +31,16 @@ public class SpaceMartApp : MonoBehaviour
     readonly List<Button> tabButtons = new List<Button>();
     readonly List<CartLine> cart = new List<CartLine>();
 
-    SpaceMartCategory currentCategory = SpaceMartCategory.Cohetes;
-    SpaceMartItem selected;
+    SpaceOsShopCategory currentCategory = SpaceOsShopCategory.Rockets;
+    SpaceOsShopItem selected;
 
     struct CartLine
     {
-        public SpaceMartItem item;
+        public SpaceOsShopItem item;
         public int quantity;
     }
 
-    public void SetCatalog(SpaceMartCatalog value)
+    public void SetCatalog(SpaceOsShopCatalog value)
     {
         catalog = value;
     }
@@ -86,7 +86,7 @@ public class SpaceMartApp : MonoBehaviour
             ownsCatalog = false;
             return;
         }
-        runtimeCatalog = SpaceMartCatalog.CreateDefault();
+        runtimeCatalog = SpaceOsShopCatalog.CreateDefault();
         ownsCatalog = true;
     }
 
@@ -113,12 +113,12 @@ public class SpaceMartApp : MonoBehaviour
         if (window != null) window.SetActive(false);
     }
 
-    void SelectCategory(SpaceMartCategory category)
+    void SelectCategory(SpaceOsShopCategory category)
     {
         currentCategory = category;
         for (int i = 0; i < tabButtons.Count; i++)
         {
-            bool on = (SpaceMartCategory)i == category;
+            bool on = (SpaceOsShopCategory)i == category;
             var img = tabButtons[i].GetComponent<Image>();
             if (img != null)
                 img.color = on ? new Color(0.95f, 0.55f, 0.15f) : new Color(0.12f, 0.14f, 0.22f, 1f);
@@ -143,7 +143,7 @@ public class SpaceMartApp : MonoBehaviour
         Canvas.ForceUpdateCanvases();
     }
 
-    void ShowDetail(SpaceMartItem item)
+    void ShowDetail(SpaceOsShopItem item)
     {
         selected = item;
         bool has = item != null;
@@ -152,11 +152,11 @@ public class SpaceMartApp : MonoBehaviour
             detailIcon.color = has ? item.color : new Color(0.2f, 0.2f, 0.25f);
         }
         if (detailName != null)
-            detailName.text = has ? item.name : "Selecciona un producto";
+            detailName.text = has ? item.name : "Select a product";
         if (detailSpec != null)
-            detailSpec.text = has ? (SpaceMartCatalog.CategoryLabel(item.category) + "\n\n" + item.spec) : "";
+            detailSpec.text = has ? (SpaceOsShopCatalog.CategoryLabel(item.category) + "\n\n" + item.spec) : "";
         if (detailPrice != null)
-            detailPrice.text = has ? SpaceMartCatalog.FormatPrice(item.price) : "";
+            detailPrice.text = has ? SpaceOsShopCatalog.FormatPrice(item.price) : "";
         if (addButton != null)
             addButton.interactable = has;
     }
@@ -215,9 +215,9 @@ public class SpaceMartApp : MonoBehaviour
             total += cart[i].item.price * cart[i].quantity;
         }
         if (cartCountText != null)
-            cartCountText.text = count == 1 ? "1 articulo" : count + " articulos";
+            cartCountText.text = count == 1 ? "1 item" : count + " items";
         if (cartTotalText != null)
-            cartTotalText.text = "Total  " + SpaceMartCatalog.FormatPrice(total);
+            cartTotalText.text = "Total  " + SpaceOsShopCatalog.FormatPrice(total);
     }
 
     void BringOverlayToFront()
@@ -257,7 +257,7 @@ public class SpaceMartApp : MonoBehaviour
         titleLabel.rectTransform.offsetMin = new Vector2(16f, 0f);
         titleLabel.rectTransform.offsetMax = new Vector2(-80f, 0f);
 
-        var close = CreateButton("Cerrar", title, new Color(0.75f, 0.20f, 0.20f, 1f));
+        var close = CreateButton("Close", title, new Color(0.75f, 0.20f, 0.20f, 1f));
         var closeRt = (RectTransform)close.transform;
         closeRt.anchorMin = closeRt.anchorMax = closeRt.pivot = new Vector2(1f, 0.5f);
         closeRt.anchoredPosition = new Vector2(-10f, 0f);
@@ -281,11 +281,11 @@ public class SpaceMartApp : MonoBehaviour
         tabButtons.Clear();
         var categories = new[]
         {
-            SpaceMartCategory.Cohetes,
-            SpaceMartCategory.Motores,
-            SpaceMartCategory.Combustible,
-            SpaceMartCategory.Modulos,
-            SpaceMartCategory.Instrumentos
+            SpaceOsShopCategory.Rockets,
+            SpaceOsShopCategory.Engines,
+            SpaceOsShopCategory.Fuel,
+            SpaceOsShopCategory.Modules,
+            SpaceOsShopCategory.Instruments
         };
         for (int i = 0; i < categories.Length; i++)
         {
@@ -294,7 +294,7 @@ public class SpaceMartApp : MonoBehaviour
             var le = tab.gameObject.AddComponent<LayoutElement>();
             le.flexibleWidth = 1f;
             le.minHeight = 36f;
-            CreateText("Etiqueta", tab.transform, SpaceMartCatalog.CategoryLabel(cat), 18f, TextAlignmentOptions.Center);
+            CreateText("Etiqueta", tab.transform, SpaceOsShopCatalog.CategoryLabel(cat), 18f, TextAlignmentOptions.Center);
             tab.onClick.AddListener(() => SelectCategory(cat));
             tabButtons.Add(tab);
         }
@@ -348,7 +348,7 @@ public class SpaceMartApp : MonoBehaviour
         detailIcon.color = new Color(0.2f, 0.2f, 0.25f);
         detailIcon.raycastTarget = false;
 
-        detailName = CreateText("Nombre", root, "Selecciona un producto", 24f, TextAlignmentOptions.MidlineLeft);
+        detailName = CreateText("Nombre", root, "Select a product", 24f, TextAlignmentOptions.MidlineLeft);
         detailName.rectTransform.anchorMin = new Vector2(0f, 1f);
         detailName.rectTransform.anchorMax = new Vector2(1f, 1f);
         detailName.rectTransform.pivot = new Vector2(0.5f, 1f);
@@ -376,14 +376,14 @@ public class SpaceMartApp : MonoBehaviour
         addRt.pivot = new Vector2(1f, 0f);
         addRt.anchoredPosition = new Vector2(-12f, 12f);
         addRt.sizeDelta = new Vector2(210f, 48f);
-        CreateText("Etiqueta", addButton.transform, "Agregar al carrito", 18f, TextAlignmentOptions.Center);
+        CreateText("Label", addButton.transform, "Add to cart", 18f, TextAlignmentOptions.Center);
         addButton.onClick.AddListener(AddSelectedToCart);
         addButton.interactable = false;
     }
 
     void BuildCart(RectTransform root)
     {
-        var header = CreateText("TituloCarrito", root, "Carrito", 20f, TextAlignmentOptions.MidlineLeft);
+        var header = CreateText("CartTitle", root, "Cart", 20f, TextAlignmentOptions.MidlineLeft);
         header.rectTransform.anchorMin = new Vector2(0f, 1f);
         header.rectTransform.anchorMax = new Vector2(1f, 1f);
         header.rectTransform.pivot = new Vector2(0.5f, 1f);
@@ -395,7 +395,7 @@ public class SpaceMartApp : MonoBehaviour
         Stretch(listHost, 8f, 44f, 8f, 32f);
         cartContent = CreateScrollArea(listHost, "Lineas");
 
-        cartCountText = CreateText("Cuenta", root, "0 articulos", 16f, TextAlignmentOptions.MidlineLeft);
+        cartCountText = CreateText("Cuenta", root, "0 items", 16f, TextAlignmentOptions.MidlineLeft);
         cartCountText.rectTransform.anchorMin = new Vector2(0f, 0f);
         cartCountText.rectTransform.anchorMax = new Vector2(0.45f, 0f);
         cartCountText.rectTransform.pivot = new Vector2(0f, 0f);
@@ -411,7 +411,7 @@ public class SpaceMartApp : MonoBehaviour
         cartTotalText.color = new Color(1f, 0.85f, 0.40f);
     }
 
-    void CreateCard(SpaceMartItem item)
+    void CreateCard(SpaceOsShopItem item)
     {
         var card = CreateButton("Item_" + item.id, gridContent, new Color(0.10f, 0.12f, 0.20f, 1f));
         var le = card.gameObject.AddComponent<LayoutElement>();
@@ -444,14 +444,14 @@ public class SpaceMartApp : MonoBehaviour
         spec.rectTransform.offsetMax = new Vector2(-12f, 0f);
         spec.color = new Color(0.80f, 0.82f, 0.88f);
 
-        var price = CreateText("Precio", card.transform, SpaceMartCatalog.FormatPrice(item.price), 18f, TextAlignmentOptions.MidlineLeft);
+        var price = CreateText("Precio", card.transform, SpaceOsShopCatalog.FormatPrice(item.price), 18f, TextAlignmentOptions.MidlineLeft);
         price.rectTransform.anchorMin = new Vector2(0f, 0f);
         price.rectTransform.anchorMax = new Vector2(1f, 0.30f);
         price.rectTransform.offsetMin = new Vector2(196f, 6f);
         price.rectTransform.offsetMax = new Vector2(-12f, 0f);
         price.color = new Color(1f, 0.85f, 0.40f);
 
-        SpaceMartItem captured = item;
+        SpaceOsShopItem captured = item;
         card.onClick.AddListener(() => ShowDetail(captured));
     }
 

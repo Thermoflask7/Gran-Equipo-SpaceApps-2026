@@ -1,7 +1,7 @@
 using TMPro;
 using UnityEngine;
 
-// Texto de depuracion para el greybox: muestra el estado de la partida.
+// Debug text for the greybox: shows the game state.
 [RequireComponent(typeof(TMP_Text))]
 public class StateDisplay : MonoBehaviour
 {
@@ -16,14 +16,14 @@ public class StateDisplay : MonoBehaviour
     {
         GameManager gm = GameManager.Instance;
         label.text =
-            "Dinero: $" + gm.money.ToString("0") + " M   Piezas compradas: " + gm.boughtParts.Count + "\n" +
-            "Misión leída: " + SiNo(gm.missionRead) + "   Tripulación lista: " + SiNo(gm.IsCrewReady()) + "\n" +
-            "Cohete válido: " + SiNo(gm.rocketValid) + "   Lanzamiento planeado: " + SiNo(gm.IsLaunchPlanned()) + "\n" +
-            "¿Se puede lanzar?: " + SiNo(gm.CanLaunch()) + "   Puntaje: " + gm.TotalScore().ToString("0");
+            "Credits: " + gm.money.ToString("N0") + "   Parts bought: " + gm.boughtParts.Count + "\n" +
+            "Mission read: " + YesNo(gm.missionRead) + "   Crew ready: " + YesNo(gm.IsCrewReady()) + "\n" +
+            "Rocket valid: " + YesNo(gm.rocketValid) + "   Launch planned: " + YesNo(gm.IsLaunchPlanned()) + "\n" +
+            "Can launch?: " + YesNo(gm.CanLaunch()) + "   Score: " + gm.TotalScore().ToString("0");
     }
 
-    string SiNo(bool value)
+    string YesNo(bool value)
     {
-        return value ? "sí" : "no";
+        return value ? "yes" : "no";
     }
 }

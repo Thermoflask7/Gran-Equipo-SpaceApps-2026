@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// Estado global de la partida. Sobrevive entre escenas.
-// Uso desde cualquier script: GameManager.Instance.money, GameManager.Instance.CanLaunch(), etc.
+// Global game state. Survives between scenes.
+// Use from any script: GameManager.Instance.money, GameManager.Instance.CanLaunch(), etc.
 public class GameManager : MonoBehaviour
 {
     static GameManager instance;
@@ -12,7 +12,7 @@ public class GameManager : MonoBehaviour
     {
         get
         {
-            // Si pruebas una escena sola y no hay GameManager, se crea uno con valores iniciales
+            // If you test a scene on its own and there is no GameManager, one is created with starting values
             if (instance == null)
             {
                 GameObject go = new GameObject("GameManager");
@@ -22,20 +22,20 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    [Header("Valores iniciales")]
-    public float startingMoney = 500f; // millones de USD (presupuesto fijo)
+    [Header("Starting values")]
+    public float startingMoney = 3400f; // game credits (fixed budget, Cristina's catalog)
 
-    [Header("Mision")]
+    [Header("Mission")]
     public DestinationData mission;
-    public bool missionRead; // tarea 1: el folder se abrio al menos una vez
+    public bool missionRead; // task 1: the folder was opened at least once
 
-    [Header("Dinero y piezas")]
+    [Header("Money and parts")]
     public float money;
-    public List<PartData> boughtParts = new List<PartData>();  // compradas en SpaceMart
-    public List<PartData> rocketParts = new List<PartData>();  // las que se usaron en el cohete armado
-    public bool rocketValid; // tarea 3: lo pone el modelo de cohete cuando el delta-v y la masa alcanzan
+    public List<PartData> boughtParts = new List<PartData>();  // bought in SpaceMart
+    public List<PartData> rocketParts = new List<PartData>();  // the ones used in the assembled rocket
+    public bool rocketValid; // task 3: set by the rocket model when delta-v and mass are enough
 
-    [Header("Tripulacion")]
+    [Header("Crew")]
     public AstronautData pilot;
     public AstronautData engineer;
     public AstronautData scientist;
@@ -44,15 +44,18 @@ public class GameManager : MonoBehaviour
     public TrainingFocus engineerTraining;
     public TrainingFocus scientistTraining;
 
-    [Header("Lanzamiento")]
+    [Header("Launch")]
     public LaunchSiteData launchSite;
-    public int launchDay = -1;    // dia elegido en el calendario (-1 = sin elegir)
-    public float weatherRisk;     // 0 a 1, del sitio y dia elegidos
+    public int launchDay = -1;    // day chosen in the calendar (-1 = not chosen)
+    public float weatherRisk;     // 0 to 1, for the chosen site and day
 
-    [Header("Puntaje y eventos")]
+    [Header("Score and events")]
     public float planningScore;
     public float missionScore;
     public List<EventData> eventsHappened = new List<EventData>();
+
+    [Header("Flight (filled in by the phases and minigames, read by Results)")]
+    public MissionResults flight = new MissionResults();
 
     void Awake()
     {
@@ -64,9 +67,13 @@ public class GameManager : MonoBehaviour
         instance = this;
         DontDestroyOnLoad(gameObject);
         ResetGame();
+
+        // A GameManager created automatically (scene tested on its own) still gets the mission
+        GameData data = GameData.Instance;
+        if (mission == null && data != null) mission = data.mission;
     }
 
-    // ---------- Partida ----------
+    // ---------- Game ----------
 
     public void ResetGame()
     {
@@ -88,21 +95,24 @@ public class GameManager : MonoBehaviour
         planningScore = 0f;
         missionScore = 0f;
         eventsHappened.Clear();
+        flight.Reset();
     }
 
+    // Before Results it is only what the events added. In Results,
+    // MissionScoring.SaveFinalScore() sets the final V16 score (0 to 100).
     public float TotalScore()
     {
         return planningScore + missionScore;
     }
 
-    // ---------- Dinero ----------
+    // ---------- Money ----------
 
     public bool CanAfford(float amount)
     {
         return money >= amount;
     }
 
-    // Regresa false si no alcanza el dinero (y no cobra nada)
+    // Returns false if there is not enough money (and charges nothing)
     public bool Spend(float amount)
     {
         if (money < amount) return false;
@@ -115,7 +125,7 @@ public class GameManager : MonoBehaviour
         money += amount;
     }
 
-    // ---------- Piezas ----------
+    // ---------- Parts ----------
 
     public bool BuyPart(PartData part)
     {
@@ -125,7 +135,7 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
-    // Devuelve la pieza y regresa su precio completo
+    // Returns the part and refunds its full price
     public void SellPart(PartData part)
     {
         if (boughtParts.Remove(part))
@@ -149,7 +159,7 @@ public class GameManager : MonoBehaviour
         return total;
     }
 
-    // ---------- Tripulacion ----------
+    // ---------- Crew ----------
 
     public bool IsCrewReady()
     {
@@ -159,8 +169,8 @@ public class GameManager : MonoBehaviour
             && scientistTraining != TrainingFocus.None;
     }
 
-    // Habilidad del astronauta en su rol (0 a 10) + 2 si entreno en lo mismo, maximo 10.
-    // Los minijuegos multiplican su resultado (0 a 1) por SkillMultiplier.
+    // Astronaut's skill in their role (0 to 10) + 2 if they trained in the same thing, max 10.
+    // The minigames multiply their result (0 to 1) by SkillMultiplier.
     public float SkillMultiplier(AstronautData astronaut, TrainingFocus role)
     {
         if (astronaut == null) return 0.5f;
@@ -181,27 +191,39 @@ public class GameManager : MonoBehaviour
         return TrainingFocus.None;
     }
 
-    // ---------- Lanzamiento ----------
+    // ---------- Launch ----------
+
+    // Globe/calendar: chooses the site and the day (index in site.weatherRiskByDay) and sets weatherRisk.
+    // Returns false and changes nothing if the site is null or the day is out of range.
+    public bool SetLaunch(LaunchSiteData site, int day)
+    {
+        if (site == null || site.weatherRiskByDay == null) return false;
+        if (day < 0 || day >= site.weatherRiskByDay.Length) return false;
+        launchSite = site;
+        launchDay = day;
+        weatherRisk = Mathf.Clamp01(site.weatherRiskByDay[day]);
+        return true;
+    }
 
     public bool IsLaunchPlanned()
     {
         return launchSite != null && launchDay >= 0;
     }
 
-    // Las 4 tareas del escritorio (GDD). El boton de lanzamiento solo se activa si esto es true.
+    // The 4 desk tasks (GDD). The launch button is only enabled if this is true.
     public bool CanLaunch()
     {
         return missionRead && IsCrewReady() && rocketValid && IsLaunchPlanned();
     }
 
-    // ---------- Escenas ----------
+    // ---------- Scenes ----------
 
     public void GoToScene(string sceneName)
     {
         SceneManager.LoadScene(sceneName);
     }
 
-    // Avanza a la siguiente escena del loop. Despues de Resultados reinicia y vuelve al Menu.
+    // Moves to the next scene in the loop. After Results it resets and goes back to the Menu.
     public void GoToNextScene()
     {
         string current = SceneManager.GetActiveScene().name;

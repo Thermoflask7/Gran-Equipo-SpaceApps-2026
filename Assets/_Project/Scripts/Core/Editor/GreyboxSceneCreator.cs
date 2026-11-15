@@ -8,29 +8,29 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
-// Menu: SpaceApps > Crear escenas greybox
-//   Crea las escenas del loop que falten con un titulo, el estado y un boton "Siguiente",
-//   y las agrega en orden a la lista de escenas del build.
-// Menu: SpaceApps > Regenerar escenas greybox (sobrescribe)
-//   Igual, pero vuelve a crear las 4 escenas aunque ya existan. Solo para el greybox inicial:
-//   no lo uses cuando alguien ya haya trabajado en una escena.
-// UI con TextMeshPro y EventSystem del Input System nuevo (reglas del equipo en AGENTS.md).
+// Menu: SpaceApps > Create greybox scenes
+//   Creates the missing loop scenes with a title, the state and a "Next" button,
+//   and adds them in order to the build's scene list.
+// Menu: SpaceApps > Regenerate greybox scenes (overwrites)
+//   Same, but recreates all 4 scenes even if they already exist. Only for the initial greybox:
+//   do not use it once someone has worked on a scene.
+// UI with TextMeshPro and an EventSystem for the new Input System (team rules in AGENTS.md).
 public static class GreyboxSceneCreator
 {
     const string Folder = "Assets/_Project/Scenes";
 
-    [MenuItem("SpaceApps/Crear escenas greybox")]
+    [MenuItem("SpaceApps/Create greybox scenes")]
     static void CreateMissingScenes()
     {
         Build(false);
     }
 
-    [MenuItem("SpaceApps/Regenerar escenas greybox (sobrescribe)")]
+    [MenuItem("SpaceApps/Regenerate greybox scenes (overwrites)")]
     static void RegenerateScenes()
     {
-        if (!EditorUtility.DisplayDialog("Regenerar escenas greybox",
-            "Esto sobrescribe 00_Menu, 01_Planeacion, 02_Lanzamiento y 03_Resultados. Se pierde lo que tengan. ¿Continuar?",
-            "Sí, regenerar", "Cancelar")) return;
+        if (!EditorUtility.DisplayDialog("Regenerate greybox scenes",
+            "This overwrites 00_Menu, 01_Planeacion, 02_Lanzamiento and 03_Resultados. Whatever they contain is lost. Continue?",
+            "Yes, regenerate", "Cancel")) return;
         Build(true);
     }
 
@@ -40,8 +40,8 @@ public static class GreyboxSceneCreator
 
         if (TMP_Settings.defaultFontAsset == null)
         {
-            EditorUtility.DisplayDialog("Falta TextMeshPro",
-                "Primero importa los recursos de TextMeshPro: Window > TextMeshPro > Import TMP Essential Resources. Luego vuelve a correr este menú.",
+            EditorUtility.DisplayDialog("TextMeshPro is missing",
+                "First import the TextMeshPro resources: Window > TextMeshPro > Import TMP Essential Resources. Then run this menu again.",
                 "OK");
             return;
         }
@@ -61,7 +61,7 @@ public static class GreyboxSceneCreator
         EditorBuildSettings.scenes = buildScenes.ToArray();
 
         EditorSceneManager.OpenScene(Folder + "/" + Scenes.Menu + ".unity");
-        Debug.Log("Escenas greybox listas y agregadas al build.");
+        Debug.Log("Greybox scenes ready and added to the build.");
     }
 
     static void CreateScene(string sceneName, string path, bool isLast)
@@ -77,17 +77,17 @@ public static class GreyboxSceneCreator
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
 
-        CreateText(canvasGo.transform, "Titulo", sceneName, 72, new Vector2(0.5f, 0.8f), new Vector2(1400, 150));
-        TextMeshProUGUI state = CreateText(canvasGo.transform, "Estado", "", 36, new Vector2(0.5f, 0.5f), new Vector2(1400, 300));
+        CreateText(canvasGo.transform, "Title", sceneName, 72, new Vector2(0.5f, 0.8f), new Vector2(1400, 150));
+        TextMeshProUGUI state = CreateText(canvasGo.transform, "State", "", 36, new Vector2(0.5f, 0.5f), new Vector2(1400, 300));
         state.gameObject.AddComponent<StateDisplay>();
 
-        GameObject button = new GameObject("BotonSiguiente", typeof(RectTransform), typeof(Image), typeof(Button), typeof(NextSceneButton));
+        GameObject button = new GameObject("NextButton", typeof(RectTransform), typeof(Image), typeof(Button), typeof(NextSceneButton));
         button.transform.SetParent(canvasGo.transform, false);
         RectTransform rt = button.GetComponent<RectTransform>();
         rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.2f);
         rt.sizeDelta = new Vector2(420, 110);
         button.GetComponent<Image>().color = new Color(0.35f, 0.35f, 0.35f);
-        CreateText(button.transform, "Texto", isLast ? "Jugar de nuevo" : "Siguiente", 44, new Vector2(0.5f, 0.5f), new Vector2(420, 110));
+        CreateText(button.transform, "Text", isLast ? "Play again" : "Next", 44, new Vector2(0.5f, 0.5f), new Vector2(420, 110));
 
         EditorSceneManager.SaveScene(scene, path);
     }

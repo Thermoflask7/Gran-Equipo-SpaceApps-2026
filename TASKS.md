@@ -1,34 +1,36 @@
-# Tablero de tareas
+# Task board
 
-Diseño completo en [GDD.md](GDD.md). Loop: Menú → Planeación (escritorio) → Lanzamiento (salida → órbita lunar → retorno) → Resultados.
+Full design in [GDD.md](GDD.md). Loop: Menu → Planning (desk) → Launch (departure → lunar orbit → return) → Results.
 
-Antes de tomar una tarea, lee [AGENTS.md](AGENTS.md) y [AI_COLLAB.md](AI_COLLAB.md). Para reclamarla, en el mismo PR llena **IA asignada** y **Rama**, y pasa **Estado** a `en curso`.
+Before taking a task, read [AGENTS.md](AGENTS.md) and [AI_COLLAB.md](AI_COLLAB.md). To claim it, fill in **Assigned AI** and **Branch** in the same PR, and set **Status** to `in progress`.
 
-Estados válidos: `pendiente`, `en curso`, `en PR`, `hecho`.
+Valid statuses: `pending`, `in progress`, `in PR`, `done`.
 
-**Responsable humano** se queda en `por asignar` hasta que alguien del equipo escriba su nombre.
+**Human owner** stays as `unassigned` until someone on the team writes their name.
 
-| ID | Tarea | Rol | Responsable humano | IA asignada | Rama | Estado |
+| ID | Task | Role | Human owner | Assigned AI | Branch | Status |
 |---|---|---|---|---|---|---|
-| 0 | GameManager + cambio de escenas + estado | P1 | Elena | Claude | `ia/claude/gamemanager` | hecho |
-| 1 | `00_Menu`: pantalla de título | P1 | por asignar | ninguna | — | pendiente |
-| 2 | `01_Planeacion`: escritorio base, cámara y navegación entre estaciones | P1 | por asignar | ninguna | — | pendiente |
-| 3 | Botón de lanzamiento + checklist de tareas | P1 | por asignar | ninguna | — | pendiente |
-| 4 | Folder: misión + actualizaciones por eventos | P3 | por asignar | ninguna | — | pendiente |
-| 5 | Folder: perfiles de astronautas + entrenamiento | P3 | por asignar | ninguna | — | pendiente |
-| 6 | Globo terráqueo + calendario (sitio, clima, viento) | P3 | por asignar | ninguna | — | pendiente |
-| 7 | Computadora: escritorio de apps, ajustes y apagar | P2 | por asignar | ninguna | — | pendiente |
-| 8 | Computadora: app SpaceMart (comprar piezas) | P2 | por asignar | ninguna | — | pendiente |
-| 9 | Modelo de cohete: armado con piezas compradas | P2 | por asignar | ninguna | — | pendiente |
-| 10 | `02_Lanzamiento`: pantalla dividida (control de misión 2D + cohete 3D) | P4 | por asignar | ninguna | — | pendiente |
-| 11 | Fases del vuelo: salida, órbita lunar, retorno | P4 | por asignar | ninguna | — | pendiente |
-| 12 | Minijuego de pilotaje | P4 | por asignar | ninguna | — | pendiente |
-| 13 | Minijuego de mantenimiento | P4 | por asignar | ninguna | — | pendiente |
-| 14 | Minijuego de investigación (recolección de datos) | P4 | por asignar | ninguna | — | pendiente |
-| 15 | Eventos aleatorios (planeación y vuelo) | P4 | por asignar | ninguna | — | pendiente |
-| 16 | `03_Resultados`: puntaje final y explicación educativa | P1 | por asignar | ninguna | — | pendiente |
-| 17 | Física: Δv, masa y energía | P5 | por asignar | ninguna | — | pendiente |
-| 18 | Datos: piezas, astronautas, eventos, sitios y clima, misión lunar | P5 | por asignar | ninguna | — | pendiente |
-| 19 | Build WebGL | P1 | por asignar | ninguna | — | pendiente |
-| 20 | Pitch para los jueces | P1–P5 | por asignar | ninguna | — | pendiente |
-| 21 | (Opcional) Tech tree como app de la computadora | P2 | por asignar | ninguna | — | pendiente |
+| 0 | GameManager + scene changes + state | P1 | Elena | Claude | `ia/claude/gamemanager` | done |
+| 1 | `00_Menu`: title screen | P1 | Mateo | Grok | `feat/mateo/menu` | done |
+| 2 | `01_Planeacion`: base desk, camera and navigation between stations | P1 | unassigned | none | — | pending |
+| 3 | Launch button + task checklist | P1 | Elena | Claude | `ia/claude/boton-lanzamiento` | done |
+| 4 | Folder: mission + updates from events | P3 | unassigned | none | — | pending |
+| 5 | Folder: astronaut profiles + training | P3 | unassigned | none | — | pending |
+| 6 | Globe + calendar (site, weather, wind) | P3 | unassigned | none | — | pending |
+| 7 | Computer: app desktop, settings and shut down | P2 | unassigned | none | — | pending |
+| 8 | Computer: SpaceMart app (buy parts) | P2 | Elena | Claude | `ia/claude/spacemart` (done, PR #18) + `ia/claude/spacemart-filters` (category tabs) | in PR |
+| 9 | Rocket model: assembly with purchased parts | P2 | unassigned | none | — | pending |
+| 10 | `02_Lanzamiento`: split screen (2D mission control + 3D rocket) | P4 | Mateo | Grok | `feat/mateo/lanzamiento` | in progress |
+| 11 | Flight phases: departure, lunar orbit, return | P4 | unassigned | none | — | pending |
+| 12 | Piloting minigame | P4 | KvotheGuile | Claude-M | `ia/claude-m/pilotaje` | pending |
+| 13 | Maintenance minigame | P4 | unassigned | none | — | pending |
+| 14 | Research minigame (data collection) | P4 | unassigned | none | — | pending |
+| 15 | Random events (planning and flight) | P4 | Elena | Claude | `ia/claude/eventos` | done |
+| 16 | `03_Resultados`: final score and educational explanation | P1 | Elena | Claude | `ia/claude/puntuacion-artemis` (Cristina's V16 scoring, adjusted to Artemis) | done |
+| 17 | Physics: Δv, mass and power | P5 | Elena, Cristina | Claude | `ia/claude/catalogo` (fix + Cristina's catalog) | done |
+| 18 | Data: parts, astronauts, events, sites and weather, lunar mission | P5 | Cristina | claude_c | `ia/claude_c/task18-data`, `ia/claude_c/game-data`, `ia/claude_c/crew-of-three` | done |
+| 19 | WebGL build | P1 | unassigned | none | — | pending |
+| 20 | Pitch for the judges | P1–P5 | unassigned | none | — | pending |
+| 21 | (Optional) Tech tree as a computer app | P2 | unassigned | none | — | pending |
+| 22 | Translate the repo to English: docs, UI, menus, messages and comments | All | Elena | Claude | `ia/claude/english` | done |
+| 23 | Rename the Spanish folders, scenes and assets to English (after the open branches are merged) | P1 | unassigned | none | — | pending |

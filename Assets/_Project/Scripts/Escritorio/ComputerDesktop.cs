@@ -46,9 +46,9 @@ public class ComputerDesktop : MonoBehaviour
     [SerializeField] List<ComputerApp> apps = new List<ComputerApp>
     {
         new ComputerApp(AppSpaceMart, "SpaceMart", new Color(0.95f, 0.55f, 0.15f)),
-        new ComputerApp(AppAjustes, "Ajustes", new Color(0.45f, 0.5f, 0.6f)),
+        new ComputerApp(AppAjustes, "Settings", new Color(0.45f, 0.5f, 0.6f)),
         new ComputerApp(AppTechTree, "Tech tree", new Color(0.3f, 0.7f, 0.45f), false),
-        new ComputerApp(AppApagar, "Apagar", new Color(0.85f, 0.2f, 0.2f)),
+        new ComputerApp(AppApagar, "Shut down", new Color(0.85f, 0.2f, 0.2f)),
     };
 
     [Header("Eventos")]

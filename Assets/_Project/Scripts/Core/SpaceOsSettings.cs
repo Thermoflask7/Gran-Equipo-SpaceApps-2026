@@ -2,10 +2,12 @@ using System;
 using UnityEngine;
 
 /// <summary>
-/// Ajustes persistentes del juego (PlayerPrefs, valido en WebGL).
-/// Cargar y aplicar al arrancar; otros sistemas leen las propiedades o se suscriben a Changed.
+/// Persistent game settings (PlayerPrefs, valid on WebGL).
+/// Loaded and applied on startup; other systems read the properties or subscribe to Changed.
+/// Renamed from GameSettings so it does not collide with the menu GameSettings MonoBehaviour.
+/// PlayerPrefs keys keep the GameSettings.* prefix so existing saves still work.
 /// </summary>
-public static class GameSettings
+public static class SpaceOsSettings
 {
     public const float DefaultMasterVolume = 1f;
     public const float DefaultMusicVolume = 0.8f;
@@ -27,7 +29,7 @@ public static class GameSettings
 
     static bool loaded;
 
-    /// <summary>Se dispara despues de Load, Apply, Save o un cambio de valor.</summary>
+    /// <summary>Fired after Load, Apply, Save or a value change.</summary>
     public static event Action Changed;
 
     public static float MasterVolume { get; set; } = DefaultMasterVolume;

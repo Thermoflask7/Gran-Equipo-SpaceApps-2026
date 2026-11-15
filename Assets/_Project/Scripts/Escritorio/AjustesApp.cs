@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// App Ajustes de SpaceOS: audio, gráficos, controles e información.
+/// SpaceOS Settings app: audio, graphics, controls and about.
 /// Se registra con ComputerDesktop.RegisterApp("ajustes") y construye su UI en runtime.
 /// </summary>
 public class AjustesApp : MonoBehaviour
@@ -32,7 +32,7 @@ public class AjustesApp : MonoBehaviour
     Slider sensitivitySlider;
     TMP_Text sensitivityValue;
 
-    static readonly string[] FrameRateLabels = { "VSync", "30 FPS", "60 FPS", "120 FPS", "Ilimitado" };
+    static readonly string[] FrameRateLabels = { "VSync", "30 FPS", "60 FPS", "120 FPS", "Unlimited" };
 
     void Awake() => Setup();
     void Start() => Setup();
@@ -44,7 +44,7 @@ public class AjustesApp : MonoBehaviour
             desktop.onHidden.RemoveListener(Close);
             desktop.onShown.RemoveListener(Close);
         }
-        GameSettings.Changed -= RefreshControls;
+        SpaceOsSettings.Changed -= RefreshControls;
     }
 
     void Setup()
@@ -54,13 +54,13 @@ public class AjustesApp : MonoBehaviour
         if (desktop == null) desktop = ComputerDesktop.Instance;
         if (desktop == null) return;
 
-        GameSettings.Load();
-        GameSettings.Apply();
+        SpaceOsSettings.Load();
+        SpaceOsSettings.Apply();
         BuildWindow();
-        desktop.RegisterApp(ComputerDesktop.AppAjustes, "Ajustes", new Color(0.45f, 0.5f, 0.6f), Open);
+        desktop.RegisterApp(ComputerDesktop.AppAjustes, "Settings", new Color(0.45f, 0.5f, 0.6f), Open);
         desktop.onHidden.AddListener(Close);
         desktop.onShown.AddListener(Close);
-        GameSettings.Changed += RefreshControls;
+        SpaceOsSettings.Changed += RefreshControls;
         ready = true;
         Close();
     }
@@ -97,18 +97,18 @@ public class AjustesApp : MonoBehaviour
 
     void RefreshControls()
     {
-        if (masterSlider != null) masterSlider.SetValueWithoutNotify(GameSettings.MasterVolume);
-        if (musicSlider != null) musicSlider.SetValueWithoutNotify(GameSettings.MusicVolume);
-        if (sfxSlider != null) sfxSlider.SetValueWithoutNotify(GameSettings.SfxVolume);
-        if (masterValue != null) masterValue.text = Percent(GameSettings.MasterVolume);
-        if (musicValue != null) musicValue.text = Percent(GameSettings.MusicVolume);
-        if (sfxValue != null) sfxValue.text = Percent(GameSettings.SfxVolume);
+        if (masterSlider != null) masterSlider.SetValueWithoutNotify(SpaceOsSettings.MasterVolume);
+        if (musicSlider != null) musicSlider.SetValueWithoutNotify(SpaceOsSettings.MusicVolume);
+        if (sfxSlider != null) sfxSlider.SetValueWithoutNotify(SpaceOsSettings.SfxVolume);
+        if (masterValue != null) masterValue.text = Percent(SpaceOsSettings.MasterVolume);
+        if (musicValue != null) musicValue.text = Percent(SpaceOsSettings.MusicVolume);
+        if (sfxValue != null) sfxValue.text = Percent(SpaceOsSettings.SfxVolume);
         if (qualityValue != null) qualityValue.text = CurrentQualityName();
         if (frameValue != null) frameValue.text = FrameRateLabels[FrameRateIndex()];
-        SetToggleVisual(fullscreenValue, GameSettings.Fullscreen, "Activada", "Desactivada");
-        SetToggleVisual(crtValue, GameSettings.CrtFilter, "Activado", "Desactivado");
-        if (sensitivitySlider != null) sensitivitySlider.SetValueWithoutNotify(GameSettings.CameraSensitivity);
-        if (sensitivityValue != null) sensitivityValue.text = GameSettings.CameraSensitivity.ToString("0.00") + "x";
+        SetToggleVisual(fullscreenValue, SpaceOsSettings.Fullscreen, "On", "Off");
+        SetToggleVisual(crtValue, SpaceOsSettings.CrtFilter, "On", "Off");
+        if (sensitivitySlider != null) sensitivitySlider.SetValueWithoutNotify(SpaceOsSettings.CameraSensitivity);
+        if (sensitivityValue != null) sensitivityValue.text = SpaceOsSettings.CameraSensitivity.ToString("0.00") + "x";
     }
 
     static string Percent(float value) => Mathf.RoundToInt(value * 100f) + "%";
@@ -117,14 +117,14 @@ public class AjustesApp : MonoBehaviour
     {
         var names = QualitySettings.names;
         if (names == null || names.Length == 0) return "-";
-        int i = Mathf.Clamp(GameSettings.QualityLevel, 0, names.Length - 1);
+        int i = Mathf.Clamp(SpaceOsSettings.QualityLevel, 0, names.Length - 1);
         return names[i];
     }
 
     static int FrameRateIndex()
     {
-        if (GameSettings.VSync) return 0;
-        switch (GameSettings.TargetFrameRate)
+        if (SpaceOsSettings.VSync) return 0;
+        switch (SpaceOsSettings.TargetFrameRate)
         {
             case 30: return 1;
             case 60: return 2;
@@ -140,24 +140,24 @@ public class AjustesApp : MonoBehaviour
         switch (index)
         {
             case 0:
-                GameSettings.VSync = true;
-                GameSettings.TargetFrameRate = 60;
+                SpaceOsSettings.VSync = true;
+                SpaceOsSettings.TargetFrameRate = 60;
                 break;
             case 1:
-                GameSettings.VSync = false;
-                GameSettings.TargetFrameRate = 30;
+                SpaceOsSettings.VSync = false;
+                SpaceOsSettings.TargetFrameRate = 30;
                 break;
             case 2:
-                GameSettings.VSync = false;
-                GameSettings.TargetFrameRate = 60;
+                SpaceOsSettings.VSync = false;
+                SpaceOsSettings.TargetFrameRate = 60;
                 break;
             case 3:
-                GameSettings.VSync = false;
-                GameSettings.TargetFrameRate = 120;
+                SpaceOsSettings.VSync = false;
+                SpaceOsSettings.TargetFrameRate = 120;
                 break;
             default:
-                GameSettings.VSync = false;
-                GameSettings.TargetFrameRate = -1;
+                SpaceOsSettings.VSync = false;
+                SpaceOsSettings.TargetFrameRate = -1;
                 break;
         }
         Commit();
@@ -168,20 +168,20 @@ public class AjustesApp : MonoBehaviour
         var names = QualitySettings.names;
         if (names == null || names.Length == 0) return;
         int count = names.Length;
-        GameSettings.QualityLevel = (GameSettings.QualityLevel + delta + count) % count;
+        SpaceOsSettings.QualityLevel = (SpaceOsSettings.QualityLevel + delta + count) % count;
         Commit();
     }
 
     void Commit()
     {
-        GameSettings.Apply();
-        GameSettings.Save();
+        SpaceOsSettings.Apply();
+        SpaceOsSettings.Save();
         RefreshControls();
     }
 
     void ResetDefaults()
     {
-        GameSettings.ResetToDefaults();
+        SpaceOsSettings.ResetToDefaults();
         RefreshControls();
     }
 
@@ -193,7 +193,7 @@ public class AjustesApp : MonoBehaviour
         Transform pantalla = desktop.transform.Find("Root/Pantalla");
         if (pantalla == null) pantalla = desktop.transform;
 
-        window = new GameObject("AjustesWindow", typeof(RectTransform), typeof(Image));
+        window = new GameObject("SettingsWindow", typeof(RectTransform), typeof(Image));
         window.transform.SetParent(pantalla, false);
         var windowRt = (RectTransform)window.transform;
         Stretch(windowRt, 24f, 72f, 24f, 100f);
@@ -211,11 +211,11 @@ public class AjustesApp : MonoBehaviour
         accent.pivot = new Vector2(0.5f, 0f);
         accent.anchoredPosition = Vector2.zero;
         accent.sizeDelta = new Vector2(0f, 3f);
-        var titleLabel = CreateText("Nombre", title, "Ajustes", 26f, TextAlignmentOptions.MidlineLeft);
+        var titleLabel = CreateText("Name", title, "Settings", 26f, TextAlignmentOptions.MidlineLeft);
         titleLabel.rectTransform.offsetMin = new Vector2(16f, 0f);
         titleLabel.rectTransform.offsetMax = new Vector2(-80f, 0f);
 
-        var close = CreateButton("Cerrar", title, new Color(0.75f, 0.20f, 0.20f, 1f));
+        var close = CreateButton("Close", title, new Color(0.75f, 0.20f, 0.20f, 1f));
         var closeRt = (RectTransform)close.transform;
         closeRt.anchorMin = closeRt.anchorMax = closeRt.pivot = new Vector2(1f, 0.5f);
         closeRt.anchoredPosition = new Vector2(-10f, 0f);
@@ -236,7 +236,7 @@ public class AjustesApp : MonoBehaviour
         tabRow.childForceExpandWidth = true;
         tabRow.childForceExpandHeight = true;
 
-        string[] tabNames = { "Audio", "Gráficos", "Controles", "Información" };
+        string[] tabNames = { "Audio", "Graphics", "Controls", "About" };
         Section[] sections = { Section.Audio, Section.Graficos, Section.Controles, Section.Informacion };
         for (int i = 0; i < tabNames.Length; i++)
         {
@@ -250,14 +250,14 @@ public class AjustesApp : MonoBehaviour
             tabButtons[i] = tab;
         }
 
-        var reset = CreateButton("Restablecer", window.transform, new Color(0.22f, 0.24f, 0.32f, 1f));
+        var reset = CreateButton("Reset", window.transform, new Color(0.22f, 0.24f, 0.32f, 1f));
         var resetRt = (RectTransform)reset.transform;
         resetRt.anchorMin = new Vector2(0.5f, 0f);
         resetRt.anchorMax = new Vector2(0.5f, 0f);
         resetRt.pivot = new Vector2(0.5f, 0f);
         resetRt.anchoredPosition = new Vector2(0f, 10f);
         resetRt.sizeDelta = new Vector2(280f, 44f);
-        CreateText("Etiqueta", reset.transform, "Restablecer valores", 18f, TextAlignmentOptions.Center);
+        CreateText("Label", reset.transform, "Reset to defaults", 18f, TextAlignmentOptions.Center);
         reset.onClick.AddListener(ResetDefaults);
 
         var body = CreateRect("Cuerpo", window.transform);
@@ -274,82 +274,82 @@ public class AjustesApp : MonoBehaviour
     {
         var content = CreateScrollContent(body, "Audio");
         CreateSectionLabel(content, "Volumen");
-        CreateVolumeSlider(content, "Principal (master)", GameSettings.MasterVolume, v =>
+        CreateVolumeSlider(content, "Master", SpaceOsSettings.MasterVolume, v =>
         {
-            GameSettings.MasterVolume = v;
+            SpaceOsSettings.MasterVolume = v;
             Commit();
         }, out masterSlider, out masterValue);
-        CreateVolumeSlider(content, "Música", GameSettings.MusicVolume, v =>
+        CreateVolumeSlider(content, "Music", SpaceOsSettings.MusicVolume, v =>
         {
-            GameSettings.MusicVolume = v;
+            SpaceOsSettings.MusicVolume = v;
             Commit();
         }, out musicSlider, out musicValue);
-        CreateVolumeSlider(content, "Efectos (SFX)", GameSettings.SfxVolume, v =>
+        CreateVolumeSlider(content, "Sound effects (SFX)", SpaceOsSettings.SfxVolume, v =>
         {
-            GameSettings.SfxVolume = v;
+            SpaceOsSettings.SfxVolume = v;
             Commit();
         }, out sfxSlider, out sfxValue);
-        CreateHint(content, "Música y SFX quedan guardados para que el audio del juego los lea después. El principal se aplica ya a AudioListener.");
+        CreateHint(content, "Music and SFX are stored so the game audio can read them later. Master is already applied to AudioListener.");
         return content.parent.parent.gameObject;
     }
 
     GameObject BuildGraphicsPanel(RectTransform body)
     {
-        var content = CreateScrollContent(body, "Graficos");
+        var content = CreateScrollContent(body, "Graphics");
         CreateSectionLabel(content, "Calidad y pantalla");
         qualityValue = CreateCycleRow(content, "Calidad", CurrentQualityName(), () => CycleQuality(-1), () => CycleQuality(1));
-        fullscreenValue = CreateToggleRow(content, "Pantalla completa", () => GameSettings.Fullscreen, on =>
+        fullscreenValue = CreateToggleRow(content, "Fullscreen", () => SpaceOsSettings.Fullscreen, on =>
         {
-            GameSettings.Fullscreen = on;
+            SpaceOsSettings.Fullscreen = on;
             Commit();
         });
-        crtValue = CreateToggleRow(content, "Filtro CRT del monitor", () => GameSettings.CrtFilter, on =>
+        crtValue = CreateToggleRow(content, "Monitor CRT filter", () => SpaceOsSettings.CrtFilter, on =>
         {
-            GameSettings.CrtFilter = on;
+            SpaceOsSettings.CrtFilter = on;
             Commit();
         });
-        frameValue = CreateCycleRow(content, "Límite de FPS", FrameRateLabels[FrameRateIndex()],
+        frameValue = CreateCycleRow(content, "Frame rate limit", FrameRateLabels[FrameRateIndex()],
             () => SetFrameRateIndex(FrameRateIndex() - 1),
             () => SetFrameRateIndex(FrameRateIndex() + 1));
-        CreateHint(content, "Pantalla completa no tiene efecto visible en WebGL si el navegador la limita. El filtro CRT enciende o apaga el material de la pantalla del monitor.");
+        CreateHint(content, "Fullscreen has no visible effect on WebGL if the browser blocks it. The CRT filter swaps the monitor screen material on or off.");
         return content.parent.parent.gameObject;
     }
 
     GameObject BuildControlsPanel(RectTransform body)
     {
-        var content = CreateScrollContent(body, "Controles");
-        CreateSectionLabel(content, "Cámara");
-        CreateLabeledSlider(content, "Sensibilidad de cámara / ratón", 0.2f, 2f, GameSettings.CameraSensitivity, v =>
+        var content = CreateScrollContent(body, "Controls");
+        CreateSectionLabel(content, "Camera");
+        CreateLabeledSlider(content, "Camera / mouse sensitivity", 0.2f, 2f, SpaceOsSettings.CameraSensitivity, v =>
         {
-            GameSettings.CameraSensitivity = v;
+            SpaceOsSettings.CameraSensitivity = v;
             Commit();
         }, out sensitivitySlider, out sensitivityValue, v => v.ToString("0.00") + "x");
-        CreateHint(content, "La sensibilidad queda guardada en GameSettings.CameraSensitivity para las estaciones que muevan la cámara.");
-        CreateSectionLabel(content, "Controles actuales");
+        CreateHint(content, "Sensitivity is stored in SpaceOsSettings.CameraSensitivity for stations that move the camera.");
+        CreateSectionLabel(content, "Current controls");
         CreateInfoLine(content, "Clic izquierdo", "Seleccionar objetos e iconos, y arrastrar deslizadores.");
-        CreateInfoLine(content, "Esc", "Cerrar la estación y volver al escritorio.");
-        CreateInfoLine(content, "Rueda del raton", "Desplazar listas y ventanas (SpaceMart, Ajustes).");
-        CreateInfoLine(content, "Volver", "Botón en la esquina de SpaceOS; misma acción que Esc.");
+        CreateInfoLine(content, "Esc", "Close the station and return to the desk.");
+        CreateInfoLine(content, "Mouse wheel", "Scroll lists and windows (SpaceMart, Settings).");
+        CreateInfoLine(content, "Back", "Button in the SpaceOS corner; same action as Esc.");
         return content.parent.parent.gameObject;
     }
 
     GameObject BuildInfoPanel(RectTransform body)
     {
-        var content = CreateScrollContent(body, "Informacion");
+        var content = CreateScrollContent(body, "About");
         CreateSectionLabel(content, "El juego");
-        CreateInfoLine(content, "Título", "Gran Equipo");
-        CreateInfoLine(content, "Equipo", "Gran Equipo – NASA Space Apps 2026");
+        CreateInfoLine(content, "Title", "Gran Equipo");
+        CreateInfoLine(content, "Team", "Gran Equipo – NASA Space Apps 2026");
         CreateInfoLine(content, "Reto", "Space Mission Design Game");
         CreateInfoLine(content, "Version", Application.version);
         CreateInfoLine(content, "Unity", Application.unityVersion);
         CreateInfoLine(content, "Plataforma", Application.platform.ToString());
-        CreateSectionLabel(content, "Descripción");
-        CreateParagraph(content, "Juego educativo de diseño de una misión de órbita lunar tripulada, inspirada en Artemis, para el NASA Space Apps Challenge 2026. Desde el escritorio de planeación compras piezas, armas el cohete y lanzas la misión.");
-        CreateSectionLabel(content, "Créditos");
-        CreateInfoLine(content, "Equipo", "Gran Equipo");
-        CreateInfoLine(content, "Programación", "Por definir");
-        CreateInfoLine(content, "Arte", "Por definir");
-        CreateInfoLine(content, "Audio", "Por definir");
+        CreateSectionLabel(content, "Description");
+        CreateParagraph(content, "Educational game about designing a crewed lunar-orbit mission, inspired by Artemis, for the NASA Space Apps Challenge 2026. From the planning desk you buy parts, assemble the rocket and launch the mission.");
+        CreateSectionLabel(content, "Credits");
+        CreateInfoLine(content, "Team", "Gran Equipo");
+        CreateInfoLine(content, "Programming", "To be decided");
+        CreateInfoLine(content, "Art", "To be decided");
+        CreateInfoLine(content, "Audio", "To be decided");
         CreateInfoLine(content, "Agradecimientos", "NASA Space Apps Challenge 2026");
         return content.parent.parent.gameObject;
     }
@@ -464,8 +464,8 @@ public class AjustesApp : MonoBehaviour
         brt.anchorMax = new Vector2(0.98f, 0.82f);
         brt.offsetMin = Vector2.zero;
         brt.offsetMax = new Vector2(-8f, 0f);
-        string onText = label.Contains("Pantalla") ? "Activada" : "Activado";
-        string offText = label.Contains("Pantalla") ? "Desactivada" : "Desactivado";
+        string onText = "On";
+        string offText = "Off";
         var value = CreateText("Texto", button.transform, on ? onText : offText, 18f, TextAlignmentOptions.Center);
         button.onClick.AddListener(() => onChanged(!getCurrent()));
         return value;

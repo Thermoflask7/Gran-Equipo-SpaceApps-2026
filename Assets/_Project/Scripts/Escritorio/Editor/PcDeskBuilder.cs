@@ -13,7 +13,7 @@ using UnityEngine.Rendering.Universal;
 /// Arma la estación PC del escritorio en 01_Planeacion:
 /// collider, zoom de cámara, malla curva del monitor (RenderTexture + filtro CRT),
 /// Canvas SpaceOS y EventSystem con Input System.
-/// Menú: SpaceApps / Armar PC del escritorio.
+/// Menu: SpaceApps / Build desk PC.
 /// </summary>
 public static class PcDeskBuilder
 {
@@ -33,12 +33,12 @@ public static class PcDeskBuilder
         public GameObject screenOff;
     }
 
-    [MenuItem("SpaceApps/Armar PC del escritorio")]
+    [MenuItem("SpaceApps/Build desk PC")]
     public static void Build()
     {
         if (EditorApplication.isPlaying)
         {
-            EditorUtility.DisplayDialog("Armar PC del escritorio", "Sal del modo Play antes de armar la PC.", "OK");
+            EditorUtility.DisplayDialog("Build desk PC", "Exit Play Mode before building the desk PC.", "OK");
             return;
         }
 
@@ -47,7 +47,7 @@ public static class PcDeskBuilder
         {
             if (AssetDatabase.LoadAssetAtPath<SceneAsset>(ScenePath) == null)
             {
-                EditorUtility.DisplayDialog("Armar PC del escritorio", "No se encontró la escena " + ScenePath + ".", "OK");
+                EditorUtility.DisplayDialog("Build desk PC", "Scene " + ScenePath + " was not found.", "OK");
                 return;
             }
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
@@ -58,34 +58,34 @@ public static class PcDeskBuilder
         GameObject pc = FindNamed(scene, PcName);
         if (pc == null)
         {
-            EditorUtility.DisplayDialog("Armar PC del escritorio", "No se encontró el GameObject '" + PcName + "' en la escena.", "OK");
+            EditorUtility.DisplayDialog("Build desk PC", "GameObject '" + PcName + "' was not found in the scene.", "OK");
             return;
         }
 
         Transform monitor = FindChild(pc.transform, MonitorName);
         if (monitor == null)
         {
-            EditorUtility.DisplayDialog("Armar PC del escritorio", "No se encontró el hijo '" + MonitorName + "'.", "OK");
+            EditorUtility.DisplayDialog("Build desk PC", "Child '" + MonitorName + "' was not found.", "OK");
             return;
         }
 
         var monitorRenderer = monitor.GetComponent<MeshRenderer>();
         if (monitorRenderer == null)
         {
-            EditorUtility.DisplayDialog("Armar PC del escritorio", "'" + MonitorName + "' no tiene MeshRenderer.", "OK");
+            EditorUtility.DisplayDialog("Build desk PC", "'" + MonitorName + "' has no MeshRenderer.", "OK");
             return;
         }
 
         Camera cam = FindMainCamera(scene);
         if (cam == null)
         {
-            EditorUtility.DisplayDialog("Armar PC del escritorio", "No hay una cámara con tag MainCamera.", "OK");
+            EditorUtility.DisplayDialog("Build desk PC", "No camera with the MainCamera tag was found.", "OK");
             return;
         }
 
         int submesh = FindScreenSubmesh(monitorRenderer);
         int undoGroup = Undo.GetCurrentGroup();
-        Undo.SetCurrentGroupName("Armar PC del escritorio");
+        Undo.SetCurrentGroupName("Build desk PC");
         try
         {
             DisableEmptyMeshColliders(pc);
@@ -115,7 +115,7 @@ public static class PcDeskBuilder
             LogZoom(station, cam);
 
             if (!station.TryGetScreenSurface(cam, out _, out _, out _, out _))
-                Debug.LogWarning("[PcDeskBuilder] No se pudo calcular la superficie de la pantalla; se usa la colocacion por defecto de SpaceOsScreen.");
+                Debug.LogWarning("[PcDeskBuilder] Could not compute the screen surface; using the default SpaceOsScreen placement.");
 
             // Conserva la pose que el usuario haya ajustado a mano en PC_Screen.
             Transform oldScreen = FindChild(pc.transform, "PC_Screen");
@@ -155,7 +155,7 @@ public static class PcDeskBuilder
     {
         if (!station.TryComputeZoomPose(cam, out Vector3 zoomPos, out Quaternion zoomRot, out float screenHeight))
         {
-            Debug.LogWarning("[PcDeskBuilder] No se pudo calcular la pose de zoom de la pantalla.");
+            Debug.LogWarning("[PcDeskBuilder] Could not compute the screen zoom pose.");
             return;
         }
 
@@ -202,7 +202,7 @@ public static class PcDeskBuilder
         Undo.RecordObject(box, "Fit PC BoxCollider");
         if (!TryEncapsulateRenderers(pc.transform, out Vector3 center, out Vector3 size))
         {
-            Debug.LogWarning("[PcDeskBuilder] " + PcName + " no tiene Renderers. El BoxCollider no se ajustó.");
+            Debug.LogWarning("[PcDeskBuilder] " + PcName + " has no Renderers. The BoxCollider was not fitted.");
             return;
         }
         box.center = center;
@@ -270,9 +270,9 @@ public static class PcDeskBuilder
         Material crtMat = AssetDatabase.LoadAssetAtPath<Material>(CrtMatPath);
         Material plainMat = AssetDatabase.LoadAssetAtPath<Material>(PlainMatPath);
         if (crtMat == null)
-            Debug.LogWarning("[PcDeskBuilder] No se encontro " + CrtMatPath + ".");
+            Debug.LogWarning("[PcDeskBuilder] Could not find " + CrtMatPath + ".");
         if (plainMat == null)
-            Debug.LogWarning("[PcDeskBuilder] No se encontro " + PlainMatPath + ".");
+            Debug.LogWarning("[PcDeskBuilder] Could not find " + PlainMatPath + ".");
 
         var screenGo = new GameObject("PC_Screen");
         Undo.RegisterCreatedObjectUndo(screenGo, "Create PC_Screen");
@@ -430,7 +430,7 @@ public static class PcDeskBuilder
         soon.anchoredPosition = Vector2.zero;
         soon.sizeDelta = new Vector2(700f, 400f);
 
-        TextMeshProUGUI soonText = CreateText("Texto", soon, "Próximamente", 40f, TextAlignmentOptions.Center);
+        TextMeshProUGUI soonText = CreateText("Texto", soon, "Coming soon", 40f, TextAlignmentOptions.Center);
         soonText.rectTransform.offsetMin = new Vector2(24f, 110f);
         soonText.rectTransform.offsetMax = new Vector2(-24f, -24f);
 
@@ -441,7 +441,7 @@ public static class PcDeskBuilder
         closeRt.pivot = new Vector2(0.5f, 0f);
         closeRt.anchoredPosition = new Vector2(0f, 24f);
         closeRt.sizeDelta = new Vector2(200f, 60f);
-        CreateText("Etiqueta", close.transform, "Cerrar", 28f, TextAlignmentOptions.Center);
+        CreateText("Etiqueta", close.transform, "Close", 28f, TextAlignmentOptions.Center);
         soon.gameObject.SetActive(false);
 
         Button back = CreateButton("Volver", pantalla, new Color(0.15f, 0.15f, 0.2f, 0.9f));
@@ -451,7 +451,7 @@ public static class PcDeskBuilder
         backRt.pivot = new Vector2(0f, 1f);
         backRt.anchoredPosition = new Vector2(24f, -24f);
         backRt.sizeDelta = new Vector2(200f, 64f);
-        CreateText("Etiqueta", back.transform, "< Volver", 30f, TextAlignmentOptions.Center);
+        CreateText("Etiqueta", back.transform, "< Back", 30f, TextAlignmentOptions.Center);
 
         RectTransform apagada = CreateImage("Apagada", pantalla, new Color(0f, 0f, 0f, 1f));
         Stretch(apagada, 0f, 0f, 0f, 0f);
@@ -481,7 +481,7 @@ public static class PcDeskBuilder
             SetLayerRecursively(t.GetChild(i).gameObject, layer);
     }
 
-    const string SpaceMartCatalogPath = "Assets/_Project/Data/Tienda/SpaceMartCatalog.asset";
+    const string SpaceMartCatalogPath = "Assets/_Project/Data/Tienda/SpaceOsShopCatalog.asset";
 
     static void EnsureAjustes(ComputerDesktop desktop)
     {
@@ -496,10 +496,10 @@ public static class PcDeskBuilder
         var app = desktop.GetComponent<SpaceMartApp>();
         if (app == null)
             app = Undo.AddComponent<SpaceMartApp>(desktop.gameObject);
-        var catalog = AssetDatabase.LoadAssetAtPath<SpaceMartCatalog>(SpaceMartCatalogPath);
+        var catalog = AssetDatabase.LoadAssetAtPath<SpaceOsShopCatalog>(SpaceMartCatalogPath);
         if (catalog == null)
         {
-            Debug.LogWarning("[PcDeskBuilder] No se encontro " + SpaceMartCatalogPath + ".");
+            Debug.LogWarning("[PcDeskBuilder] Could not find " + SpaceMartCatalogPath + ".");
             return;
         }
         var so = new SerializedObject(app);

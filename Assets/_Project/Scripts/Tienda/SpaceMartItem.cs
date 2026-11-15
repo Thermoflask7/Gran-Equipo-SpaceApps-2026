@@ -1,38 +1,45 @@
-using System;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
-public enum SpaceMartCategory
+// One row of the SpaceMart list: name, facts, price and a Buy / Swap / Sell button.
+// SpaceMart clones the row template and calls Setup() once per part.
+public class SpaceMartItem : MonoBehaviour
 {
-    Cohetes,
-    Motores,
-    Combustible,
-    Modulos,
-    Instrumentos
-}
+    public TMP_Text nameText;
+    public TMP_Text infoText;
+    public TMP_Text priceText;
+    public TMP_Text buttonLabel;
+    public Button button;
 
-/// <summary>
-/// Una pieza de la tienda SpaceMart. Valores placeholder; mas adelante se pueden
-/// reemplazar por PartData reales.
-/// </summary>
-[Serializable]
-public class SpaceMartItem
-{
-    public string id;
-    public string name;
-    public SpaceMartCategory category;
-    public float price;
-    [TextArea] public string spec;
-    public Color color = Color.gray;
+    SpaceMart shop;
+    PartData part;
 
-    public SpaceMartItem() { }
+    public PartData Part { get { return part; } }
 
-    public SpaceMartItem(string id, string name, SpaceMartCategory category, float price, string spec, Color color)
+    public void Setup(SpaceMart shop, PartData part)
     {
-        this.id = id;
-        this.name = name;
-        this.category = category;
-        this.price = price;
-        this.spec = spec;
-        this.color = color;
+        this.shop = shop;
+        this.part = part;
+        nameText.text = part.partName;
+        infoText.text = SpaceMart.CategoryName(part.type) + " | " + SpaceMart.PartFacts(part) + "\n" + part.description;
+        priceText.text = SpaceMart.Credits(part.price);
+        button.onClick.AddListener(OnClick);
+    }
+
+    public void Refresh()
+    {
+        if (part == null) return;
+        bool owned = shop.IsOwned(part);
+        if (owned) buttonLabel.text = "Sell";
+        else if (part.type == PartType.LaunchService && shop.OwnedLauncher() != null) buttonLabel.text = "Swap";
+        else buttonLabel.text = "Buy";
+        button.interactable = owned || shop.CanBuy(part); // gray when there are not enough credits
+    }
+
+    void OnClick()
+    {
+        if (shop.IsOwned(part)) shop.Sell(part);
+        else shop.Buy(part);
     }
 }
